@@ -12,8 +12,8 @@
 
 int main(int argc, char** argv){
 
-	maquina_unit_tests();
-	//diagrama_unit_tests();
+	//maquina_unit_tests();
+	diagrama_unit_tests();
 	return 0;
 }
 
