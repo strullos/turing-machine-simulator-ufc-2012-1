@@ -12,13 +12,22 @@
 
 void modulo_unit_tests()
 {
-	Maquina *m = new Maquina("ab", 1000);
-	Modulo modulo("r.mt");
-	modulo.inicializar();
-	modulo.executar(m);
+	Maquina *m1 = new Maquina("ab", 1000);
+	Modulo modulo1("r.mt");
+	modulo1.inicializar();
+	modulo1.executar(m1);
 
-	if( m->simbolo_atual() != 'b' ) {
-		std::cout << "Erro!" << std::endl;
+	if( m1->simbolo_atual() != 'b' ) {
+		std::cout << "Erro! Teste 1" << std::endl;
+	}
+
+	Maquina *m2 = new Maquina("abc", 1000);
+	Modulo modulo2("r#.mt");
+	modulo2.inicializar();
+	modulo2.executar(m2);
+
+	if( m2->simbolo_atual() != '#' ) {
+		std::cout << "Erro! Teste 2" << std::endl;
 	}
 }
 

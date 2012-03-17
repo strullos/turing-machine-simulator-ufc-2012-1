@@ -28,16 +28,17 @@ bool Modulo::executar(Maquina *m)
 	while( (it = m_regras.find(estado_atual)) != m_regras.end() ) {
 
 		// Procura uma regra com estado1 = estado_atual e simbolo = simbolo_atual
-		for( ; it->first != estado_atual || it != m_regras.end() ; it++) {
+		for( ; it != m_regras.end() || it->first != estado_atual ; it++) {
 			const Regra &regra_atual = it->second;
 
 			if( regra_atual.simbolo == m->simbolo_atual() ) {
 				if( !aplica_regra(m, regra_atual) ) {
 					return false;
+				} else {
+					// Se conseguiu aplicar a regra, passa para o proximo estado
+					estado_atual = regra_atual.estado2;
+					break;
 				}
-				// Se conseguiu aplicar a regra, passa para o proximo estado
-				estado_atual = regra_atual.estado2;
-				break;
 			}
 		}
 	}
@@ -54,6 +55,7 @@ bool Modulo::inicializar()
 
 	// Se nao conseguiu abrir o arquivo, retorna erro
 	if( !fs ) {
+		fs.close();
 		return false;
 	}
 
@@ -62,6 +64,7 @@ bool Modulo::inicializar()
 	// Le cabecalho - se a primeira linha do arquivo nao estiver no formato certo, retorna erro
 	fs >> estado_inicial >> tamanho_fita >> num_iteracoes;
 	if( !fs.good() ) {
+		fs.close();
 		return false;
 	}
 
@@ -78,6 +81,7 @@ bool Modulo::inicializar()
 
 			std::getline(fs, line);
 			if( !line.empty() ) {
+				fs.close();
 				return false;
 			}
 		} else {
@@ -86,6 +90,7 @@ bool Modulo::inicializar()
 		}
 	}
 
+	fs.close();
 	return true;
 }
 
