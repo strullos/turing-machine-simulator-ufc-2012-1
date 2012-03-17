@@ -9,18 +9,29 @@
 #define MODULO_H_
 #include <string>
 #include <map>
-#include "regra.h"
 #include "../maquina/maquina.h"
 
 class Modulo {
 public:
-	Modulo(const std::string &path);
+	Modulo(const std::string &arquivo);
 	virtual ~Modulo();
 
-	Maquina* executar(Maquina *);
+	bool inicializar();
+	bool executar(Maquina *m);
+	unsigned int linha_incorreta();
 private:
-	std::string regra_inicial;
-	std::multimap<std::string, Regra*> m_regras;
+	typedef struct {
+		char simbolo;
+		std::string estado2;
+		char acao;
+	}Regra;
+
+	std::string m_estado_inicial;
+	std::string m_arquivo;
+	std::multimap<std::string, Regra> m_regras;
+	unsigned int m_linha_incorreta;
+
+	bool aplica_regra(Maquina *m, const Regra &r);
 };
 
 #endif /* MODULO_H_ */
