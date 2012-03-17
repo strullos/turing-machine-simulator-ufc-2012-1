@@ -39,7 +39,18 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 
 Diagrama::~Diagrama()
 {
-	// TODO Auto-generated destructor stub
+	std::map<std::string, Modulo*>::iterator it;
+	Modulo* m = NULL;
+	for(it = m_modulos_carregados.begin(); it != m_modulos_carregados.end(); it++){
+		m = (*it).second;
+		delete (m);
+		m_modulos_carregados.erase(it);
+
+	}
+	m_modulos_carregados.clear();
+	//Essa tabela guarda os mesmos ponteiros da tabela "m_modulos_carregados", então não é necessário
+	//deletar esses ponteiros, basta limpar a tabela;
+	m_modulos.clear();
 }
 
 bool Diagrama::carregar_modulo(std::string& linha_modulo)
@@ -56,7 +67,7 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 	//Remove modulo da linha
 	linha_modulo = linha_modulo.substr(espaco_pos,linha_modulo.size());
 
-	//Remove os espaços em branco depois de módulo
+	//Remove os espaços em branco depois de "modulo"
 	espaco_pos = linha_modulo.find_first_not_of(" ");
 	if(espaco_pos == std::string::npos){
 		std::cout << "Arquivo inválido" << std::endl;
@@ -96,10 +107,15 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 		if(m_modulos.find(nome_modulo) == m_modulos.end()){
 			m_modulos[nome_modulo] = novo_modulo;
 		}else{
-			std::cout << "Um módulo com esse nome já foi carregado. Ignorando a instância repetida..." << std::endl;
+			std::cout << "Uma referência com esse nome já existe. Ignorando nova referência..." << std::endl;
 		}
 	}else{
-		std::cout << "Arquivo de módulo já carregado. Ignorando.." << std::endl;
+		std::cout << "Arquivo de módulo já carregado. Adicionando nova referência..." << std::endl;
+		if(m_modulos.find(nome_modulo) == m_modulos.end()){
+			m_modulos[nome_modulo] = m_modulos_carregados[arquivo_modulo];
+		}else{
+			std::cout << "Uma referência com esse nome já existe. Ignorando nova referência..." << std::endl;
+		}
 	}
 	return true;
 }
