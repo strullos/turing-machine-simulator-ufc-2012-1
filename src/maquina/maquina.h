@@ -18,17 +18,17 @@ class Maquina {
 public:
 	Maquina(const std::string& fita, unsigned int tamanho_da_fita); //< Recebe uma string representando a fita e o tamanho total da fita
 	virtual ~Maquina() {}; //< Destrutor
-	bool mover_esquerda(); //< Move a cabeça de leitura 1 posição para a esquerda / Decrementa m_pos_atual
-	bool mover_direita();  //< Move a cabeça de leitura 1 posição para a direita  / Incrementa m_pos_atual
-	bool escrever(char simbolo); //< Escreve "simbolo" na fita na posição atual
-	char simbolo_atual(); //< Retorna o símbolo da fita na posição atual
+	bool mover_esquerda(); //< Move a cabeï¿½a de leitura 1 posiï¿½ï¿½o para a esquerda / Decrementa m_pos_atual
+	bool mover_direita();  //< Move a cabeï¿½a de leitura 1 posiï¿½ï¿½o para a direita  / Incrementa m_pos_atual
+	bool escrever(char simbolo); //< Escreve "simbolo" na fita na posiï¿½ï¿½o atual
+	char simbolo_atual(); //< Retorna o sï¿½mbolo da fita na posiï¿½ï¿½o atual
 	const std::string& fita(); //< Retorna a fita
 
 	void print_tape(); // remove later
 private:
-	unsigned int m_pos_atual; //< Representa a cabeça de leitura da máquina / a posição atual na fita
-	unsigned int m_tamanho_da_fita; //< Tamanho máximo da fita
-	std::string m_fita; //< O conteúdo da fita
+	unsigned int m_pos_atual; //< Representa a cabeï¿½a de leitura da mï¿½quina / a posiï¿½ï¿½o atual na fita
+	unsigned int m_tamanho_da_fita; //< Tamanho mï¿½ximo da fita
+	std::string m_fita; //< O conteï¿½do da fita
 };
 
 #endif /* MAQUINA_H_ */
