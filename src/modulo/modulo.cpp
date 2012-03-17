@@ -80,10 +80,10 @@ bool Modulo::inicializar()
 			if( !line.empty() ) {
 				return false;
 			}
+		} else {
+			Regra regra_atual = { simbolo, estado2, acao };
+			m_regras.insert(std::pair<std::string, Regra>( estado_inicial, regra_atual ));
 		}
-
-		Regra regra_atual = { simbolo, estado2, acao };
-		m_regras.insert(std::pair<std::string, Regra>( estado_inicial, regra_atual ));
 	}
 
 	return true;
@@ -108,6 +108,7 @@ bool Modulo::aplica_regra(Maquina *m, const Regra &r)
 
 	default:
 		ret = m->escrever(r.simbolo);
+		break;
 	}
 
 	return ret;
