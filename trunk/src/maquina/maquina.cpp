@@ -43,7 +43,7 @@ bool Maquina::mover_direita()
 }
 
 
-bool Maquina::escrever(char simbolo[1])
+bool Maquina::escrever(std::string simbolo)
 {
 //	std::string::iterator it1;
 //	std::string::iterator it2;
@@ -54,8 +54,11 @@ bool Maquina::escrever(char simbolo[1])
 //	m_fita.replace(it1,it2,simbolo.c_str(),1);
 
 	//Substitui o simbolo na posição atual da cabeça de leitura
-	m_fita.replace(m_pos_atual,1,simbolo);
-	return true;
+	if(m_pos_atual > 0){
+		m_fita.replace(m_pos_atual,1,simbolo);
+		return true;
+	}
+	return false;
 }
 
 
