@@ -12,7 +12,7 @@
 void maquina_unit_tests()
 {
 	Maquina *m = new Maquina("abcd", 10);
-	m->escrever("d");
+	m->escrever('d');
 	std::cout << m->simbolo_atual() << std::endl;
 	m->mover_direita();
 	m->mover_direita();
@@ -28,5 +28,7 @@ void maquina_unit_tests()
 	m->mover_esquerda();
 	m->mover_esquerda();
 	m->print_tape();
+
+	delete m;
 }
 

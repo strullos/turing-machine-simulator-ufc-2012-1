@@ -20,7 +20,7 @@ public:
 	virtual ~Maquina() {}; //< Destrutor
 	bool mover_esquerda(); //< Move a cabeça de leitura 1 posição para a esquerda / Decrementa m_pos_atual
 	bool mover_direita();  //< Move a cabeça de leitura 1 posição para a direita  / Incrementa m_pos_atual
-	bool escrever(std::string simbolo); //< Escreve "simbolo" na fita na posição atual
+	bool escrever(char simbolo); //< Escreve "simbolo" na fita na posição atual
 	char simbolo_atual(); //< Retorna o símbolo da fita na posição atual
 	const std::string& fita(); //< Retorna a fita
 
