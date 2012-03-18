@@ -21,17 +21,21 @@ Modulo::~Modulo()
 
 bool Modulo::executar(Maquina *m)
 {
+	bool continua = true;
 	std::string estado_atual = m_estado_inicial;
 	std::multimap<std::string, Regra>::const_iterator it;
 
 	// Enquanto puder encontrar uma regra com o estado1 igual ao estado atual...
-	while( (it = m_regras.find(estado_atual)) != m_regras.end() ) {
+	while( continua && (it = m_regras.find(estado_atual)) != m_regras.end() ) {
+		// Se o laco for nao encontrar nenhuma regra que corresponda ao simbolo atual da maquina, a maquina para
+		continua = false;
 
 		// Procura uma regra com estado1 = estado_atual e simbolo = simbolo_atual
 		for( ; it != m_regras.end() && it->first == estado_atual ; it++) {
 			const Regra &regra_atual = it->second;
 
 			if( regra_atual.simbolo == m->simbolo_atual() ) {
+				continua = true;
 				if( !aplica_regra(m, regra_atual) ) {
 					return false;
 				}
