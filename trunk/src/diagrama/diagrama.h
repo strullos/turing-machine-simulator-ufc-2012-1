@@ -10,6 +10,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "../modulo/modulo.h"
 
@@ -17,12 +18,27 @@
 class Regra{
 public:
 	Regra(std::string &simbolo, std::string &modulo_final){
+		m_qualquer_simbolo = false;
 		inserir(simbolo,modulo_final);
 	}
+	Regra(){ m_qualquer_simbolo = false; };
+
 	void inserir(std::string simbolo, std::string modulo_final){
 		m_acoes.insert(std::pair<std::string,std::string>(simbolo,modulo_final));
 	}
+
+	std::string pegar_prox_modulo(std::string simbolo_atual){
+		if(m_qualquer_simbolo){
+			return (*(m_acoes.begin())).second;
+		}else{
+			if(m_acoes.find(simbolo_atual) != m_acoes.end()){
+				return m_acoes[simbolo_atual];
+			}
+			return "--NONE--";
+		}
+	}
 	std::map<std::string, std::string> m_acoes;
+	bool m_qualquer_simbolo;
 };
 
 class Diagrama {

@@ -106,6 +106,7 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 	//um novo mï¿½dulo ï¿½ instanciado e adicionado ï¿½ tabela de mï¿½dulos carregados
 	if(m_modulos_carregados.find(arquivo_modulo) == m_modulos_carregados.end()){
 		Modulo* novo_modulo = new Modulo(arquivo_modulo);
+		novo_modulo->inicializar();
 		m_modulos_carregados[arquivo_modulo] = novo_modulo;
 		//Verifica se jï¿½ existe um mï¿½dulo com esse nome, caso nï¿½o tenha, um mï¿½dulo com esse nome ï¿½ adicionado ï¿½ tabela de mï¿½dulos
 		if(m_modulos.find(nome_modulo) == m_modulos.end()){
@@ -132,7 +133,8 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 bool Diagrama::carregar_acoes(std::string& linha_ac)
 {
 	std::string modulo_inicial;
-	std::string simbolo;
+	std::vector<std::string> lista_de_simbolos;
+	std::string simbolos;
 	std::string modulo_final;
 	size_t aux_pos;
 	if(!pegar_remover_valor_da_linha(linha_ac,modulo_inicial))
@@ -153,8 +155,29 @@ bool Diagrama::carregar_acoes(std::string& linha_ac)
 	linha_ac = linha_ac.substr(aux_pos+1,linha_ac.size() - (aux_pos-1));
 
 	aux_pos = linha_ac.find("]");
-	simbolo = linha_ac.substr(0,aux_pos);
+	simbolos = linha_ac.substr(0,aux_pos);
 //	std::cout << "Ao ler simbolo: " << simbolo << std::endl;
+	//Se houver mais de um símbolo
+
+	if(simbolos.size() > 0)
+	{
+		std::string s;
+		while(!simbolos.empty()){
+			aux_pos = simbolos.find(",");
+			if(aux_pos == std::string::npos){
+				s = simbolos;
+				std::cout << s << std::endl;
+				lista_de_simbolos.push_back(s);
+				break;
+			}
+			s = simbolos.substr(0,aux_pos);
+			lista_de_simbolos.push_back(s);
+			simbolos = simbolos.substr(aux_pos+1,simbolos.size() - aux_pos);
+			std::cout << s << std::endl;
+		}
+	}else{
+		lista_de_simbolos.push_back(simbolos);
+	}
 
 	remover_valor_da_linha(linha_ac);
 	remover_espacos_brancos(linha_ac);
@@ -166,14 +189,23 @@ bool Diagrama::carregar_acoes(std::string& linha_ac)
 	}
 //	std::cout << "Para o modulo: " << modulo_final << std::endl;
 
-	Regra *nova_ac = NULL;
-	std::map<std::string,Regra*>::iterator it = m_regras.find(modulo_inicial);
-	if(it == m_regras.end()){
-		nova_ac = new Regra(simbolo,modulo_final);
-		m_regras.insert(std::pair<std::string,Regra*>(modulo_inicial,nova_ac));
+	Regra *regra = NULL;
+	std::map<std::string,Regra*>::iterator regras_it = m_regras.find(modulo_inicial);
+	std::vector<std::string>::iterator simbolos_it;
+	if(regras_it == m_regras.end()){
+		regra = new Regra();
+		for(simbolos_it = lista_de_simbolos.begin(); simbolos_it != lista_de_simbolos.end(); simbolos_it++){
+			regra->inserir((*simbolos_it),modulo_final);
+		}
+		m_regras.insert(std::pair<std::string,Regra*>(modulo_inicial,regra));
 	}else{
-		Regra* ac = (*it).second;
-		ac->inserir(simbolo,modulo_final);
+		regra = (*regras_it).second;
+		for(simbolos_it = lista_de_simbolos.begin(); simbolos_it != lista_de_simbolos.end(); simbolos_it++){
+			regra->inserir((*simbolos_it),modulo_final);
+		}
+	}
+	if(simbolos.compare("*") == 0){
+		regra->m_qualquer_simbolo = true;
 	}
 
 	return true;
@@ -247,6 +279,7 @@ void Diagrama::print_diagram()
 	for(it2 = m_regras.begin(); it2 != m_regras.end(); it2++){
 		initial_module = (*it2).first;
 		ac = (*it2).second;
+		//std::cout << "Regras: " << ac->m_acoes.size() << std::endl;
 		for(it3 = ac->m_acoes.begin(); it3 != ac->m_acoes.end(); it3++){
 			symbol = (*it3).first;
 			last_module = (*it3).second;
@@ -262,30 +295,25 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 		Modulo* modulo = NULL;
 		std::string modulo_atual = m_modulo_inicial;
 		std::string prox_modulo;
-		std::string simbolo_na_fita;
+		std::string simbolo_atual;
 		std::cout << "Modulo inicial: " << modulo_atual << std::endl;
 		bool executando = true;
-
 		mt->print_tape();
-		modulo = m_modulos[modulo_atual];
-		executando = modulo->executar(mt);
-		mt->print_tape();
-//		while(executando){
-//			simbolo_na_fita = mt->simbolo_atual();
-//
-//			if(modulo == NULL){
-//				return;
-//			}
-//
-//
-//			prox_modulo = m_regras[modulo_atual]->m_acoes[simbolo_na_fita];
-//			modulo_atual
-//		}
-
-
-
-
-
+		while(executando){
+			simbolo_atual = mt->simbolo_atual();
+			modulo = m_modulos[modulo_atual];
+			if(modulo == NULL){
+				return;
+			}
+			prox_modulo = m_regras[modulo_atual]->pegar_prox_modulo(simbolo_atual);
+			std::cout << "Prox modulo: " << prox_modulo << std::endl;
+			if(modulo->executar(mt)){
+				mt->print_tape();
+				modulo_atual = prox_modulo;
+			}else{
+				executando = false;
+			}
+		}
 		delete mt;
 	}
 }
