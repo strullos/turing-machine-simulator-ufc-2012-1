@@ -21,7 +21,7 @@ void modulo_unit_tests()
 		std::cout << "Erro! Teste 1" << std::endl;
 	}
 
-	Maquina *m2 = new Maquina("abc", 1000);
+	Maquina *m2 = new Maquina("ab", 1000);
 	Modulo modulo2("r#.mt");
 	modulo2.inicializar();
 	modulo2.executar(m2);
