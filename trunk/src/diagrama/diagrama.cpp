@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 Diagrama::Diagrama()
 {
@@ -28,14 +29,14 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 			std::getline(arquivo,linha);
 			if( linha.find("modulo",0) == 0){
 				if(!carregar_modulo(linha)){
-					std::cout << "Falha ao carregar mï¿½dulo." << std::endl;
+					std::cout << "Falha ao carregar modulo." << std::endl;
 					arquivo.close();
 					return false;
 				}
 			}else{
 				if(linha != "" && linha != "\r" && linha != "\n")	{
-					if(!carregar_acoes(linha)){
-						std::cout << "Falha ao carregar aï¿½ï¿½es." << std::endl;
+					if(!carregar_regras(linha)){
+						std::cout << "Falha ao carregar regras." << std::endl;
 						arquivo.close();
 						return false;
 					}
@@ -81,30 +82,20 @@ Diagrama::~Diagrama()
 
 bool Diagrama::carregar_modulo(std::string& linha_modulo)
 {
+	std::stringstream tokens;
+	tokens << linha_modulo;
+
 	std::string nome_modulo = "";
 	std::string arquivo_modulo = "";
-	size_t aux_pos;
-	aux_pos = linha_modulo.find(" ");
-	if(aux_pos == std::string::npos){
-		std::cout << "Arquivo invï¿½lido." << std::endl;
-		return false;
-	}
-	//Remove "modulo" da linha
-	remover_valor_da_linha(linha_modulo);
-	remover_espacos_brancos(linha_modulo);
 
-	//Pega o nome do mï¿½dulo
-	if(!pegar_remover_valor_da_linha(linha_modulo,nome_modulo))
-		return false;
-	remover_espacos_brancos(linha_modulo);
-	std::cout << "Modulo: " << nome_modulo;
+	size_t aux_pos = linha_modulo.find(' ');
+	tokens.ignore(aux_pos, ' ');
+	tokens >> nome_modulo >> arquivo_modulo;
+	std::cout << "Modulo: " << nome_modulo << " ";
+	std::cout << arquivo_modulo << std::endl;
 
-	//Pega o nome do arquivo do mï¿½dulo
-	arquivo_modulo = linha_modulo;
-	std::cout << "  Arquivo: " << arquivo_modulo << std::endl;
-
-	//Verifica se esse arquivo de mï¿½dulo jï¿½ foi carregado, caso nï¿½o tenha sido,
-	//um novo mï¿½dulo ï¿½ instanciado e adicionado ï¿½ tabela de mï¿½dulos carregados
+	//Verifica se esse arquivo de modulo ja foi carregado, caso nao tenha sido,
+	//um novo modulo eh instanciado e adicionado na tabela de modulos carregados
 	if(m_modulos_carregados.find(arquivo_modulo) == m_modulos_carregados.end()){
 		Modulo* novo_modulo = new Modulo(arquivo_modulo);
 		if(!novo_modulo->inicializar()){
@@ -112,84 +103,65 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 			return false;
 		}
 		m_modulos_carregados[arquivo_modulo] = novo_modulo;
-		//Verifica se jï¿½ existe um mï¿½dulo com esse nome, caso nï¿½o tenha, um mï¿½dulo com esse nome ï¿½ adicionado ï¿½ tabela de mï¿½dulos
+		//Verifica se ja existe um modulo com esse nome, caso nao tenha, um modulo com esse nome ja adicionado na tabela de modulos
 		if(m_modulos.find(nome_modulo) == m_modulos.end()){
 			m_modulos[nome_modulo] = novo_modulo;
-			//Verica se algum mï¿½dulo jï¿½ foi carregado. Se nï¿½o tiver sido, o primeiro mï¿½dulo carregado
-			//serï¿½ o mï¿½dulo inicial
+			//Verica se algum modulo ja foi carregado. Se nao tiver sido, o primeiro modulo carregado
+			//sera o modulo inicial
 			if(m_modulos_carregados.size() == 1){
 				m_modulo_inicial = nome_modulo;
 			}
 		}else{
-			std::cout << "Uma referï¿½ncia com esse nome jï¿½ existe. Ignorando nova referï¿½ncia..." << std::endl;
+			std::cout << "Uma referencia com esse nome ja existe. Ignorando nova referencia." << std::endl;
 		}
 	}else{
-		std::cout << "Arquivo de mï¿½dulo jï¿½ carregado. Adicionando nova referï¿½ncia..." << std::endl;
+		std::cout << "Arquivo de modulo ja carregado. Perparando para adicionar nova referencia." << std::endl;
 		if(m_modulos.find(nome_modulo) == m_modulos.end()){
 			m_modulos[nome_modulo] = m_modulos_carregados[arquivo_modulo];
 		}else{
-			std::cout << "Uma referï¿½ncia com esse nome jï¿½ existe. Ignorando nova referï¿½ncia..." << std::endl;
+			std::cout << "Uma referencia com esse nome ja existe. Ignorando nova referencia." << std::endl;
 		}
 	}
 	return true;
 }
 
-bool Diagrama::carregar_acoes(std::string& linha_ac)
+bool Diagrama::carregar_regras(std::string& linha_regra)
 {
-	std::string modulo_inicial;
+	std::stringstream tokens;
+	std::string modulo_inicial = "";
 	std::vector<std::string> lista_de_simbolos;
-	std::string simbolos;
-	std::string modulo_final;
-	size_t aux_pos;
-	if(!pegar_remover_valor_da_linha(linha_ac,modulo_inicial))
-		return false;
+	std::string simbolos = "";
+	std::string modulo_final = "";
 
-	if(m_modulos.find(modulo_inicial) == m_modulos.end()){
-		std::cout << "Modulo " << modulo_inicial << " nï¿½o declarado. Abortando..." << std::endl;
-		return false;
-	}
-//	std::cout << "Ac para o Modulo: " << modulo_inicial << std::endl;
+	tokens << linha_regra;
+	tokens >> modulo_inicial >> simbolos >> modulo_final;
+	std::cout << "Regra: " << modulo_inicial << " ";
+	std::cout << simbolos << " ";
+	std::cout<< modulo_final << std::endl;
 
-
-	aux_pos = linha_ac.find("[");
-	if(aux_pos == std::string::npos){
-		std::cout << "Arquivo invï¿½lido. " << std::endl;
+	if( (modulo_inicial.size() == 0) || (simbolos.size() == 0) || (modulo_final.size() == 0) ){
 		return false;
 	}
-	linha_ac = linha_ac.substr(aux_pos+1,linha_ac.size() - (aux_pos-1));
+	if( (simbolos.find("[") == std::string::npos) || (simbolos.find("]") == std::string::npos) ){
+		return false;
+	}
 
-	aux_pos = linha_ac.find("]");
-	simbolos = linha_ac.substr(0,aux_pos);
-//	std::cout << "Ao ler simbolo: " << simbolo << std::endl;
-	//Se houver mais de um símbolo
-
-	if(simbolos.size() > 0)
-	{
-		std::string s;
-		while(!simbolos.empty()){
-			aux_pos = simbolos.find(",");
-			if(aux_pos == std::string::npos){
-				s = simbolos;
-				lista_de_simbolos.push_back(s);
-				break;
+	bool qualquer_simbolo = false;
+	std::string::iterator string_it;
+	std::string aux;
+	for(string_it = simbolos.begin(); string_it != simbolos.end(); string_it++){
+		aux = (*string_it);
+		if( (aux.compare("[") != 0) && (aux.compare(",") != 0) && (aux.compare("]") != 0) ){
+			if(aux.compare("*") == 0){
+				qualquer_simbolo = true;
 			}
-			s = simbolos.substr(0,aux_pos);
-			lista_de_simbolos.push_back(s);
-			simbolos = simbolos.substr(aux_pos+1,simbolos.size() - aux_pos);
+			lista_de_simbolos.push_back(aux);
 		}
-	}else{
-		lista_de_simbolos.push_back(simbolos);
 	}
 
-	remover_valor_da_linha(linha_ac);
-	remover_espacos_brancos(linha_ac);
-
-	modulo_final = linha_ac;
-	if(m_modulos.find(modulo_inicial) == m_modulos.end()){
-		std::cout << "Modulo " << modulo_inicial << " nï¿½o declarado. Abortando..." << std::endl;
+	if(lista_de_simbolos.size() == 0){
 		return false;
 	}
-//	std::cout << "Para o modulo: " << modulo_final << std::endl;
 
 	Regra *regra = NULL;
 	std::map<std::string,Regra*>::iterator regras_it = m_regras.find(modulo_inicial);
@@ -206,58 +178,7 @@ bool Diagrama::carregar_acoes(std::string& linha_ac)
 			regra->inserir((*simbolos_it),modulo_final);
 		}
 	}
-	if(simbolos.compare("*") == 0){
-		regra->m_qualquer_simbolo = true;
-	}
-
-	return true;
-}
-
-bool Diagrama::remover_espacos_brancos(std::string& linha) {
-	size_t aux_pos;
-	if(linha.compare(0,1," ") != 0){
-		return false;
-	}
-	//Remove os espaï¿½os em branco depois de "modulo"
-	aux_pos = linha.find_first_not_of(" ");
-	if(aux_pos == std::string::npos){
-		std::cout << "Arquivo invï¿½lido." << std::endl;
-		return false;
-	}
-	linha = linha.substr(aux_pos,linha.size() - aux_pos);
-	return true;
-}
-
-bool Diagrama::remover_valor_da_linha(std::string& linha)
-{
-	size_t aux_pos;
-	if(linha.compare(0,1," ") == 0){
-		return false;
-	}
-	aux_pos = linha.find(" ");
-	if(aux_pos == std::string::npos){
-		std::cout << "Arquivo invï¿½lido." << std::endl;
-		return false;
-	}
-	linha = linha.substr(aux_pos,linha.size() - aux_pos);
-	return true;
-}
-
-
-
-bool Diagrama::pegar_remover_valor_da_linha(std::string& linha, std::string& valor)
-{
-	size_t aux_pos;
-	if(linha.compare(0,1," ") == 0){
-		return false;
-	}
-	aux_pos = linha.find(" ");
-	if(aux_pos == std::string::npos){
-		std::cout << "Arquivo invï¿½lido." << std::endl;
-		return false;
-	}
-	valor = linha.substr(0,aux_pos);
-	linha = linha.substr(aux_pos,linha.size() - aux_pos);
+	regra->m_qualquer_simbolo = qualquer_simbolo;
 	return true;
 }
 
@@ -265,10 +186,10 @@ void Diagrama::print_diagram()
 {
 	std::string module_name;
 	std::map<std::string, Modulo*>::iterator it;
-	std::cout << "Loaded modules: " << std::endl;
+	std::cout << "Diagrama: " << std::endl;
 	for(it = m_modulos.begin(); it != m_modulos.end(); it++){
 		module_name = (*it).first;
-		std::cout << "Module " << module_name << " loaded." << std::endl;
+		std::cout << "Module " << module_name << " carregado." << std::endl;
 	}
 	std::string initial_module;
 	std::string symbol;
@@ -298,12 +219,15 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 		std::string modulo_atual = m_modulo_inicial;
 		std::string prox_modulo;
 		std::string simbolo_atual;
+		std::cout << "Iniciando." << std::endl;
 		std::cout << "Modulo inicial: " << modulo_atual << std::endl;
 		std::map<std::string,Regra*>::iterator regra_it;
 		std::map<std::string,Modulo*>::iterator modulo_it;
-
+		unsigned int passos = 1;
 		bool executando = true;
+		std::cout << passos << ": ";
 		mt->print_tape();
+		passos++;
 		while(executando){
 			modulo_it = m_modulos.find(modulo_atual);
 			if(modulo_it != m_modulos.end()){
@@ -316,7 +240,10 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 			}
 
 			if(modulo->executar(mt)){
+				std::cout << passos << ": ";
 				mt->print_tape();
+				passos++;
+
 				regra_it = m_regras.find(modulo_atual);
 				if(regra_it != m_regras.end()){
 					simbolo_atual = mt->simbolo_atual();
