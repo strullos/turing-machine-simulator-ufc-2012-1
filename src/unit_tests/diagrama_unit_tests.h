@@ -16,6 +16,10 @@ void diagrama_unit_tests(){
 
 	d->print_diagram();
 	d->executar("aba",10);
+	std::cout << "----" << std::endl;
+	d->carregar_diagrama("diagrama3.dt");
+	d->print_diagram();
+	d->executar("aba",10);
 	delete d;
 }
 

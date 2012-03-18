@@ -59,10 +59,7 @@ public:
 	void executar(std::string fita_inicial, unsigned int tamanho_da_fita);
 private:
 	bool carregar_modulo(std::string& linha_modulo);
-	bool carregar_acoes(std::string& linha_acao);
-	bool remover_espacos_brancos(std::string& linha);
-	bool remover_valor_da_linha(std::string& linha);
-	bool pegar_remover_valor_da_linha(std::string&linha, std::string& valor);
+	bool carregar_regras(std::string& linha_acao);
 
 	std::map<std::string, Regra*> m_regras; //< Hash indexado pelo nome do módulo, contendo as ações que ele pode realizar.
 	std::map<std::string,Modulo*> m_modulos_carregados; //< Hash indexado pelo nome do arquivo do módulo. Cada módulo só pode ser carregado uma única vez
