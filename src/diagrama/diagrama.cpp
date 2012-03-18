@@ -10,7 +10,11 @@
 #include <fstream>
 #include <iostream>
 
-Diagrama::Diagrama() {}
+Diagrama::Diagrama()
+{
+	m_modulo_inicial = "";
+	m_carregado = false;
+}
 
 bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 {
@@ -42,9 +46,8 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 		std::cout << "Falha ao abrir o arquivo." << std::endl;
 		return false;
 	}
-	std::cout << "Módulos carregadas com sucesso." << std::endl;
-	std::cout << "Acões carregadas com sucesso." << std::endl;
 	std::cout << "Diagrama carregado com sucesso." << std::endl;
+	m_carregado = true;
 	arquivo.close();
 	return true;
 }
@@ -64,15 +67,15 @@ Diagrama::~Diagrama()
 	//deletar esses ponteiros, basta limpar a tabela;
 	m_modulos.clear();
 
-	std::map<std::string, AcDiagrama*>::iterator it2;
-	while(!m_acoes_diagrama.empty()){
-		it2 = m_acoes_diagrama.begin();
-		(*it2).second->m_ac.clear();
+	std::map<std::string, Regra*>::iterator it2;
+	while(!m_regras.empty()){
+		it2 = m_regras.begin();
+		(*it2).second->m_acoes.clear();
 		delete((*it2).second);
-		m_acoes_diagrama.erase(it2);
+		m_regras.erase(it2);
 	}
 
-	m_acoes_diagrama.clear();
+	m_regras.clear();
 }
 
 bool Diagrama::carregar_modulo(std::string& linha_modulo)
@@ -107,6 +110,11 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 		//Verifica se já existe um módulo com esse nome, caso não tenha, um módulo com esse nome é adicionado à tabela de módulos
 		if(m_modulos.find(nome_modulo) == m_modulos.end()){
 			m_modulos[nome_modulo] = novo_modulo;
+			//Verica se algum módulo já foi carregado. Se não tiver sido, o primeiro módulo carregado
+			//será o módulo inicial
+			if(m_modulos_carregados.size() == 1){
+				m_modulo_inicial = nome_modulo;
+			}
 		}else{
 			std::cout << "Uma referência com esse nome já existe. Ignorando nova referência..." << std::endl;
 		}
@@ -158,13 +166,13 @@ bool Diagrama::carregar_acoes(std::string& linha_ac)
 	}
 //	std::cout << "Para o modulo: " << modulo_final << std::endl;
 
-	AcDiagrama *nova_ac = NULL;
-	std::map<std::string,AcDiagrama*>::iterator it = m_acoes_diagrama.find(modulo_inicial);
-	if(it == m_acoes_diagrama.end()){
-		nova_ac = new AcDiagrama(simbolo,modulo_final);
-		m_acoes_diagrama.insert(std::pair<std::string,AcDiagrama*>(modulo_inicial,nova_ac));
+	Regra *nova_ac = NULL;
+	std::map<std::string,Regra*>::iterator it = m_regras.find(modulo_inicial);
+	if(it == m_regras.end()){
+		nova_ac = new Regra(simbolo,modulo_final);
+		m_regras.insert(std::pair<std::string,Regra*>(modulo_inicial,nova_ac));
 	}else{
-		AcDiagrama* ac = (*it).second;
+		Regra* ac = (*it).second;
 		ac->inserir(simbolo,modulo_final);
 	}
 
@@ -201,33 +209,7 @@ bool Diagrama::remover_valor_da_linha(std::string& linha)
 	return true;
 }
 
-void Diagrama::print_diagram()
-{
-	std::string module_name;
-	std::map<std::string, Modulo*>::iterator it;
-	std::cout << "Loaded modules: " << std::endl;
-	for(it = m_modulos.begin(); it != m_modulos.end(); it++){
-		module_name = (*it).first;
-		std::cout << "Module " << module_name << " loaded." << std::endl;
-	}
-	std::string initial_module;
-	std::string symbol;
-	std::string last_module;
-	std::cout << std::endl;
-	std::cout << "Actions: " << std::endl;
-	std::map<std::string, AcDiagrama*>::iterator it2;
-	std::map<std::string, std::string>::iterator it3;
-	AcDiagrama *ac = NULL;
-	for(it2 = m_acoes_diagrama.begin(); it2 != m_acoes_diagrama.end(); it2++){
-		initial_module = (*it2).first;
-		ac = (*it2).second;
-		for(it3 = ac->m_ac.begin(); it3 != ac->m_ac.end(); it3++){
-			symbol = (*it3).first;
-			last_module = (*it3).second;
-			std::cout << "(" << initial_module << " , " << symbol << ") -> " << last_module << std::endl;
-		}
-	}
-}
+
 
 bool Diagrama::pegar_remover_valor_da_linha(std::string& linha, std::string& valor)
 {
@@ -243,6 +225,69 @@ bool Diagrama::pegar_remover_valor_da_linha(std::string& linha, std::string& val
 	valor = linha.substr(0,aux_pos);
 	linha = linha.substr(aux_pos,linha.size() - aux_pos);
 	return true;
+}
+
+void Diagrama::print_diagram()
+{
+	std::string module_name;
+	std::map<std::string, Modulo*>::iterator it;
+	std::cout << "Loaded modules: " << std::endl;
+	for(it = m_modulos.begin(); it != m_modulos.end(); it++){
+		module_name = (*it).first;
+		std::cout << "Module " << module_name << " loaded." << std::endl;
+	}
+	std::string initial_module;
+	std::string symbol;
+	std::string last_module;
+	std::cout << std::endl;
+	std::cout << "Actions: " << std::endl;
+	std::map<std::string, Regra*>::iterator it2;
+	std::map<std::string, std::string>::iterator it3;
+	Regra *ac = NULL;
+	for(it2 = m_regras.begin(); it2 != m_regras.end(); it2++){
+		initial_module = (*it2).first;
+		ac = (*it2).second;
+		for(it3 = ac->m_acoes.begin(); it3 != ac->m_acoes.end(); it3++){
+			symbol = (*it3).first;
+			last_module = (*it3).second;
+			std::cout << "(" << initial_module << " , " << symbol << ") -> " << last_module << std::endl;
+		}
+	}
+}
+
+void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
+{
+	if(m_carregado){
+		Maquina* mt = new Maquina(fita_inicial, tamanho_da_fita);
+		Modulo* modulo = NULL;
+		std::string modulo_atual = m_modulo_inicial;
+		std::string prox_modulo;
+		std::string simbolo_na_fita;
+		std::cout << "Modulo inicial: " << modulo_atual << std::endl;
+		bool executando = true;
+
+		mt->print_tape();
+		modulo = m_modulos[modulo_atual];
+		executando = modulo->executar(mt);
+		mt->print_tape();
+//		while(executando){
+//			simbolo_na_fita = mt->simbolo_atual();
+//
+//			if(modulo == NULL){
+//				return;
+//			}
+//
+//
+//			prox_modulo = m_regras[modulo_atual]->m_acoes[simbolo_na_fita];
+//			modulo_atual
+//		}
+
+
+
+
+
+		delete mt;
+	}
 }
 
 
