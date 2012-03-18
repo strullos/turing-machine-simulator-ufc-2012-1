@@ -47,6 +47,7 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 		return false;
 	}
 	std::cout << "Diagrama carregado com sucesso." << std::endl;
+	std::cout << std::endl;
 	m_carregado = true;
 	arquivo.close();
 	return true;
@@ -166,7 +167,6 @@ bool Diagrama::carregar_acoes(std::string& linha_ac)
 			aux_pos = simbolos.find(",");
 			if(aux_pos == std::string::npos){
 				s = simbolos;
-				std::cout << s << std::endl;
 				lista_de_simbolos.push_back(s);
 				break;
 			}
@@ -272,20 +272,20 @@ void Diagrama::print_diagram()
 	std::string symbol;
 	std::string last_module;
 	std::cout << std::endl;
-	std::cout << "Actions: " << std::endl;
+	std::cout << "Regras: " << std::endl;
 	std::map<std::string, Regra*>::iterator it2;
 	std::map<std::string, std::string>::iterator it3;
 	Regra *ac = NULL;
 	for(it2 = m_regras.begin(); it2 != m_regras.end(); it2++){
 		initial_module = (*it2).first;
 		ac = (*it2).second;
-		//std::cout << "Regras: " << ac->m_acoes.size() << std::endl;
 		for(it3 = ac->m_acoes.begin(); it3 != ac->m_acoes.end(); it3++){
 			symbol = (*it3).first;
 			last_module = (*it3).second;
 			std::cout << "(" << initial_module << " , " << symbol << ") -> " << last_module << std::endl;
 		}
 	}
+	std::cout << std::endl;
 }
 
 void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
@@ -305,12 +305,17 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 			if(modulo == NULL){
 				return;
 			}
+
 			prox_modulo = m_regras[modulo_atual]->pegar_prox_modulo(simbolo_atual);
-			std::cout << "Prox modulo: " << prox_modulo << std::endl;
+			std::cout << "Prox: " << prox_modulo << std::endl;
 			if(modulo->executar(mt)){
 				mt->print_tape();
 				modulo_atual = prox_modulo;
 			}else{
+				executando = false;
+			}
+
+			if(prox_modulo.size() == 0){
 				executando = false;
 			}
 		}
