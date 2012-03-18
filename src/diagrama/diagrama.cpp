@@ -299,7 +299,7 @@ void Diagrama::print_diagram()
 	std::cout << "Diagrama: " << std::endl;
 	for(it = m_modulos.begin(); it != m_modulos.end(); it++){
 		module_name = (*it).first;
-		std::cout << "Module " << module_name << " carregado." << std::endl;
+		std::cout << "Modulo " << module_name << " carregado." << std::endl;
 	}
 	std::string initial_module;
 	std::string symbol;
