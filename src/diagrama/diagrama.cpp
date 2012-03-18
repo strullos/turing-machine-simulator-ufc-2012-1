@@ -10,9 +10,7 @@
 #include <fstream>
 #include <iostream>
 
-Diagrama::Diagrama() {
-
-}
+Diagrama::Diagrama() {}
 
 bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 {
@@ -26,14 +24,26 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 			std::getline(arquivo,linha);
 			if( linha.find("modulo",0) == 0){
 				if(!carregar_modulo(linha)){
-					std::cout << "Falha ao carregar" << std::endl;
+					std::cout << "Falha ao carregar módulo." << std::endl;
 					arquivo.close();
 					return false;
 				}
+			}else{
+				if(linha != "")	{
+					if(!carregar_acoes(linha)){
+						std::cout << "Falha ao carregar ações." << std::endl;
+						arquivo.close();
+						return false;
+					}
+				}
 			}
 		}
+	}else{
+		std::cout << "Falha ao abrir o arquivo." << std::endl;
+		return false;
 	}
-	std::cout << "Diagrama carregado com sucesso" << std::endl;
+	std::cout << "Diagrama carregado com sucesso." << std::endl;
+	arquivo.close();
 	return true;
 }
 
@@ -41,62 +51,42 @@ Diagrama::~Diagrama()
 {
 	std::map<std::string, Modulo*>::iterator it;
 	Modulo* m = NULL;
-	for(it = m_modulos_carregados.begin(); it != m_modulos_carregados.end(); it++){
+	while(!m_modulos_carregados.empty()){
+		it = m_modulos_carregados.begin();
 		m = (*it).second;
 		delete (m);
 		m_modulos_carregados.erase(it);
-
 	}
 	m_modulos_carregados.clear();
 	//Essa tabela guarda os mesmos ponteiros da tabela "m_modulos_carregados", então não é necessário
 	//deletar esses ponteiros, basta limpar a tabela;
 	m_modulos.clear();
+	m_acoes_diagrama.clear();
 }
 
 bool Diagrama::carregar_modulo(std::string& linha_modulo)
 {
 	std::string nome_modulo = "";
 	std::string arquivo_modulo = "";
-	size_t espaco_pos;
-	espaco_pos = linha_modulo.find(" ");
-	if(espaco_pos == std::string::npos){
-		std::cout << "Arquivo inválido" << std::endl;
+	size_t aux_pos;
+	aux_pos = linha_modulo.find(" ");
+	if(aux_pos == std::string::npos){
+		std::cout << "Arquivo inválido." << std::endl;
 		return false;
 	}
-
-	//Remove modulo da linha
-	linha_modulo = linha_modulo.substr(espaco_pos,linha_modulo.size());
-
-	//Remove os espaços em branco depois de "modulo"
-	espaco_pos = linha_modulo.find_first_not_of(" ");
-	if(espaco_pos == std::string::npos){
-		std::cout << "Arquivo inválido" << std::endl;
-		return false;
-	}
-	linha_modulo = linha_modulo.substr(espaco_pos,linha_modulo.size() - espaco_pos);
+	//Remove "modulo" da linha
+	remover_valor_da_linha(linha_modulo);
+	remover_espacos_brancos(linha_modulo);
 
 	//Pega o nome do módulo
-	espaco_pos = linha_modulo.find(" ");
-	if(espaco_pos == std::string::npos){
-		std::cout << "Arquivo inválido" << std::endl;
+	if(!pegar_remover_valor_da_linha(linha_modulo,nome_modulo))
 		return false;
-	}
-	nome_modulo = linha_modulo.substr(0,espaco_pos);
-	std::cout << nome_modulo << std::endl;
-
-	//Remove o nome do módulo da string
-	linha_modulo = linha_modulo.substr(espaco_pos, linha_modulo.size() - espaco_pos);
+	remover_espacos_brancos(linha_modulo);
+	std::cout << "Modulo: " << nome_modulo;
 
 	//Pega o nome do arquivo do módulo
-	espaco_pos = linha_modulo.find_first_not_of(" ");
-	if(espaco_pos == std::string::npos){
-		std::cout << "Arquivo inválido" << std::endl;
-		return false;
-	}
-
-	linha_modulo = linha_modulo.substr(espaco_pos, linha_modulo.size() - espaco_pos);
 	arquivo_modulo = linha_modulo;
-	std::cout << arquivo_modulo << std::endl;
+	std::cout << "  Arquivo: " << arquivo_modulo << std::endl;
 
 	//Verifica se esse arquivo de módulo já foi carregado, caso não tenha sido,
 	//um novo módulo é instanciado e adicionado à tabela de módulos carregados
@@ -120,10 +110,100 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 	return true;
 }
 
-bool Diagrama::configurar_acoes(std::string& linha_acao)
+bool Diagrama::carregar_acoes(std::string& linha_ac)
 {
+	std::string modulo_inicial;
+	std::string simbolo;
+	std::string modulo_final;
+	size_t aux_pos;
+	if(!pegar_remover_valor_da_linha(linha_ac,modulo_inicial))
+		return false;
+
+	if(m_modulos.find(modulo_inicial) == m_modulos.end()){
+		std::cout << "Modulo " << modulo_inicial << " não declarado. Abortando..." << std::endl;
+		return false;
+	}
+//	std::cout << "Ac para o Modulo: " << modulo_inicial << std::endl;
+
+
+	aux_pos = linha_ac.find("[");
+	if(aux_pos == std::string::npos){
+		std::cout << "Arquivo inválido. " << std::endl;
+		return false;
+	}
+	linha_ac = linha_ac.substr(aux_pos+1,linha_ac.size() - (aux_pos-1));
+
+	aux_pos = linha_ac.find("]");
+	simbolo = linha_ac.substr(0,aux_pos);
+//	std::cout << "Ao ler simbolo: " << simbolo << std::endl;
+
+	remover_valor_da_linha(linha_ac);
+	remover_espacos_brancos(linha_ac);
+
+	modulo_final = linha_ac;
+	if(m_modulos.find(modulo_inicial) == m_modulos.end()){
+		std::cout << "Modulo " << modulo_inicial << " não declarado. Abortando..." << std::endl;
+		return false;
+	}
+//	std::cout << "Para o modulo: " << modulo_final << std::endl;
+
+	AcDiagrama nova_ac;
+	nova_ac.m_ac[simbolo] = modulo_final;
+	m_acoes_diagrama.insert(std::pair<std::string,AcDiagrama>(modulo_inicial,nova_ac));
+
+	std::cout << "Acões carregadas com sucesso." << std::endl;
+	std::cout << std::endl;
 	return true;
 }
+
+bool Diagrama::remover_espacos_brancos(std::string& linha) {
+	size_t aux_pos;
+	if(linha.compare(0,1," ") != 0){
+		return false;
+	}
+	//Remove os espaços em branco depois de "modulo"
+	aux_pos = linha.find_first_not_of(" ");
+	if(aux_pos == std::string::npos){
+		std::cout << "Arquivo inválido." << std::endl;
+		return false;
+	}
+	linha = linha.substr(aux_pos,linha.size() - aux_pos);
+	return true;
+}
+
+bool Diagrama::remover_valor_da_linha(std::string& linha)
+{
+	size_t aux_pos;
+	if(linha.compare(0,1," ") == 0){
+		return false;
+	}
+	aux_pos = linha.find(" ");
+	if(aux_pos == std::string::npos){
+		std::cout << "Arquivo inválido." << std::endl;
+		return false;
+	}
+	linha = linha.substr(aux_pos,linha.size() - aux_pos);
+	return true;
+}
+
+bool Diagrama::pegar_remover_valor_da_linha(std::string& linha, std::string& valor)
+{
+	size_t aux_pos;
+	if(linha.compare(0,1," ") == 0){
+		return false;
+	}
+	aux_pos = linha.find(" ");
+	if(aux_pos == std::string::npos){
+		std::cout << "Arquivo inválido." << std::endl;
+		return false;
+	}
+	valor = linha.substr(0,aux_pos);
+	linha = linha.substr(aux_pos,linha.size() - aux_pos);
+	return true;
+}
+
+
+
 
 
 
