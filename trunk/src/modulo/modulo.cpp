@@ -28,17 +28,16 @@ bool Modulo::executar(Maquina *m)
 	while( (it = m_regras.find(estado_atual)) != m_regras.end() ) {
 
 		// Procura uma regra com estado1 = estado_atual e simbolo = simbolo_atual
-		for( ; it != m_regras.end() || it->first != estado_atual ; it++) {
+		for( ; it != m_regras.end() && it->first == estado_atual ; it++) {
 			const Regra &regra_atual = it->second;
 
 			if( regra_atual.simbolo == m->simbolo_atual() ) {
 				if( !aplica_regra(m, regra_atual) ) {
 					return false;
-				} else {
-					// Se conseguiu aplicar a regra, passa para o proximo estado
-					estado_atual = regra_atual.estado2;
-					break;
 				}
+				// Se conseguiu aplicar a regra, passa para o proximo estado
+				estado_atual = regra_atual.estado2;
+				break;
 			}
 		}
 	}
@@ -48,50 +47,52 @@ bool Modulo::executar(Maquina *m)
 
 bool Modulo::inicializar()
 {
+	bool resultado_ok = true;
 	std::ifstream fs(m_arquivo.c_str());
-	std::string estado_inicial, tamanho_fita, num_iteracoes;
+	std::string estado_inicial;
 	std::string estado1, estado2;
+	std::string linha;
+	std::stringstream ss;
+	int tamanho_fita, num_iteracoes;
 	char acao, simbolo;
 
 	// Se nao conseguiu abrir o arquivo, retorna erro
 	if( !fs ) {
-		fs.close();
-		return false;
-	}
+		resultado_ok = false;
+	} else {
+		m_linha_incorreta = 1;
+		m_regras.clear();
 
-	m_linha_incorreta = 1;
-	m_regras.clear();
-	// Le cabecalho - se a primeira linha do arquivo nao estiver no formato certo, retorna erro
-	fs >> estado_inicial >> tamanho_fita >> num_iteracoes;
-	if( !fs.good() ) {
-		fs.close();
-		return false;
-	}
-
-	m_estado_inicial = estado_inicial;
-	// Le as quadruplas e gera uma regra para cada quadrupla lida
-	while( !fs.eof() ) {
-		++m_linha_incorreta;
-		fs >> estado1 >> simbolo >> estado2 >> acao;
-
-		// Se nao conseguiu ler uma linha no formato das quadruplas...
-		if( !fs.good() ) {
-			// Verifica se eh uma linha em branco - se nao for, retorna erro
-			std::string line;
-
-			std::getline(fs, line);
-			if( !line.empty() ) {
-				fs.close();
-				return false;
-			}
+		std::getline(fs, linha);
+		ss << linha;
+		// Le cabecalho - se a primeira linha do arquivo nao estiver no formato certo, retorna erro
+		ss >> estado_inicial >> tamanho_fita >> num_iteracoes;
+		if( ss.fail() ) {
+			resultado_ok = false;
 		} else {
-			Regra regra_atual = { simbolo, estado2, acao };
-			m_regras.insert(std::pair<std::string, Regra>( estado_inicial, regra_atual ));
+			m_estado_inicial = estado_inicial;
 		}
+		ss.clear();
+	}
+
+	while( resultado_ok && !fs.eof() ) {
+		std::getline(fs, linha);
+		if( !linha.empty() && linha != "\r" && linha != "\n") {
+			ss << linha;
+			ss >> estado1 >> simbolo >> estado2 >> acao;
+			if( !ss.fail() ) {
+				Regra regra_atual = { simbolo, estado2, acao };
+				m_regras.insert(std::pair<std::string, Regra>( estado_inicial, regra_atual ));
+			} else {
+				resultado_ok = false;
+			}
+			ss.clear();
+		}
+		++m_linha_incorreta;
 	}
 
 	fs.close();
-	return true;
+	return resultado_ok;
 }
 
 bool Modulo::aplica_regra(Maquina *m, const Regra &r)
