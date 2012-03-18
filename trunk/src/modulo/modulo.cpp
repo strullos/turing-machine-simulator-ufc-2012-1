@@ -30,11 +30,11 @@ bool Modulo::executar(Maquina *m)
 		// Se o laco for nao encontrar nenhuma regra que corresponda ao simbolo atual da maquina, a maquina para
 		continua = false;
 
-		// Procura uma regra com estado1 = estado_atual e simbolo = simbolo_atual
+		// Procura uma regra com estado1 = estado_atual e simbolo = simbolo_atual(ou simbolo coringa '*')
 		for( ; it != m_regras.end() && it->first == estado_atual ; it++) {
 			const Regra &regra_atual = it->second;
 
-			if( regra_atual.simbolo == m->simbolo_atual() ) {
+			if( regra_atual.simbolo == m->simbolo_atual() || regra_atual.simbolo == '*' ) {
 				continua = true;
 				if( !aplica_regra(m, regra_atual) ) {
 					return false;
@@ -85,8 +85,12 @@ bool Modulo::inicializar()
 			ss << linha;
 			ss >> estado1 >> simbolo >> estado2 >> acao;
 			if( !ss.fail() ) {
-				Regra regra_atual = { simbolo, estado2, acao };
-				m_regras.insert(std::pair<std::string, Regra>( estado_inicial, regra_atual ));
+				if( simbolo != '*' || m_regras.find(estado1) == m_regras.end() ) {
+					Regra regra_atual = { simbolo, estado2, acao };
+					m_regras.insert(std::pair<std::string, Regra>( estado_inicial, regra_atual ));
+				} else {
+					resultado_ok = false;
+				}
 			} else {
 				resultado_ok = false;
 			}
@@ -117,7 +121,7 @@ bool Modulo::aplica_regra(Maquina *m, const Regra &r)
 		break;
 
 	default:
-		ret = m->escrever(r.simbolo);
+		ret = m->escrever(r.acao);
 		break;
 	}
 
