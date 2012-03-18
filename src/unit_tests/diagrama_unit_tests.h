@@ -13,6 +13,8 @@
 void diagrama_unit_tests(){
 	Diagrama *d = new Diagrama();
 	d->carregar_diagrama("diagrama.dt");
+
+	d->print_diagram();
 	delete d;
 }
 
