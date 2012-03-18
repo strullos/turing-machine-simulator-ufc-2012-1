@@ -15,7 +15,7 @@ void diagrama_unit_tests(){
 	d->carregar_diagrama("diagrama3.dt");
 
 	d->print_diagram();
-	d->executar("aaa",10);
+	d->executar("#",10);
 	delete d;
 }
 
