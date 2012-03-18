@@ -12,9 +12,10 @@
 
 void diagrama_unit_tests(){
 	Diagrama *d = new Diagrama();
-	d->carregar_diagrama("diagrama.dt");
+	d->carregar_diagrama("diagrama2.dt");
 
 	d->print_diagram();
+	d->executar("b",5);
 	delete d;
 }
 
