@@ -81,8 +81,7 @@ public:
 
 	bool carregar_diagrama(std::string arquivo); 		//!< Carrega um diagrama especificad por 'arquivo'
 	void print_diagram(); 								//!< Imprime o diagrama atualmente carregado
-	void executar(std::string fita_inicial,
-			unsigned int tamanho_da_fita); 				//!< Executa o diagrama carregado.
+	void executar(std::string fita_inicial); 			//!< Executa o diagrama carregado.
 private:
 	bool carregar_modulo(std::string& linha_modulo); 	//!< Carrega um módulo especicado num arquivo de diagrama
 	bool carregar_regra(std::string& linha_regra); 		//!< Carrega uma regra especicada num arquivo de diagrama

@@ -330,11 +330,11 @@ void Diagrama::print_diagram()
  *	@param[out]: none
  *	return: none
  */
-void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
+void Diagrama::executar(std::string fita_inicial)
 {
 	if(m_carregado){
 		//Instancia uma nova maquina de turing, com os parametros recebidos
-		Maquina* mt = new Maquina(fita_inicial, tamanho_da_fita);
+		Maquina* mt = new Maquina(fita_inicial);
 		Modulo* modulo = NULL;
 		std::string modulo_atual = m_modulo_inicial;
 		std::string prox_modulo = "";
@@ -346,7 +346,7 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 		std::map<std::string,Modulo*>::iterator modulo_it;
 		unsigned int passos = 1;
 		bool executando = true;
-		std::cout << passos << ": ";
+		std::cout << passos << ":\t";
 		//Imprime o estado inicial da fita da maquina de turing
 		mt->print_tape();
 		passos++;
@@ -365,7 +365,7 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 			}
 			//Executa o modulo
 			if(modulo->executar(mt)){
-				std::cout << passos << ": ";
+				std::cout << passos << ":\t";
 				mt->print_tape();
 				passos++;
 
