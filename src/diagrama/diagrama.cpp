@@ -297,17 +297,31 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 		std::string prox_modulo;
 		std::string simbolo_atual;
 		std::cout << "Modulo inicial: " << modulo_atual << std::endl;
+		std::map<std::string,Regra*>::iterator regra_it;
+		std::map<std::string,Modulo*>::iterator modulo_it;
+
 		bool executando = true;
 		mt->print_tape();
 		while(executando){
 			simbolo_atual = mt->simbolo_atual();
-			modulo = m_modulos[modulo_atual];
-			if(modulo == NULL){
+			modulo_it = m_modulos.find(modulo_atual);
+			if(modulo_it != m_modulos.end()){
+				modulo = m_modulos[modulo_atual];
+				if(modulo == NULL){
+					return;
+				}
+			}else{
 				return;
 			}
 
-			prox_modulo = m_regras[modulo_atual]->pegar_prox_modulo(simbolo_atual);
-			std::cout << "Prox: " << prox_modulo << std::endl;
+			regra_it = m_regras.find(modulo_atual);
+			if(regra_it != m_regras.end()){
+				prox_modulo = (*regra_it).second->pegar_prox_modulo(simbolo_atual);
+			}else{
+				prox_modulo = "NONE";
+			}
+
+//			std::cout << "Prox: " << prox_modulo << std::endl;
 			if(modulo->executar(mt)){
 				mt->print_tape();
 				modulo_atual = prox_modulo;

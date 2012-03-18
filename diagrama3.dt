@@ -1,5 +1,5 @@
-modulo  R r.mt
+
 modulo Wb wb.mt
 
-R [a,b]  R
-R [#] Wb
+
+Wb [#] Wb

@@ -28,14 +28,22 @@ public:
 	}
 
 	std::string pegar_prox_modulo(std::string simbolo_atual){
-		if(m_qualquer_simbolo){
-			return (*(m_acoes.begin())).second;
-		}else{
-			if(m_acoes.find(simbolo_atual) != m_acoes.end()){
-				return m_acoes[simbolo_atual];
+		std::map<std::string,std::string>::iterator it;
+		if(m_acoes.size() > 0){
+			if(m_qualquer_simbolo){
+				std::map<std::string,std::string>::iterator it;
+				it = m_acoes.begin();
+				return (*it).second;
+			}else{
+				if(m_acoes.find(simbolo_atual) != m_acoes.end()){
+					return m_acoes[simbolo_atual];
+				}
 			}
 			return "";
+		}else{
+			return "";
 		}
+
 	}
 	std::map<std::string, std::string> m_acoes;
 	bool m_qualquer_simbolo;
