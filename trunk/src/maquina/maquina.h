@@ -16,7 +16,7 @@
  */
 class Maquina {
 public:
-	Maquina(const std::string& fita, unsigned int tamanho_da_fita); //< Recebe uma string representando a fita e o tamanho total da fita
+	Maquina(const std::string& fita); //< Recebe uma string representando a fita e o tamanho total da fita
 	virtual ~Maquina() {}; //< Destrutor
 	bool mover_esquerda(); //< Move a cabe�a de leitura 1 posi��o para a esquerda / Decrementa m_pos_atual
 	bool mover_direita();  //< Move a cabe�a de leitura 1 posi��o para a direita  / Incrementa m_pos_atual
