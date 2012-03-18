@@ -33,6 +33,22 @@ m_carregado(false)
  */
 Diagrama::~Diagrama()
 {
+	limpar();
+}
+
+/*!
+ *
+ *	Reseta o diagrama e limpa as estruturas de dados
+ *
+ *	@param[in]: none
+ *	@param[out]: none
+ *	return: none
+ */
+void Diagrama::limpar()
+{
+	m_modulo_inicial.clear();
+	m_carregado = false;
+
 	std::map<std::string, Modulo*>::iterator it;
 	Modulo* m = NULL;
 	//Apaga a tabela de módulos carregados
@@ -373,50 +389,3 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 		delete mt;
 	}
 }
-
-/*!
- *
- *	Reseta o diagrama e limpa as estruturas de dados
- *
- *	@param[in]: none
- *	@param[out]: none
- *	return: none
- */
-void Diagrama::limpar()
-{
-	std::map<std::string, Modulo*>::iterator it;
-	Modulo* m = NULL;
-	//Apaga a tabela de módulos carregados
-	while(!m_modulos_carregados.empty()){
-		it = m_modulos_carregados.begin();
-		m = (*it).second;
-		delete (m);
-		m_modulos_carregados.erase(it);
-	}
-	m_modulos_carregados.clear();
-	//Essa tabela guarda os mesmos ponteiros da tabela "m_modulos_carregados", entao nao eh necessario
-	//deletar esses ponteiros, basta limpar a tabela;
-	m_modulos.clear();
-
-	//Apaga a tabela de regras carregadas
-	std::map<std::string, RegraDiagrama*>::iterator it2;
-	while(!m_regras_modulos.empty()){
-		it2 = m_regras_modulos.begin();
-		(*it2).second->m_regras.clear();
-		delete((*it2).second);
-		m_regras_modulos.erase(it2);
-	}
-	m_regras_modulos.clear();
-
-	m_modulo_inicial = "";
-	m_carregado = false;
-}
-
-
-
-
-
-
-
-
-
