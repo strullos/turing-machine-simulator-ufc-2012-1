@@ -107,7 +107,10 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 	//um novo m�dulo � instanciado e adicionado � tabela de m�dulos carregados
 	if(m_modulos_carregados.find(arquivo_modulo) == m_modulos_carregados.end()){
 		Modulo* novo_modulo = new Modulo(arquivo_modulo);
-		novo_modulo->inicializar();
+		if(!novo_modulo->inicializar()){
+			delete novo_modulo;
+			return false;
+		}
 		m_modulos_carregados[arquivo_modulo] = novo_modulo;
 		//Verifica se j� existe um m�dulo com esse nome, caso n�o tenha, um m�dulo com esse nome � adicionado � tabela de m�dulos
 		if(m_modulos.find(nome_modulo) == m_modulos.end()){
@@ -173,7 +176,6 @@ bool Diagrama::carregar_acoes(std::string& linha_ac)
 			s = simbolos.substr(0,aux_pos);
 			lista_de_simbolos.push_back(s);
 			simbolos = simbolos.substr(aux_pos+1,simbolos.size() - aux_pos);
-			std::cout << s << std::endl;
 		}
 	}else{
 		lista_de_simbolos.push_back(simbolos);
