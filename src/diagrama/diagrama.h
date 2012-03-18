@@ -34,7 +34,7 @@ public:
 			if(m_acoes.find(simbolo_atual) != m_acoes.end()){
 				return m_acoes[simbolo_atual];
 			}
-			return "--NONE--";
+			return "";
 		}
 	}
 	std::map<std::string, std::string> m_acoes;
