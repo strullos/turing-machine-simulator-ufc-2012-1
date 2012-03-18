@@ -1,0 +1,6 @@
+modulo  R    r.mt
+modulo  W#  w#.mt
+
+R   [b]  R
+R   [a]  W#
+W#  [*]  R
