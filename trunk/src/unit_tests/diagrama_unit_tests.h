@@ -12,10 +12,10 @@
 
 void diagrama_unit_tests(){
 	Diagrama *d = new Diagrama();
-	d->carregar_diagrama("diagrama3.dt");
+	d->carregar_diagrama("shiftString.dt");
 
 	d->print_diagram();
-	d->executar("aaa",10);
+	d->executar("aba",10);
 	delete d;
 }
 
