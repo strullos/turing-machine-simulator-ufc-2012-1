@@ -9,7 +9,10 @@
 #include <sstream>
 #include "modulo.h"
 
-Modulo::Modulo(const std::string &arquivo) : m_arquivo(arquivo), m_linha_incorreta(0)
+Modulo::Modulo(const std::string &arquivo)
+: m_arquivo(arquivo),
+  m_linha_incorreta(0),
+  m_inicializado(false)
 {
 
 }
@@ -21,6 +24,10 @@ Modulo::~Modulo()
 
 bool Modulo::executar(Maquina *m)
 {
+	if( !m_inicializado ) {
+		return false;
+	}
+
 	bool continua = true;
 	std::string estado_atual = m_estado_inicial;
 	std::multimap<std::string, Regra>::const_iterator it;
@@ -100,6 +107,7 @@ bool Modulo::inicializar()
 	}
 
 	fs.close();
+	m_inicializado = resultado_ok;
 	return resultado_ok;
 }
 

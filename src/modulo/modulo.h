@@ -30,6 +30,7 @@ private:
 	std::string m_arquivo;
 	std::multimap<std::string, Regra> m_regras;
 	unsigned int m_linha_incorreta;
+	bool m_inicializado;
 
 	bool aplica_regra(Maquina *m, const Regra &r);
 };
