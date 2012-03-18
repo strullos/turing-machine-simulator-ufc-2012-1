@@ -42,6 +42,8 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 		std::cout << "Falha ao abrir o arquivo." << std::endl;
 		return false;
 	}
+	std::cout << "Módulos carregadas com sucesso." << std::endl;
+	std::cout << "Acões carregadas com sucesso." << std::endl;
 	std::cout << "Diagrama carregado com sucesso." << std::endl;
 	arquivo.close();
 	return true;
@@ -61,6 +63,15 @@ Diagrama::~Diagrama()
 	//Essa tabela guarda os mesmos ponteiros da tabela "m_modulos_carregados", então não é necessário
 	//deletar esses ponteiros, basta limpar a tabela;
 	m_modulos.clear();
+
+	std::map<std::string, AcDiagrama*>::iterator it2;
+	while(!m_acoes_diagrama.empty()){
+		it2 = m_acoes_diagrama.begin();
+		(*it2).second->m_ac.clear();
+		delete((*it2).second);
+		m_acoes_diagrama.erase(it2);
+	}
+
 	m_acoes_diagrama.clear();
 }
 
@@ -147,12 +158,16 @@ bool Diagrama::carregar_acoes(std::string& linha_ac)
 	}
 //	std::cout << "Para o modulo: " << modulo_final << std::endl;
 
-	AcDiagrama nova_ac;
-	nova_ac.m_ac[simbolo] = modulo_final;
-	m_acoes_diagrama.insert(std::pair<std::string,AcDiagrama>(modulo_inicial,nova_ac));
+	AcDiagrama *nova_ac = NULL;
+	std::map<std::string,AcDiagrama*>::iterator it = m_acoes_diagrama.find(modulo_inicial);
+	if(it == m_acoes_diagrama.end()){
+		nova_ac = new AcDiagrama(simbolo,modulo_final);
+		m_acoes_diagrama.insert(std::pair<std::string,AcDiagrama*>(modulo_inicial,nova_ac));
+	}else{
+		AcDiagrama* ac = (*it).second;
+		ac->inserir(simbolo,modulo_final);
+	}
 
-	std::cout << "Acões carregadas com sucesso." << std::endl;
-	std::cout << std::endl;
 	return true;
 }
 
@@ -184,6 +199,34 @@ bool Diagrama::remover_valor_da_linha(std::string& linha)
 	}
 	linha = linha.substr(aux_pos,linha.size() - aux_pos);
 	return true;
+}
+
+void Diagrama::print_diagram()
+{
+	std::string module_name;
+	std::map<std::string, Modulo*>::iterator it;
+	std::cout << "Loaded modules: " << std::endl;
+	for(it = m_modulos.begin(); it != m_modulos.end(); it++){
+		module_name = (*it).first;
+		std::cout << "Module " << module_name << " loaded." << std::endl;
+	}
+	std::string initial_module;
+	std::string symbol;
+	std::string last_module;
+	std::cout << std::endl;
+	std::cout << "Actions: " << std::endl;
+	std::map<std::string, AcDiagrama*>::iterator it2;
+	std::map<std::string, std::string>::iterator it3;
+	AcDiagrama *ac = NULL;
+	for(it2 = m_acoes_diagrama.begin(); it2 != m_acoes_diagrama.end(); it2++){
+		initial_module = (*it2).first;
+		ac = (*it2).second;
+		for(it3 = ac->m_ac.begin(); it3 != ac->m_ac.end(); it3++){
+			symbol = (*it3).first;
+			last_module = (*it3).second;
+			std::cout << "(" << initial_module << " , " << symbol << ") -> " << last_module << std::endl;
+		}
+	}
 }
 
 bool Diagrama::pegar_remover_valor_da_linha(std::string& linha, std::string& valor)
