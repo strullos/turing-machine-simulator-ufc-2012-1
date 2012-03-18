@@ -11,16 +11,16 @@
 
 Maquina::Maquina(const std::string& fita, unsigned int tamanho_da_fita)
 {
-	//Inicializa a fita como definida na nossa convenção (@, #, etc)
+	//Inicializa a fita como definida na nossa convenï¿½ï¿½o (@, #, etc)
 	m_fita.append("@#" + fita);
 	m_fita.resize(tamanho_da_fita,'#');
 	m_tamanho_da_fita = tamanho_da_fita;
 
-	// Poe a cabeça de leitura na posição inicial, no caso: 2
+	// Poe a cabeï¿½a de leitura na posiï¿½ï¿½o inicial, no caso: 2
 	m_pos_atual = 2;
 }
 
-//Move a cabeça de leitura para a esquerda e retorna 'true' caso não haja problemas
+//Move a cabeï¿½a de leitura para a esquerda e retorna 'true' caso nï¿½o haja problemas
 bool Maquina::mover_esquerda()
 {
 	if(m_pos_atual > 0){
@@ -30,11 +30,11 @@ bool Maquina::mover_esquerda()
 	return false;
 }
 
-//Move a cabeça de leitura para a direita e retorna 'true' caso não haja problemas
+//Move a cabeï¿½a de leitura para a direita e retorna 'true' caso nï¿½o haja problemas
 bool Maquina::mover_direita()
 {
-	//Para uma fita de tamanho n, temos que a posição da cabeça de leitura
-	//varia de 0 a n-1, por isso essa verificação
+	//Para uma fita de tamanho n, temos que a posiï¿½ï¿½o da cabeï¿½a de leitura
+	//varia de 0 a n-1, por isso essa verificaï¿½ï¿½o
 	if(m_pos_atual < m_tamanho_da_fita - 1){
 		m_pos_atual++;
 		return true;
@@ -53,14 +53,24 @@ bool Maquina::escrever(char simbolo)
 //	std::advance(it2,m_pos_atual+1);
 //	m_fita.replace(it1,it2,simbolo.c_str(),1);
 
+	if( m_pos_atual > 0 && m_pos_atual < m_fita.size() ) {
+		m_fita[m_pos_atual] = simbolo;
+		return true;
+	}
+
+	return false;
+	/*
+
 	char s[1];
 	s[0] = simbolo;
-	//Substitui o simbolo na posição atual da cabeça de leitura
+	//Substitui o simbolo na posiï¿½ï¿½o atual da cabeï¿½a de leitura
 	if(m_pos_atual > 0){
 		m_fita.replace(m_pos_atual,1,s);
 		return true;
 	}
 	return false;
+	*/
+	return true;
 }
 
 
@@ -68,8 +78,8 @@ char Maquina::simbolo_atual()
 {
 	std::string::iterator it;
 	it = m_fita.begin();
-	//Avança o iterador da string para o
-	//caractere na posiçao atual da cabeça de leitura
+	//Avanï¿½a o iterador da string para o
+	//caractere na posiï¿½ao atual da cabeï¿½a de leitura
 	std::advance(it,m_pos_atual);
 	return (*it);
 }
