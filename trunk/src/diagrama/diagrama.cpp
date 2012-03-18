@@ -305,7 +305,6 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 		bool executando = true;
 		mt->print_tape();
 		while(executando){
-			simbolo_atual = mt->simbolo_atual();
 			modulo_it = m_modulos.find(modulo_atual);
 			if(modulo_it != m_modulos.end()){
 				modulo = m_modulos[modulo_atual];
@@ -316,22 +315,16 @@ void Diagrama::executar(std::string fita_inicial, unsigned int tamanho_da_fita)
 				return;
 			}
 
-			regra_it = m_regras.find(modulo_atual);
-			if(regra_it != m_regras.end()){
-				prox_modulo = (*regra_it).second->pegar_prox_modulo(simbolo_atual);
-			}else{
-				prox_modulo = "NONE";
-			}
-
-//			std::cout << "Prox: " << prox_modulo << std::endl;
 			if(modulo->executar(mt)){
 				mt->print_tape();
-				modulo_atual = prox_modulo;
+				regra_it = m_regras.find(modulo_atual);
+				if(regra_it != m_regras.end()){
+					simbolo_atual = mt->simbolo_atual();
+					modulo_atual = (*regra_it).second->pegar_prox_modulo(simbolo_atual);
+				}else{
+					executando = false;
+				}
 			}else{
-				executando = false;
-			}
-
-			if(prox_modulo.size() == 0){
 				executando = false;
 			}
 		}
