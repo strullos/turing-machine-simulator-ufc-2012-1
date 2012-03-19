@@ -94,7 +94,7 @@ bool Modulo::inicializar()
 			if( !ss.fail() ) {
 				if( simbolo != '*' || m_regras.find(estado1) == m_regras.end() ) {
 					Regra regra_atual = { simbolo, estado2, acao };
-					m_regras.insert(std::pair<std::string, Regra>( estado_inicial, regra_atual ));
+					m_regras.insert(std::pair<std::string, Regra>( estado1, regra_atual ));
 				} else {
 					resultado_ok = false;
 				}
