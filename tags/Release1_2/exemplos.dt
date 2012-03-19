@@ -1,0 +1,30 @@
+
+Exemplo 0: Maquina que move a cabeca de leitura ate' o primeiro branco apos a palavra de entrada.
+
+modulo  R  r.mt
+
+R  [a,b]  R
+
+
+Exemplo 1: Maquina que apaga os a's da palavra de entrada.
+
+modulo  R    r.mt
+modulo  W#  w#.mt
+
+R   [b]  R
+R   [a]  W#
+W#  [*]  R
+
+
+Exemplo 2: Maquina que troca os a's por b's, e vice-versa.
+
+modulo  R    r.mt
+modulo  Wa  wa.mt
+modulo  Wb  wb.mt
+modulo  L#  l#.mt
+
+R   [a]  Wb
+R   [b]  Wa
+R   [#]  L#
+Wa  [*]  R
+Wb  [*]  R
