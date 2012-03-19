@@ -17,7 +17,7 @@ Maquina::Maquina(const std::string& fita)
 	m_fita.resize(m_tamanho_da_fita,'#');
 
 	// Poe a cabeca de leitura na posicao inicial, no caso: 2
-	m_pos_atual = 2;
+	m_pos_atual = 1;
 }
 
 //Move a cabeca de leitura para a esquerda e retorna 'true' caso nao haja problemas
