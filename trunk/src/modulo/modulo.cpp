@@ -12,7 +12,9 @@
 Modulo::Modulo(const std::string &arquivo)
 : m_arquivo(arquivo),
   m_linha_incorreta(0),
-  m_inicializado(false)
+  m_inicializado(false),
+  m_var('\0'),
+  m_var_value('\0')
 {
 
 }
@@ -22,7 +24,7 @@ Modulo::~Modulo()
 
 }
 
-bool Modulo::executar(Maquina *m)
+bool Modulo::executar(Maquina *m, char var_value /* = '\0' */)
 {
 	if( !m_inicializado ) {
 		return false;
@@ -30,26 +32,18 @@ bool Modulo::executar(Maquina *m)
 
 	bool continua = true;
 	std::string estado_atual = m_estado_inicial;
-	std::multimap<std::string, Regra>::const_iterator it;
+	m_var_value = var_value;
 
-	// Enquanto puder encontrar uma regra com o estado1 igual ao estado atual...
-	while( continua && (it = m_regras.find(estado_atual)) != m_regras.end() ) {
-		// Se o laco for nao encontrar nenhuma regra que corresponda ao simbolo atual da maquina, a maquina para
-		continua = false;
+	while( continua ) {
+		const Regrap regra = procura_regra(estado_atual, m->simbolo_atual());
 
-		// Procura uma regra com estado1 = estado_atual e simbolo = simbolo_atual(ou simbolo coringa '*')
-		for( ; it != m_regras.end() && it->first == estado_atual ; it++) {
-			const Regra &regra_atual = it->second;
-
-			if( regra_atual.simbolo == m->simbolo_atual() || regra_atual.simbolo == '*' ) {
-				continua = true;
-				if( !aplica_regra(m, regra_atual) ) {
-					return false;
-				}
-				// Se conseguiu aplicar a regra, passa para o proximo estado
-				estado_atual = regra_atual.estado2;
-				break;
+		if( !regra ) {
+			continua = false;
+		} else {
+			if( !aplica_regra(m, regra) ) {
+				return false;
 			}
+			estado_atual = regra->estado2;
 		}
 	}
 
@@ -88,13 +82,18 @@ bool Modulo::inicializar()
 
 	while( resultado_ok && !fs.eof() ) {
 		std::getline(fs, linha);
+
 		if( !linha.empty() && linha != "\r" && linha != "\n") {
 			ss << linha;
 			ss >> estado1 >> simbolo >> estado2 >> acao;
+
 			if( !ss.fail() ) {
-				if( simbolo != '*' || m_regras.find(estado1) == m_regras.end() ) {
+				if( (simbolo == '*' && m_regras.find(estado1) == m_regras.end()) ||
+					(simbolo != '*' && !procura_regra(estado1, simbolo)) ) {
 					Regra regra_atual = { simbolo, estado2, acao };
-					m_regras.insert(std::pair<std::string, Regra>( estado1, regra_atual ));
+					std::pair<std::string, Regra> elem(estado1, regra_atual);
+
+					m_regras.insert( elem );
 				} else {
 					resultado_ok = false;
 				}
@@ -111,15 +110,14 @@ bool Modulo::inicializar()
 	return resultado_ok;
 }
 
-bool Modulo::aplica_regra(Maquina *m, const Regra &r)
+bool Modulo::aplica_regra(Maquina *m, const Regrap r)
 {
-	bool ret;
-
 	if( !m ) {
 		return false;
 	}
+	bool ret;
 
-	switch(r.acao) {
+	switch(r->acao) {
 	case '>':
 		ret = m->mover_direita();
 		break;
@@ -129,7 +127,11 @@ bool Modulo::aplica_regra(Maquina *m, const Regra &r)
 		break;
 
 	default:
-		ret = m->escrever(r.acao);
+		if( r->acao == m_var ) {
+			ret = m->escrever(m_var_value);
+		} else {
+			ret = m->escrever(r->acao);
+		}
 		break;
 	}
 
@@ -140,3 +142,37 @@ unsigned int Modulo::linha_incorreta()
 {
 	return m_linha_incorreta;
 }
+
+const Regrap Modulo::procura_regra(std::string estado, char simbolo)
+{
+	Regrap regra = NULL;
+	std::multimap<std::string, Regra>::iterator it = m_regras.find(estado);
+
+	for( ; it != m_regras.end() && it->first == estado ; it++) {
+		Regrap r = &(it->second);
+		if( r->simbolo == '*' ||
+			r->simbolo == simbolo ||
+			(r->simbolo == m_var && m_var_value == simbolo) ) {
+			regra = r;
+			break;
+		}
+	}
+
+	return regra;
+}
+
+bool Modulo::processa_cabecalho(std::string linha)
+{
+	return false;
+}
+
+bool Modulo::processa_variavel(std::string linha)
+{
+	return false;
+}
+
+bool Modulo::processa_regra(std::string linha)
+{
+	return false;
+}
+
