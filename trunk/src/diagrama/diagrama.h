@@ -56,6 +56,7 @@ private:
 
 	std::string m_modulo_atual;									//!< Armazena o nome do modulo atual, sendo executado
 	bool m_carregado;											//!< Determina se o diagrama especificado foi carregado com sucesso
+	bool m_arquivo_mt;											//!< Verifica se o arquivo é de diagrama ou de um módulo
 };
 
 #endif /* DIAGRAMA_H_ */
