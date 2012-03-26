@@ -72,7 +72,7 @@ const std::string& Maquina::fita()
 	return m_fita;
 }
 
-void Maquina::print_tape(){
+void Maquina::imprimir_fita(){
 	std::string::iterator it;
 	unsigned int curr_pos = 0;
 	for(it = m_fita.begin(); it != m_fita.end(); it++){

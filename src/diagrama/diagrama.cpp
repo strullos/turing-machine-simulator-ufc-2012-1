@@ -19,7 +19,7 @@
  *	return: none
  */
 Diagrama::Diagrama() :
-m_modulo_inicial(""),
+m_modulo_atual(""),
 m_carregado(false)
 {}
 
@@ -46,7 +46,7 @@ Diagrama::~Diagrama()
  */
 void Diagrama::limpar()
 {
-	m_modulo_inicial.clear();
+	m_modulo_atual.clear();
 	m_carregado = false;
 
 	std::map<std::string, Modulo*>::iterator it;
@@ -160,7 +160,7 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 	//um novo modulo eh instanciado e adicionado na tabela de modulos carregados
 	if(m_modulos_carregados.find(arquivo_modulo) == m_modulos_carregados.end()){
 		Modulo* novo_modulo = new Modulo(arquivo_modulo);
-		if(!novo_modulo->inicializar()){
+		if(!novo_modulo->carregar()){
 			delete novo_modulo;
 			std::cout << "Falha ao inicializar modulo. Abortado." << std::endl;
 			return false;
@@ -172,7 +172,7 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 			//Verica se algum modulo ja foi carregado. Se nao tiver sido, o primeiro modulo carregado
 			//sera o modulo inicial
 			if(m_modulos_carregados.size() == 1){
-				m_modulo_inicial = nome_modulo;
+				m_modulo_atual = nome_modulo;
 			}
 		}else{
 			std::cout << "Uma referencia com esse nome ja existe. Ignorando referencia duplicada." << std::endl;
@@ -213,9 +213,9 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 	tokens << linha_regra;
 	tokens >> modulo_inicial >> simbolos >> modulo_final;
 
-	std::cout << "Regra: " << modulo_inicial << " ";
-	std::cout << simbolos << " ";
-	std::cout<< modulo_final << std::endl;
+//	std::cout << "Regra: " << modulo_inicial << " ";
+//	std::cout << simbolos << " ";
+//	std::cout<< modulo_final << std::endl;
 
 	//Verifica se qualquer um dos componentes da regra é vazio. Caso qualquer um seja,
 	//o arquivo está inválido.
@@ -292,15 +292,16 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
  *	@param[out]: none
  *	return: none
  */
-void Diagrama::print_diagram()
+void Diagrama::imprime_diagrama()
 {
 	std::string module_name;
 	std::map<std::string, Modulo*>::iterator it;
-	std::cout << "Diagrama: " << std::endl;
-	for(it = m_modulos.begin(); it != m_modulos.end(); it++){
-		module_name = (*it).first;
-		std::cout << "Modulo " << module_name << " carregado." << std::endl;
-	}
+//	std::cout << "Diagrama: " << std::endl;
+//	std::cout << "Modulos: " << std::endl;
+//	for(it = m_modulos.begin(); it != m_modulos.end(); it++){
+//		module_name = (*it).first;
+//		std::cout << "Modulo " << module_name << " inicializado." << std::endl;
+//	}
 	std::string initial_module;
 	std::string symbol;
 	std::string last_module;
@@ -336,56 +337,105 @@ void Diagrama::executar(std::string fita_inicial)
 		//Instancia uma nova maquina de turing, com os parametros recebidos
 		Maquina* mt = new Maquina(fita_inicial);
 		Modulo* modulo = NULL;
-		std::string modulo_atual = m_modulo_inicial;
-		std::string prox_modulo = "";
-		std::string simbolo_atual  = "";
-		std::cout << "Iniciando." << std::endl;
-		std::cout << "Modulo inicial: " << modulo_atual << std::endl;
-
-		std::map<std::string,RegraDiagrama*>::iterator regra_it;
 		std::map<std::string,Modulo*>::iterator modulo_it;
-		unsigned int passos = 1;
-		bool executando = true;
-		std::cout << passos << ":\t";
+		std::string ultimo_modulo;
+		bool executando_diagrama = true;
+		bool executando_modulo = false;
+		unsigned int passos = 0;
+
+		std::cout << "Iniciando." << std::endl;
+		std::cout << "Modulo inicial: " <<  m_modulo_atual << std::endl;
+		std::cout << "Fita: ";
 		//Imprime o estado inicial da fita da maquina de turing
-		mt->print_tape();
-		passos++;
+		mt->imprimir_fita();
+		std::cout << std::endl;
 		//Inicia a execucao, o modulo atual inicial eh definido pela variavel
 		//'m_modulo_inicial'
-		while(executando){
+		while(executando_diagrama){
 			//Pega o modulo atual
-			modulo_it = m_modulos.find(modulo_atual);
+			modulo_it = m_modulos.find(m_modulo_atual);
 			//Se o modulo atual nao estiver na tabela de modulos, entao retorna.
 			if(modulo_it == m_modulos.end()){
-				return;
+				ultimo_modulo = m_modulo_atual;
+				modulo = NULL;
+				break;
 			}
-			modulo = m_modulos[modulo_atual];
-			if(modulo == NULL){
-				return;
+			modulo = (modulo_it->second);
+			if(!modulo->inicializar()){
+				break;
 			}
-			//Executa o modulo
-			if(modulo->executar(mt)){
-				std::cout << passos << ":\t";
-				mt->print_tape();
-				passos++;
-
-				//Pega o nome do proximo modulo a ser executado
-				//e poe 'modulo_atual' para receber esse valor
-				regra_it = m_regras_modulos.find(modulo_atual);
-				if(regra_it != m_regras_modulos.end()){
-					//O simbolo atual na cabeca de leitura da maquina de turing
-					simbolo_atual = mt->simbolo_atual();
-					modulo_atual = (*regra_it).second->pegar_prox_modulo(simbolo_atual);
+			executando_modulo = true;
+			imprime_config_atual(mt, modulo, m_modulo_atual, passos);
+			passos++;
+			while(executando_modulo){
+				//Executa um passo do modulo atual
+				if(modulo->executa_passo(mt)){
+					imprime_config_atual(mt, modulo, m_modulo_atual, passos);
+					passos++;
 				}else{
-					//Se nao houver nenhuma regra para o estado atual, para a execucao
-					executando = false;
+					ultimo_modulo = m_modulo_atual;
+					//Se não houver mais passos, termina a execucao do modulo
+					executando_modulo = false;
+					//Verifica o proximo modulo a ser executado, se nao houver nenhum, termina a execuca
+					//do diagrama
+					executando_diagrama = verifica_prox_modulo(mt);
 				}
-			}else{
-				//Se o modulo falhar em executar, para a execucao do diagrama
-				executando = false;
 			}
 		}
+
+		//Imprime a config. final do diagrama
+		std::cout << std::endl;
+		std::cout << "Terminada em: " << passos << " passos." << std::endl;
+		imprime_config_atual(mt, modulo, ultimo_modulo, --passos);
+		std::cout << std::endl;
+
 		//Ao terminar, deleta a maquina de turing da memoria
 		delete mt;
 	}
 }
+
+/*!
+ *
+ *	Imprime a configuracao atual do diagrama
+ *
+ *	@param[in]: Um ponteiro para a maquina de turing em execucao
+ *	@param[in]: Um ponteiro para o modulo atual em execucao
+ *	return: none
+ */
+void Diagrama::imprime_config_atual(Maquina *mt, Modulo *modulo, const std::string& modulo_atual, const unsigned int &passos)
+{
+	std::cout << passos << ":\t";
+	if(modulo != NULL){
+		std::cout << "( " << modulo_atual << " , " << modulo->pega_estado_atual() <<  " )" << "\t\t";
+	}else{
+		std::cout << "( " << modulo_atual << " )" << "\t\t";
+	}
+	mt->imprimir_fita();
+}
+
+/*!
+ *
+ *	Verifica, de acordo com a configuracao atual, qual o proximo modulo a ser executado
+ *
+ *	@param[in]: Um ponteiro para a maquina de turing em execucao *
+ *	return: true, se um proximo modulo pode ser executado, false do contrario
+ */
+bool Diagrama::verifica_prox_modulo(Maquina *mt)
+{
+	std::string simbolo_atual = "";
+	std::map<std::string,RegraDiagrama*>::iterator regra_it;
+	//Pega o nome do proximo modulo a ser executado
+	//e poe 'm_modulo_atual' para receber esse valor
+	regra_it = m_regras_modulos.find(m_modulo_atual);
+	if(regra_it != m_regras_modulos.end()){
+		//O simbolo atual na cabeca de leitura da maquina de turing
+		simbolo_atual = mt->simbolo_atual();
+		m_modulo_atual = (*regra_it).second->pegar_prox_modulo(simbolo_atual);
+	}else{
+		//Se nao houver nenhuma regra para o estado atual, retorna 'false'
+		return false;
+	}
+	return true;
+}
+
+

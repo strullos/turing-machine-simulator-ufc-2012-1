@@ -24,33 +24,7 @@ Modulo::~Modulo()
 
 }
 
-bool Modulo::executar(Maquina *m, char var_value /* = '\0' */)
-{
-	if( !m_inicializado ) {
-		return false;
-	}
-
-	bool continua = true;
-	std::string estado_atual = m_estado_inicial;
-	m_var_value = var_value;
-
-	while( continua ) {
-		const Regrap regra = procura_regra(estado_atual, m->simbolo_atual());
-
-		if( !regra ) {
-			continua = false;
-		} else {
-			if( !aplica_regra(m, regra) ) {
-				return false;
-			}
-			estado_atual = regra->estado2;
-		}
-	}
-
-	return true;
-}
-
-bool Modulo::inicializar()
+bool Modulo::carregar()
 {
 	bool resultado_ok = true;
 	std::ifstream fs(m_arquivo.c_str());
@@ -75,6 +49,7 @@ bool Modulo::inicializar()
 		if( ss.fail() ) {
 			resultado_ok = false;
 		} else {
+			m_estado_atual = estado_inicial;
 			m_estado_inicial = estado_inicial;
 		}
 		ss.clear();
@@ -109,6 +84,35 @@ bool Modulo::inicializar()
 	m_inicializado = resultado_ok;
 	return resultado_ok;
 }
+
+
+bool Modulo::inicializar()
+{
+	if(m_inicializado){
+		m_estado_atual = m_estado_inicial;
+		return true;
+	}
+	return false;
+}
+
+//Executa um passo do modulo
+bool Modulo::executa_passo(Maquina* m, char var_value)
+{
+	m_var_value = var_value;
+	const Regrap regra = procura_regra(m_estado_atual, m->simbolo_atual());
+
+	if( !regra ) {
+		return false;
+	} else {
+		if( !aplica_regra(m, regra) ) {
+			return false;
+		}
+		m_estado_atual = regra->estado2;
+	}
+	return true;
+}
+
+
 
 bool Modulo::aplica_regra(Maquina *m, const Regrap r)
 {
@@ -169,6 +173,11 @@ bool Modulo::processa_cabecalho(std::string linha)
 bool Modulo::processa_variavel(std::string linha)
 {
 	return false;
+}
+
+std::string Modulo::pega_estado_atual()
+{
+	return m_estado_atual;
 }
 
 bool Modulo::processa_regra(std::string linha)

@@ -22,11 +22,10 @@ int main(int argc, char** argv){
 		std::string arquivo = argv[1];
 		std::string fita = argv[2];
 		Diagrama *d = new Diagrama();
-		d->carregar_diagrama(arquivo);
-
-		d->print_diagram();
-		d->executar(fita);
-
+		if(d->carregar_diagrama(arquivo)){
+			d->imprime_diagrama();
+			d->executar(fita);
+		}
 		delete d;
 	}
 	return 0;
