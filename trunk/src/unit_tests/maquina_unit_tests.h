@@ -19,15 +19,15 @@ void maquina_unit_tests()
 	m->mover_direita();
 	m->mover_direita();
 	std::cout << m->simbolo_atual() << std::endl;
-	m->print_tape();
+	m->imprimir_fita();
 	m->mover_esquerda();
 	m->mover_esquerda();
 	m->mover_esquerda();
 	m->mover_esquerda();
-	m->print_tape();
+	m->imprimir_fita();
 	m->mover_esquerda();
 	m->mover_esquerda();
-	m->print_tape();
+	m->imprimir_fita();
 
 	delete m;
 }

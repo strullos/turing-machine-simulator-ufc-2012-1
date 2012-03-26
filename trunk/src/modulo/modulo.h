@@ -22,12 +22,15 @@ public:
 	Modulo(const std::string &arquivo);
 	virtual ~Modulo();
 
+	bool carregar();
 	bool inicializar();
-	bool executar(Maquina *m, char var_value = '\0');
+	bool executa_passo(Maquina *m, char var_value = '\0');
+	std::string pega_estado_atual();
 	unsigned int linha_incorreta();
 
 private:
 	std::string m_estado_inicial;
+	std::string m_estado_atual;
 	std::string m_arquivo;
 	std::multimap<std::string, Regra> m_regras;
 	unsigned int m_linha_incorreta;
