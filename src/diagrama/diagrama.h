@@ -8,13 +8,10 @@
 #ifndef DIAGRAMA_H_
 #define DIAGRAMA_H_
 
-#include <map>
-#include <string>
 #include <vector>
 
-#include "../modulo/modulo.h"
 #include "regra_diagrama.h"
-
+#include "../modulo/modulo.h"
 
 /*!
  * Representa um diagrama. Composta por um conjunto de modulos e regras.
@@ -43,7 +40,8 @@ public:
 	void imprime_diagrama(); 									//!< Imprime o diagrama atualmente carregado
 	void executar(std::string fita_inicial); 					//!< Executa o diagrama carregado.
 private:
-	bool carregar_modulo(std::string& linha_modulo); 			//!< Carrega um modulo especificado num arquivo de diagrama
+	bool carregar_modulo(std::string& linha_modulo,
+							const std::string& path); 			//!< Carrega um modulo especificado num arquivo de diagrama
 	bool carregar_regra(std::string& linha_regra); 				//!< Carrega uma regra especificada num arquivo de diagrama
 	void limpar();												//!< Reseta os valores do diagrama
 	void imprime_config_atual(Maquina *mt, Modulo *modulo,		//!< Imprime a configuracao atual do Diagrama

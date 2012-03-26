@@ -94,10 +94,21 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 	std::string linha;
 
 	if(arquivo.is_open()){
+		//Obtem o diretorio do arquivo
+		unsigned int pos = 0;
+		std::string dir = "";
+		//O path do arquivo pode ser definido tanto com "/" quanto com "\"
+		//"pos" vai receber a ultima posicao de "/" ou "\", caso o caminho do arquivo contenha esses caracteres.
+		//"pos" recebe o menor dos dois, porque se rfind nao encontrar o caractere,
+		//retorna std::string::npos, que tem o valor maximo possivel para um elemento do tipo size_t.
+		pos = (caminho_arquivo.rfind("/") < caminho_arquivo.rfind("\\")) ? caminho_arquivo.rfind("/") : caminho_arquivo.rfind("\\");
+		if(pos != std::string::npos){
+			dir = caminho_arquivo.substr(0,pos+1);
+		}
 		if(caminho_arquivo.find(".mt",caminho_arquivo.size() - 3) != std::string::npos){
 			std::cout << "Arquivo .mt detectado." << std::endl;
 			m_arquivo_mt = true;
-			if(!carregar_modulo(caminho_arquivo)){
+			if(!carregar_modulo(caminho_arquivo, dir)){
 				std::cout << "Falha ao carregar MT." << std::endl;
 				arquivo.close();
 				return false;
@@ -108,7 +119,7 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 				std::getline(arquivo,linha);
 				//Se a linha inicia com "modulo", então deve conter uma instrução para carregar um módulo
 				if( linha.find("modulo",0) == 0){
-					if(!carregar_modulo(linha)){
+					if(!carregar_modulo(linha, dir)){
 						std::cout << "Falha ao carregar modulo." << std::endl;
 						arquivo.close();
 						return false;
@@ -145,7 +156,7 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
  *	@param[out]: none
  *	return: true, se o módulo foi carregado corretamente
  */
-bool Diagrama::carregar_modulo(std::string& linha_modulo)
+bool Diagrama::carregar_modulo(std::string& linha_modulo, const std::string& dir)
 {
 	//Tokenizamos a linha. Supondo um arquivo válido, temos
 	//cada possível token separado por espaços.
@@ -162,7 +173,6 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 	//a posicao do primeiro ' '
 	size_t aux_pos = linha_modulo.find(' ');
 	tokens.ignore(aux_pos, ' ');
-
 	//As palavras restantes se referem ao nome do modulo e o arquivo do qual sera carregado
 	if(!m_arquivo_mt){
 		//Se nao for um arquivo .mt
@@ -184,7 +194,9 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 	//Verifica se esse arquivo de modulo ja foi carregado, caso nao tenha sido,
 	//um novo modulo eh instanciado e adicionado na tabela de modulos carregados
 	if(m_modulos_carregados.find(arquivo_modulo) == m_modulos_carregados.end()){
-		Modulo* novo_modulo = new Modulo(arquivo_modulo);
+		std::string caminho_arquivo = dir;
+		caminho_arquivo.append(arquivo_modulo);
+		Modulo* novo_modulo = new Modulo(caminho_arquivo);
 		if(!novo_modulo->carregar()){
 			delete novo_modulo;
 			std::cout << "Falha ao inicializar modulo. Abortado." << std::endl;
