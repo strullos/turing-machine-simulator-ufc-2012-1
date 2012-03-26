@@ -20,7 +20,8 @@
  */
 Diagrama::Diagrama() :
 m_modulo_atual(""),
-m_carregado(false)
+m_carregado(false),
+m_arquivo_mt(false)
 {}
 
 /*!
@@ -93,23 +94,33 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 	std::string linha;
 
 	if(arquivo.is_open()){
-		while(arquivo.good())
-		{
-			std::getline(arquivo,linha);
-			//Se a linha inicia com "modulo", então deve conter uma instrução para carregar um módulo
-			if( linha.find("modulo",0) == 0){
-				if(!carregar_modulo(linha)){
-					std::cout << "Falha ao carregar modulo." << std::endl;
-					arquivo.close();
-					return false;
-				}
-			}else{
-				//Caso o contrário, supondo um arquivo válido, deve conter uma regra do diagrama
-				if(linha != "" && linha != "\r" && linha != "\n")	{
-					if(!carregar_regra(linha)){
-						std::cout << "Falha ao carregar regras." << std::endl;
+		if(caminho_arquivo.find(".mt",caminho_arquivo.size() - 3) != std::string::npos){
+			std::cout << "Arquivo .mt detectado." << std::endl;
+			m_arquivo_mt = true;
+			if(!carregar_modulo(caminho_arquivo)){
+				std::cout << "Falha ao carregar MT." << std::endl;
+				arquivo.close();
+				return false;
+			}
+		}else{
+			while(arquivo.good())
+			{
+				std::getline(arquivo,linha);
+				//Se a linha inicia com "modulo", então deve conter uma instrução para carregar um módulo
+				if( linha.find("modulo",0) == 0){
+					if(!carregar_modulo(linha)){
+						std::cout << "Falha ao carregar modulo." << std::endl;
 						arquivo.close();
 						return false;
+					}
+				}else{
+					//Caso o contrário, supondo um arquivo válido, deve conter uma regra do diagrama
+					if(linha != "" && linha != "\r" && linha != "\n" && (linha.find("//",0) == std::string::npos))	{
+						if(!carregar_regra(linha)){
+							std::cout << "Falha ao carregar regras." << std::endl;
+							arquivo.close();
+							return false;
+						}
 					}
 				}
 			}
@@ -152,9 +163,14 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 	tokens.ignore(aux_pos, ' ');
 
 	//As palavras restantes se referem ao nome do modulo e o arquivo do qual sera carregado
-	tokens >> nome_modulo >> arquivo_modulo;
-	std::cout << "Modulo: " << nome_modulo << " ";
-	std::cout << arquivo_modulo << std::endl;
+	if(!m_arquivo_mt){
+		tokens >> nome_modulo >> arquivo_modulo;
+		std::cout << "Modulo: " << nome_modulo << " ";
+		std::cout << arquivo_modulo << std::endl;
+	}else{
+		tokens >> arquivo_modulo;
+		nome_modulo = arquivo_modulo;
+	}
 
 	//Verifica se esse arquivo de modulo ja foi carregado, caso nao tenha sido,
 	//um novo modulo eh instanciado e adicionado na tabela de modulos carregados
@@ -302,24 +318,26 @@ void Diagrama::imprime_diagrama()
 //		module_name = (*it).first;
 //		std::cout << "Modulo " << module_name << " inicializado." << std::endl;
 //	}
-	std::string initial_module;
-	std::string symbol;
-	std::string last_module;
-	std::cout << std::endl;
-	std::cout << "Regras: " << std::endl;
-	std::map<std::string, RegraDiagrama*>::iterator it2;
-	std::map<std::string, std::string>::iterator it3;
-	RegraDiagrama *ac = NULL;
-	for(it2 = m_regras_modulos.begin(); it2 != m_regras_modulos.end(); it2++){
-		initial_module = (*it2).first;
-		ac = (*it2).second;
-		for(it3 = ac->m_regras.begin(); it3 != ac->m_regras.end(); it3++){
-			symbol = (*it3).first;
-			last_module = (*it3).second;
-			std::cout << "(" << initial_module << " , " << symbol << ") -> " << last_module << std::endl;
+	if(!m_arquivo_mt){
+		std::string initial_module;
+		std::string symbol;
+		std::string last_module;
+		std::cout << std::endl;
+		std::cout << "Regras: " << std::endl;
+		std::map<std::string, RegraDiagrama*>::iterator it2;
+		std::map<std::string, std::string>::iterator it3;
+		RegraDiagrama *ac = NULL;
+		for(it2 = m_regras_modulos.begin(); it2 != m_regras_modulos.end(); it2++){
+			initial_module = (*it2).first;
+			ac = (*it2).second;
+			for(it3 = ac->m_regras.begin(); it3 != ac->m_regras.end(); it3++){
+				symbol = (*it3).first;
+				last_module = (*it3).second;
+				std::cout << "(" << initial_module << " , " << symbol << ") -> " << last_module << std::endl;
+			}
 		}
+		std::cout << std::endl;
 	}
-	std::cout << std::endl;
 }
 
 /*!
@@ -356,8 +374,10 @@ void Diagrama::executar(std::string fita_inicial)
 			modulo_it = m_modulos.find(m_modulo_atual);
 			//Se o modulo atual nao estiver na tabela de modulos, entao retorna.
 			if(modulo_it == m_modulos.end()){
-				ultimo_modulo = m_modulo_atual;
-				modulo = NULL;
+				if(m_modulo_atual.compare("") != 0){
+					ultimo_modulo = m_modulo_atual;
+					modulo = NULL;
+				}
 				break;
 			}
 			modulo = (modulo_it->second);
@@ -385,8 +405,9 @@ void Diagrama::executar(std::string fita_inicial)
 
 		//Imprime a config. final do diagrama
 		std::cout << std::endl;
+		passos--;
 		std::cout << "Terminada em: " << passos << " passos." << std::endl;
-		imprime_config_atual(mt, modulo, ultimo_modulo, --passos);
+		imprime_config_atual(mt, modulo, ultimo_modulo, passos);
 		std::cout << std::endl;
 
 		//Ao terminar, deleta a maquina de turing da memoria
@@ -405,11 +426,16 @@ void Diagrama::executar(std::string fita_inicial)
 void Diagrama::imprime_config_atual(Maquina *mt, Modulo *modulo, const std::string& modulo_atual, const unsigned int &passos)
 {
 	std::cout << passos << ":\t";
-	if(modulo != NULL){
-		std::cout << "( " << modulo_atual << " , " << modulo->pega_estado_atual() <<  " )" << "\t\t";
+	if(!m_arquivo_mt){
+		if(modulo != NULL){
+			std::cout << "( " << modulo_atual << " , " << modulo->pega_estado_atual() <<  " )" << "\t\t";
+		}else{
+			std::cout << "( " << modulo_atual << " )" << "\t\t";
+		}
 	}else{
-		std::cout << "( " << modulo_atual << " )" << "\t\t";
+			std::cout << "< " << modulo->pega_estado_atual() << ":\t\t";
 	}
+
 	mt->imprimir_fita();
 }
 
