@@ -16,7 +16,8 @@ int main(int argc, char** argv){
 
 	if(argc < 3){
 		std::cout << "Para rodar um diagrama, passe o nome do arquivo por parametro e o estado inicial da fita." << std::endl;
-		std::cout << "O modulo inicial sera o primeiro modulo a ser carregado no diagrama." << std::endl;
+		std::cout << "O modulo inicial pode ser especificado com um '%' antes do nome do modulo." << std::endl;
+		std::cout << "Caso nenhum modulo inicial seja especificado, o primeiro modulo a ser carregado sera o inicial." << std::endl;
 	}else{
 		std::cout << std::endl;
 		std::string arquivo = argv[1];
