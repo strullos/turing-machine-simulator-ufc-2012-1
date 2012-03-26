@@ -154,6 +154,7 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 
 	std::string nome_modulo = "";
 	std::string arquivo_modulo = "";
+	bool modulo_inicial_especificado = false;
 
 	//A instrução de carregar modulos tem o seguinte formato:
 	// modulo A arquivo
@@ -164,9 +165,17 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 
 	//As palavras restantes se referem ao nome do modulo e o arquivo do qual sera carregado
 	if(!m_arquivo_mt){
+		//Se nao for um arquivo .mt
 		tokens >> nome_modulo >> arquivo_modulo;
-		std::cout << "Modulo: " << nome_modulo << " ";
+		std::cout << "Modulo:\t" << nome_modulo << "\t";
 		std::cout << arquivo_modulo << std::endl;
+		//Verifica se este modulo eh o modulo inicial
+		if(nome_modulo.find("%",0) == 0){
+			nome_modulo = nome_modulo.substr(1,nome_modulo.size() - 1);
+			modulo_inicial_especificado = true;
+			m_modulo_atual = nome_modulo;
+			std::cout << "Modulo inicial especificado:\t" << nome_modulo << std::endl;
+		}
 	}else{
 		tokens >> arquivo_modulo;
 		nome_modulo = arquivo_modulo;
@@ -185,9 +194,10 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo)
 		//Verifica se ja existe um modulo com esse nome, caso nao tenha, um modulo com esse nome ja adicionado na tabela de modulos
 		if(m_modulos.find(nome_modulo) == m_modulos.end()){
 			m_modulos[nome_modulo] = novo_modulo;
-			//Verica se algum modulo ja foi carregado. Se nao tiver sido, o primeiro modulo carregado
+			//Verica se algum modulo ja foi carregado ou se um modulo inicial já foi especificado.
+			//Se nao tiver sido, o primeiro modulo carregado
 			//sera o modulo inicial
-			if(m_modulos_carregados.size() == 1){
+			if((m_modulos_carregados.size() == 1) && (modulo_inicial_especificado == false)){
 				m_modulo_atual = nome_modulo;
 			}
 		}else{
