@@ -1,0 +1,21 @@
+digraph G
+{
+  edge [fontname="Helvetica",fontsize="12",labelfontname="Helvetica",labelfontsize="12"];
+  node [fontname="Helvetica",fontsize="12",shape=record];
+  Node1 [label="E:/Comp 2012.1/Teoria da Computação/Implementações/turing-machine-simulator-ufc-2012-1/src/diagrama/diagrama.h",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [color="midnightblue",fontsize="12",style="solid",fontname="Helvetica"];
+  Node2 [label="vector",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node1 -> Node3 [color="midnightblue",fontsize="12",style="solid",fontname="Helvetica"];
+  Node3 [label="regra_diagrama.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$regra__diagrama_8h.html"];
+  Node3 -> Node4 [color="midnightblue",fontsize="12",style="solid",fontname="Helvetica"];
+  Node4 [label="string",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node3 -> Node5 [color="midnightblue",fontsize="12",style="solid",fontname="Helvetica"];
+  Node5 [label="map",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node1 -> Node6 [color="midnightblue",fontsize="12",style="solid",fontname="Helvetica"];
+  Node6 [label="../modulo/modulo.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$modulo_8h.html"];
+  Node6 -> Node4 [color="midnightblue",fontsize="12",style="solid",fontname="Helvetica"];
+  Node6 -> Node5 [color="midnightblue",fontsize="12",style="solid",fontname="Helvetica"];
+  Node6 -> Node7 [color="midnightblue",fontsize="12",style="solid",fontname="Helvetica"];
+  Node7 [label="../maquina/maquina.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$maquina_8h.html"];
+  Node7 -> Node4 [color="midnightblue",fontsize="12",style="solid",fontname="Helvetica"];
+}
