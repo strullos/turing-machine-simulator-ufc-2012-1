@@ -14,7 +14,9 @@ Modulo::Modulo(const std::string &arquivo)
   m_linha_incorreta(0),
   m_inicializado(false),
   m_var('\0'),
-  m_var_value('\0')
+  m_var_value('\0'),
+  m_recebe_var(false),
+  m_variavel("")
 {
 
 }
@@ -180,8 +182,19 @@ std::string Modulo::pega_estado_atual()
 	return m_estado_atual;
 }
 
+bool Modulo::usa_variavel()
+{
+	return m_recebe_var;
+}
+
+std::string Modulo::pega_variavel()
+{
+	return m_variavel;
+}
+
 bool Modulo::processa_regra(std::string linha)
 {
 	return false;
 }
+
 

@@ -51,6 +51,7 @@ private:
 	std::map<std::string, RegraDiagrama*> m_regras_modulos; 	//!< Hash indexado pelo nome do modulo, contendo as acoes que ele pode realizar.
 	std::map<std::string,Modulo*> m_modulos_carregados; 		//!< Hash dos modulos carregados, indexado pelo nome do arquivo do modulo.
 	std::map<std::string,Modulo*> m_modulos; 					//!< Hash dos modulos e suas referencias indexado pelo nome de um modulo.
+	std::map<std::string, std::string> m_tabela_var;			//!< Hash contendo a tabela de variáveis e seus respectivos valores, indexadas pelo nome da variável
 
 	std::string m_modulo_atual;									//!< Armazena o nome do modulo atual, sendo executado
 	bool m_carregado;											//!< Determina se o diagrama especificado foi carregado com sucesso

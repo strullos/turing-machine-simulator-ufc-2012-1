@@ -11,15 +11,25 @@
 #include <string>
 #include <map>
 
+typedef struct DescritorRegra_t
+{
+	bool m_passa_var;
+	std::string m_variavel;
+	std::string m_prox_modulo;
+}DescritorRegra;
+
 class RegraDiagrama{
 public:
 	RegraDiagrama(std::string &simbolo, 
-					std::string &modulo_final);		//!< Construtor
-	RegraDiagrama();	 						//!< Destrutor
+					std::string &modulo_final,
+					std::string variavel = "");					//!< Construtor
+	RegraDiagrama();	 											//!< Destrutor
 	void inserir(std::string simbolo, 
-					std::string modulo_final);		//!< Insere uma nova regra
+					std::string modulo_final,
+					std::string variavel = "");						//!< Insere uma nova regra
 
 	std::string pegar_prox_modulo(std::string simbolo_atual);		//!< Retorna o proximo modulo a ser executado
-	std::map<std::string, std::string> m_regras;				//!< Hash, contendo o simbolo esperado na cabeca de leitura e o nome do proximo modulo
-	bool m_qualquer_simbolo;						//!< Determina se essa regra eh do tipo que aceita qualquer simbolo na cabeca de leitura
+	DescritorRegra*	pegar_descritor_regra(std::string simbolo_atual);
+	std::map<std::string, DescritorRegra*> m_regras;							//!< Hash, contendo o simbolo esperado na cabeca de leitura e as informacoes sobre essa regra
+	bool m_qualquer_simbolo;										//!< Determina se essa regra eh do tipo que aceita qualquer simbolo na cabeca de leitura
 };

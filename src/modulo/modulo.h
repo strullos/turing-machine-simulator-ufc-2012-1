@@ -25,6 +25,8 @@ public:
 	bool carregar();
 	bool inicializar();
 	bool executa_passo(Maquina *m, char var_value = '\0');
+	bool usa_variavel();
+	std::string pega_variavel();
 	std::string pega_estado_atual();
 	unsigned int linha_incorreta();
 
@@ -35,13 +37,16 @@ private:
 	std::multimap<std::string, Regra> m_regras;
 	unsigned int m_linha_incorreta;
 	bool m_inicializado;
-	char m_var, m_var_value;
+	char m_var;
+	char m_var_value;
 
 	bool aplica_regra(Maquina *m, const Regrap r);
 	const Regrap procura_regra(std::string estado, char simbolo);
 	bool processa_cabecalho(std::string linha);
 	bool processa_variavel(std::string linha);
 	bool processa_regra(std::string linha);
+	bool m_recebe_var;
+	std::string m_variavel;
 };
 
 #endif /* MODULO_H_ */
