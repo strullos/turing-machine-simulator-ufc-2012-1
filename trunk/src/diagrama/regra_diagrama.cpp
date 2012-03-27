@@ -9,12 +9,12 @@ RegraDiagrama::RegraDiagrama(std::string &simbolo, std::string &modulo_final)
 RegraDiagrama::RegraDiagrama()
 { 
 	m_qualquer_simbolo = false; 
-};		 //!< Destrutor
+}
 
 void RegraDiagrama::inserir(std::string simbolo, std::string modulo_final)
 {
 	m_regras.insert(std::pair<std::string,std::string>(simbolo,modulo_final));
-}													
+}
 
 	
 std::string RegraDiagrama::pegar_prox_modulo(std::string simbolo_atual)
