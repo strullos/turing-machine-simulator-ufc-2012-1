@@ -1,26 +1,22 @@
 #include "regra_diagrama.h"
 
-RegraDiagrama::RegraDiagrama(std::string &simbolo, std::string &modulo_final, std::string variavel)
+RegraDiagrama::RegraDiagrama()
 {
 	m_qualquer_simbolo = false;
-	inserir(simbolo,modulo_final,variavel);
 }	
-												 
-RegraDiagrama::RegraDiagrama()
-{ 
-	m_qualquer_simbolo = false; 
-}
 
-void RegraDiagrama::inserir(std::string simbolo, std::string modulo_final, std::string variavel)
+void RegraDiagrama::inserir(std::string simbolo, std::string modulo_final,
+		bool atualiza_var,
+		std::string var_atualizada,
+		bool envia_var,
+		std::string var_enviada)
 {
 	DescritorRegra *nova_regra = new DescritorRegra();
 	nova_regra->m_prox_modulo = modulo_final;
-	if(!variavel.empty()){
-		nova_regra->m_passa_var = true;
-		nova_regra->m_variavel = variavel;
-	}else{
-		nova_regra->m_passa_var = false;
-	}
+	nova_regra->m_atualiza_var = atualiza_var;
+	nova_regra->m_envia_var = envia_var;
+	nova_regra->m_variavel_atualizada = var_atualizada;
+	nova_regra->m_variavel_enviada = var_enviada;
 	m_regras.insert(std::pair<std::string,DescritorRegra*>(simbolo,nova_regra));
 }
 
@@ -41,6 +37,10 @@ std::string RegraDiagrama::pegar_prox_modulo(std::string simbolo_atual)
 		}
 	}
 	return "";
+}
+
+RegraDiagrama::~RegraDiagrama()
+{
 }
 
 DescritorRegra* RegraDiagrama::pegar_descritor_regra(std::string simbolo_atual)
