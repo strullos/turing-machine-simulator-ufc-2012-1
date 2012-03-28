@@ -19,6 +19,7 @@
  *	return: none
  */
 Diagrama::Diagrama() :
+m_var_atual(""),
 m_modulo_atual(""),
 m_carregado(false),
 m_arquivo_mt(false)
@@ -239,8 +240,10 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 	//Tokenizamos a linha contendo a instrução da regra
 	std::stringstream tokens;
 
-	bool tem_var = false;
-	std::string variavel;
+	bool atualiza_var = false;
+	bool envia_var = false;
+	std::string var_atualizada = "";
+	std::string var_enviada = "";
 	std::string modulo_inicial = "";
 	//Podemos ter uma regra relativa a um conjunto de simbolos
 	std::vector<std::string> lista_de_simbolos;
@@ -261,26 +264,36 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 	if( (modulo_inicial.size() == 0) || (simbolos.size() == 0) || (modulo_final.size() == 0) ){
 		std::cout << "Erro lendo instrucao de carregamento de regra: " << std::endl;
 		std::cout << linha_regra << std::endl;
-		//return false;
+		return false;
 	}
 	//Verifica se a lista de simbolos esta no formato apropriado
 	if( (simbolos.find("[") == std::string::npos) || (simbolos.find("]") == std::string::npos) ){
 		std::cout << "Erro lendo instrucao de carregamento de regra: " << std::endl;
 		std::cout << linha_regra << std::endl;
-		//return false;
+		return false;
 	}
 
-	unsigned int var_pos = simbolos.find("=");
+	unsigned int aux_pos = simbolos.find("=");
 	//Verifica se a regra utiliza alguma variavel
-	if( var_pos != std::string::npos){
-		tem_var = true;
-		variavel = simbolos.substr(1,var_pos - 1);
-		//Remove a declaração de variável da regra
-		simbolos = (simbolos.substr(0,var_pos - 1)).append(simbolos.substr(var_pos +1, simbolos.size() - var_pos +1));
-		m_tabela_var.insert(std::pair<std::string,std::string>(variavel, ""));
-		std::cout << "tem_var" << std::endl;
+	if( aux_pos != std::string::npos){
+		atualiza_var = true;
+		var_atualizada = simbolos.substr(1,aux_pos - 1);
+		//Remove a declaração de variável da regra. Por exemplo R [x=a,b] S -> R [a,b] S
+		simbolos = (simbolos.substr(0,aux_pos - 1)).append(simbolos.substr(aux_pos +1, simbolos.size() - aux_pos +1));
+		m_tabela_var.insert(std::pair<std::string,std::string>(var_atualizada, "#"));
 	}
 
+	aux_pos = modulo_final.find("(");
+	if(aux_pos != std::string::npos){
+		if(modulo_final.find(")") == std::string::npos){
+			std::cout << "Erro lendo instrucao de carregamento de regra: " << std::endl;
+			std::cout << linha_regra << std::endl;
+			return false;
+		}
+		envia_var = true;
+		var_enviada = modulo_final.substr(aux_pos+1,1);
+		modulo_final = modulo_final.substr(0,aux_pos);
+	}
 
 	bool qualquer_simbolo = false;
 	std::string::iterator string_it;
@@ -299,13 +312,13 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 			lista_de_simbolos.push_back(aux);
 		}
 	}
+
 	//Se a lista de simbolos estiver vazia, o arquivo nao eh valido
 	if(lista_de_simbolos.size() == 0){
 		std::cout << "Erro lendo instrução de carregamento de regra: " << std::endl;
 		std::cout << linha_regra << std::endl;
 		return false;
 	}
-
 	//Adiciona a nova regra
 	RegraDiagrama *regra = NULL;
 	std::map<std::string,RegraDiagrama*>::iterator regras_it = m_regras_modulos.find(modulo_inicial);
@@ -316,11 +329,7 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 		regra = new RegraDiagrama();
 		//Para cada simbolo, inserir uma entrada nas regras para esse modulo
 		for(simbolos_it = lista_de_simbolos.begin(); simbolos_it != lista_de_simbolos.end(); simbolos_it++){
-			if(tem_var){
-				regra->inserir((*simbolos_it),modulo_final, variavel);
-			}else{
-				regra->inserir((*simbolos_it),modulo_final);
-			}
+			regra->inserir((*simbolos_it),modulo_final,atualiza_var,var_atualizada,envia_var,var_enviada);
 		}
 		//Armazena o conjunto de regras desse modulo
 		m_regras_modulos.insert(std::pair<std::string,RegraDiagrama*>(modulo_inicial,regra));
@@ -329,11 +338,7 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 		//adiciona as novas regras a esse conjunto
 		regra = (*regras_it).second;
 		for(simbolos_it = lista_de_simbolos.begin(); simbolos_it != lista_de_simbolos.end(); simbolos_it++){
-			if(tem_var){
-				regra->inserir((*simbolos_it),modulo_final, variavel);
-			}else{
-				regra->inserir((*simbolos_it),modulo_final);
-			}
+			regra->inserir((*simbolos_it),modulo_final,atualiza_var,var_atualizada,envia_var,var_enviada);
 		}
 	}
 	//Se a regra era referente a '*', 'qualquer_simbolo' será true
@@ -398,7 +403,7 @@ void Diagrama::executar(std::string fita_inicial)
 		Modulo* modulo = NULL;
 		std::map<std::string,Modulo*>::iterator modulo_it;
 		std::string ultimo_modulo;
-		std::string variavel_modulo;
+		std::string var_modulo;
 		bool executando_diagrama = true;
 		bool executando_modulo = false;
 		unsigned int passos = 0;
@@ -430,17 +435,18 @@ void Diagrama::executar(std::string fita_inicial)
 			imprime_config_atual(mt, modulo, m_modulo_atual, passos);
 			passos++;
 			while(executando_modulo){
-				variavel_modulo = "";
-				//Executa um passo do modulo atual
-				if(modulo->usa_variavel()){
+				var_modulo = "";
+				//Verifica se o modulo recebe uma variavel
+				if(modulo->recebe_variavel()){
+					//Caso receba, pega o valor dessa variavel e passa para o modulo
 					std::map<std::string, std::string>::iterator it;
-					it = m_tabela_var.find(modulo->pega_variavel());
+					it = m_tabela_var.find(m_var_atual);
 					if(it != m_tabela_var.end()){
-						variavel_modulo = it->second;
+						var_modulo = it->second;
 					}
 				}
-
-				if(modulo->executa_passo(mt, variavel_modulo[0])){
+				//Executa um passo do modulo atual
+				if(modulo->executa_passo(mt, var_modulo[0])){
 					imprime_config_atual(mt, modulo, m_modulo_atual, passos);
 					passos++;
 				}else{
@@ -506,11 +512,17 @@ bool Diagrama::verifica_prox_modulo(Maquina *mt)
 	//e poe 'm_modulo_atual' para receber esse valor
 	regra_it = m_regras_modulos.find(m_modulo_atual);
 	if(regra_it != m_regras_modulos.end()){
+		m_var_atual = "/0";
 		//O simbolo atual na cabeca de leitura da maquina de turing
 		simbolo_atual = mt->simbolo_atual();
 		descritor_regra = (*regra_it).second->pegar_descritor_regra(simbolo_atual);
-		if(descritor_regra->m_passa_var){
-			m_tabela_var[descritor_regra->m_variavel] = simbolo_atual;
+		if(descritor_regra != NULL){
+			if(descritor_regra->m_atualiza_var){
+				m_tabela_var[descritor_regra->m_variavel_atualizada] = simbolo_atual;
+			}
+			if(descritor_regra->m_envia_var){
+				m_var_atual = descritor_regra->m_variavel_enviada;
+			}
 		}
 		m_modulo_atual = (*regra_it).second->pegar_prox_modulo(simbolo_atual);
 	}else{

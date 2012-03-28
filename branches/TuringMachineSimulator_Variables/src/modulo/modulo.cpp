@@ -7,18 +7,17 @@
 
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include "modulo.h"
 
 Modulo::Modulo(const std::string &arquivo)
 : m_arquivo(arquivo),
   m_linha_atual(0),
   m_inicializado(false),
-  m_var('\0'),
-  m_var_value('\0'),
   m_recebe_var(false),
-  m_variavel("")
+  m_var('\0'),
+  m_var_value('\0')
 {
-
 }
 
 Modulo::~Modulo()
@@ -59,25 +58,28 @@ bool Modulo::carregar()
 
 	while( resultado_ok && !fs.eof() ) {
 		std::getline(fs, linha);
+		if( linha.find("var") != std::string::npos){
+			processa_declaracao_variavel(linha);
+		}else{
+			if( !linha.empty() && linha != "\r" && linha != "\n") {
+				ss << linha;
+				ss >> estado1 >> simbolo >> estado2 >> acao;
 
-		if( !linha.empty() && linha != "\r" && linha != "\n") {
-			ss << linha;
-			ss >> estado1 >> simbolo >> estado2 >> acao;
+				if( !ss.fail() ) {
+					if( (simbolo == '*' && m_regras.find(estado1) == m_regras.end()) ||
+						(simbolo != '*' && !procura_regra(estado1, simbolo)) ) {
+						Regra regra_atual = { simbolo, estado2, acao };
+						std::pair<std::string, Regra> elem(estado1, regra_atual);
 
-			if( !ss.fail() ) {
-				if( (simbolo == '*' && m_regras.find(estado1) == m_regras.end()) ||
-					(simbolo != '*' && !procura_regra(estado1, simbolo)) ) {
-					Regra regra_atual = { simbolo, estado2, acao };
-					std::pair<std::string, Regra> elem(estado1, regra_atual);
-
-					m_regras.insert( elem );
+						m_regras.insert( elem );
+					} else {
+						resultado_ok = false;
+					}
 				} else {
 					resultado_ok = false;
 				}
-			} else {
-				resultado_ok = false;
+				ss.clear();
 			}
-			ss.clear();
 		}
 		++m_linha_atual;
 	}
@@ -174,14 +176,9 @@ std::string Modulo::pega_estado_atual()
 	return m_estado_atual;
 }
 
-bool Modulo::usa_variavel()
+bool Modulo::recebe_variavel()
 {
 	return m_recebe_var;
-}
-
-std::string Modulo::pega_variavel()
-{
-	return m_variavel;
 }
 
 bool Modulo::processa_cabecalho(std::string linha)
@@ -211,6 +208,7 @@ bool Modulo::processa_declaracao_variavel(std::string linha)
 	if( !ss.fail() && marcador == "var") {
 		resultado = true;
 		m_var = var;
+		m_recebe_var = true;
 	}
 
 	return resultado;
