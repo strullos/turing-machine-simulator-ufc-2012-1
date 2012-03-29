@@ -6,7 +6,6 @@
  */
 
 
-
 #include "diagrama/diagrama.h"
 
 #include <iostream>

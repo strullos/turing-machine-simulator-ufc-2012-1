@@ -19,7 +19,6 @@
  *	return: none
  */
 Diagrama::Diagrama() :
-m_modulo_atual(""),
 m_carregado(false),
 m_arquivo_mt(false)
 {}
@@ -96,7 +95,7 @@ bool Diagrama::carregar_diagrama(std::string caminho_arquivo)
 	if(arquivo.is_open()){
 		//Obtem o diretorio do arquivo
 		unsigned int pos = 0;
-		std::string dir = "";
+		std::string dir;
 		//O path do arquivo pode ser definido tanto com "/" quanto com "\"
 		//"pos" vai receber a ultima posicao de "/" ou "\", caso o caminho do arquivo contenha esses caracteres.
 		//"pos" recebe o menor dos dois, porque se rfind nao encontrar o caractere,
@@ -163,8 +162,8 @@ bool Diagrama::carregar_modulo(std::string& linha_modulo, const std::string& dir
 	std::stringstream tokens;
 	tokens << linha_modulo;
 
-	std::string nome_modulo = "";
-	std::string arquivo_modulo = "";
+	std::string nome_modulo;
+	std::string arquivo_modulo;
 	bool modulo_inicial_especificado = false;
 
 	//A instrução de carregar modulos tem o seguinte formato:
@@ -239,12 +238,15 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 	//Tokenizamos a linha contendo a instrução da regra
 	std::stringstream tokens;
 
-
-	std::string modulo_inicial = "";
+	bool atualiza_var = false;
+	bool envia_var = false;
+	std::string var_atualizada;
+	std::string var_enviada;
+	std::string modulo_inicial;
 	//Podemos ter uma regra relativa a um conjunto de simbolos
 	std::vector<std::string> lista_de_simbolos;
-	std::string simbolos = "";
-	std::string modulo_final = "";
+	std::string simbolos;
+	std::string modulo_final;
 
 	//Linhas de regra tem o seguinte formato:
 	// A [a,b,c...] B
@@ -258,18 +260,38 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 	//Verifica se qualquer um dos componentes da regra é vazio. Caso qualquer um seja,
 	//o arquivo está inválido.
 	if( (modulo_inicial.size() == 0) || (simbolos.size() == 0) || (modulo_final.size() == 0) ){
-		std::cout << "Erro lendo instrução de carregamento de regra: " << std::endl;
+		std::cout << "Erro lendo instrucao de carregamento de regra: " << std::endl;
 		std::cout << linha_regra << std::endl;
 		return false;
 	}
-
 	//Verifica se a lista de simbolos esta no formato apropriado
 	if( (simbolos.find("[") == std::string::npos) || (simbolos.find("]") == std::string::npos) ){
-		std::cout << "Erro lendo instrução de carregamento de regra: " << std::endl;
+		std::cout << "Erro lendo instrucao de carregamento de regra: " << std::endl;
 		std::cout << linha_regra << std::endl;
 		return false;
 	}
 
+	unsigned int aux_pos = simbolos.find("=");
+	//Verifica se a regra utiliza alguma variavel
+	if( aux_pos != std::string::npos){
+		atualiza_var = true;
+		var_atualizada = simbolos.substr(1,aux_pos - 1);
+		//Remove a declaração de variável da regra. Por exemplo R [x=a,b] S -> R [a,b] S
+		simbolos = (simbolos.substr(0,aux_pos - 1)).append(simbolos.substr(aux_pos +1, simbolos.size() - aux_pos +1));
+		m_tabela_var.insert(std::pair<std::string,std::string>(var_atualizada, ""));
+	}
+
+	aux_pos = modulo_final.find("(");
+	if(aux_pos != std::string::npos){
+		if(modulo_final.find(")") == std::string::npos){
+			std::cout << "Erro lendo instrucao de carregamento de regra: " << std::endl;
+			std::cout << linha_regra << std::endl;
+			return false;
+		}
+		envia_var = true;
+		var_enviada = modulo_final.substr(aux_pos+1,1);
+		modulo_final = modulo_final.substr(0,aux_pos);
+	}
 
 	bool qualquer_simbolo = false;
 	std::string::iterator string_it;
@@ -288,13 +310,13 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 			lista_de_simbolos.push_back(aux);
 		}
 	}
+
 	//Se a lista de simbolos estiver vazia, o arquivo nao eh valido
 	if(lista_de_simbolos.size() == 0){
 		std::cout << "Erro lendo instrução de carregamento de regra: " << std::endl;
 		std::cout << linha_regra << std::endl;
 		return false;
 	}
-
 	//Adiciona a nova regra
 	RegraDiagrama *regra = NULL;
 	std::map<std::string,RegraDiagrama*>::iterator regras_it = m_regras_modulos.find(modulo_inicial);
@@ -305,7 +327,7 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 		regra = new RegraDiagrama();
 		//Para cada simbolo, inserir uma entrada nas regras para esse modulo
 		for(simbolos_it = lista_de_simbolos.begin(); simbolos_it != lista_de_simbolos.end(); simbolos_it++){
-			regra->inserir((*simbolos_it),modulo_final);
+			regra->inserir((*simbolos_it),modulo_final,atualiza_var,var_atualizada,envia_var,var_enviada);
 		}
 		//Armazena o conjunto de regras desse modulo
 		m_regras_modulos.insert(std::pair<std::string,RegraDiagrama*>(modulo_inicial,regra));
@@ -314,7 +336,7 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 		//adiciona as novas regras a esse conjunto
 		regra = (*regras_it).second;
 		for(simbolos_it = lista_de_simbolos.begin(); simbolos_it != lista_de_simbolos.end(); simbolos_it++){
-			regra->inserir((*simbolos_it),modulo_final);
+			regra->inserir((*simbolos_it),modulo_final,atualiza_var,var_atualizada,envia_var,var_enviada);
 		}
 	}
 	//Se a regra era referente a '*', 'qualquer_simbolo' será true
@@ -347,19 +369,95 @@ void Diagrama::imprime_diagrama()
 		std::cout << std::endl;
 		std::cout << "Regras: " << std::endl;
 		std::map<std::string, RegraDiagrama*>::iterator it2;
-		std::map<std::string, std::string>::iterator it3;
+		std::map<std::string, DescritorRegra*>::iterator it3;
 		RegraDiagrama *ac = NULL;
 		for(it2 = m_regras_modulos.begin(); it2 != m_regras_modulos.end(); it2++){
 			initial_module = (*it2).first;
 			ac = (*it2).second;
 			for(it3 = ac->m_regras.begin(); it3 != ac->m_regras.end(); it3++){
 				symbol = (*it3).first;
-				last_module = (*it3).second;
+				last_module = ((*it3).second)->m_prox_modulo;
 				std::cout << "(" << initial_module << " , " << symbol << ") -> " << last_module << std::endl;
 			}
 		}
 		std::cout << std::endl;
 	}
+}
+
+/*!
+ *
+ *	Verifica, de acordo com a configuracao atual, qual o proximo modulo a ser executado
+ *
+ *	@param[in]: Um ponteiro para a maquina de turing em execucao *
+ *	return: true, se um proximo modulo pode ser executado, false do contrario
+ */
+bool Diagrama::verifica_prox_modulo(Maquina *mt)
+{
+	std::string simbolo_atual = "";
+	std::map<std::string,RegraDiagrama*>::iterator regra_it;
+	DescritorRegra *descritor_regra = NULL;
+	//Pega o nome do proximo modulo a ser executado
+	//e poe 'm_modulo_atual' para receber esse valor
+	regra_it = m_regras_modulos.find(m_modulo_atual);
+	if(regra_it != m_regras_modulos.end()){
+		m_var_atual = "";
+		//O simbolo atual na cabeca de leitura da maquina de turing
+		simbolo_atual = mt->simbolo_atual();
+		descritor_regra = (*regra_it).second->pegar_descritor_regra(simbolo_atual);
+		if(descritor_regra != NULL){
+			if(descritor_regra->m_atualiza_var){
+				m_tabela_var[descritor_regra->m_variavel_atualizada] = simbolo_atual;
+			}
+			if(descritor_regra->m_envia_var){
+				m_var_atual = descritor_regra->m_variavel_enviada;
+			}
+		}
+		m_modulo_atual = (*regra_it).second->pegar_prox_modulo(simbolo_atual);
+	}else{
+		//Se nao houver nenhuma regra para o estado atual, retorna 'false'
+		return false;
+	}
+	return true;
+}
+
+/*!
+ *
+ *	Imprime a configuracao atual do diagrama
+ *
+ *	@param[in]: Um ponteiro para a maquina de turing em execucao
+ *	@param[in]: Um ponteiro para o modulo atual em execucao
+ *	return: none
+ */
+void Diagrama::imprime_config_atual(Maquina *mt, Modulo *modulo, const std::string& modulo_atual, const unsigned int &passos)
+{
+	std::cout << passos << ":\t";
+	if(!m_arquivo_mt){
+		if(modulo != NULL){
+			if( !m_var_atual.empty()){
+				std::string valor_var = m_tabela_var[m_var_atual];
+				if(valor_var.empty()){
+					valor_var = "NULL";
+				}
+				std::cout << "( " << modulo_atual << " , " << modulo->pega_estado_atual() << " , " << m_var_atual << "=" << valor_var << " )" << "\t\t";
+			}else{
+				std::cout << "( " << modulo_atual << " , " << modulo->pega_estado_atual() <<  " )" << "\t\t\t";
+			}
+		}else{
+			if( !m_var_atual.empty()){
+				std::string valor_var = m_tabela_var[m_var_atual];
+				if(valor_var.empty()){
+					valor_var = "NULL";
+				}
+				std::cout << "( " << modulo_atual << " , " <<  m_var_atual << "=" << valor_var << " )" << "\t\t";
+			}else{
+				std::cout << "( " << modulo_atual << " )" << "\t\t\t";
+			}
+		}
+	}else{
+			std::cout << "< " << modulo->pega_estado_atual() << ":\t\t";
+	}
+
+	mt->imprimir_fita();
 }
 
 /*!
@@ -379,6 +477,7 @@ void Diagrama::executar(std::string fita_inicial)
 		Modulo* modulo = NULL;
 		std::map<std::string,Modulo*>::iterator modulo_it;
 		std::string ultimo_modulo;
+		std::string var_modulo;
 		bool executando_diagrama = true;
 		bool executando_modulo = false;
 		unsigned int passos = 0;
@@ -410,13 +509,26 @@ void Diagrama::executar(std::string fita_inicial)
 			imprime_config_atual(mt, modulo, m_modulo_atual, passos);
 			passos++;
 			while(executando_modulo){
+				var_modulo = mt->simbolo_atual();
+				//Verifica se o modulo recebe uma variavel
+				if(modulo->recebe_variavel()){
+					//Caso receba, pega o valor dessa variavel e passa para o modulo
+					std::map<std::string, std::string>::iterator it;
+					it = m_tabela_var.find(m_var_atual);
+					if(it != m_tabela_var.end()){
+						var_modulo = it->second;
+						if(var_modulo.empty()){
+							var_modulo = "#";//mt->simbolo_atual();
+						}
+					}
+				}
 				//Executa um passo do modulo atual
-				if(modulo->executa_passo(mt)){
+				if(modulo->executa_passo(mt, var_modulo[0])){
 					imprime_config_atual(mt, modulo, m_modulo_atual, passos);
 					passos++;
 				}else{
 					ultimo_modulo = m_modulo_atual;
-					//Se não houver mais passos, termina a execucao do modulo
+					//Se não houver mais passos, termina a execucao do modulos
 					executando_modulo = false;
 					//Verifica o proximo modulo a ser executado, se nao houver nenhum, termina a execuca
 					//do diagrama
@@ -436,54 +548,3 @@ void Diagrama::executar(std::string fita_inicial)
 		delete mt;
 	}
 }
-
-/*!
- *
- *	Imprime a configuracao atual do diagrama
- *
- *	@param[in]: Um ponteiro para a maquina de turing em execucao
- *	@param[in]: Um ponteiro para o modulo atual em execucao
- *	return: none
- */
-void Diagrama::imprime_config_atual(Maquina *mt, Modulo *modulo, const std::string& modulo_atual, const unsigned int &passos)
-{
-	std::cout << passos << ":\t";
-	if(!m_arquivo_mt){
-		if(modulo != NULL){
-			std::cout << "( " << modulo_atual << " , " << modulo->pega_estado_atual() <<  " )" << "\t\t";
-		}else{
-			std::cout << "( " << modulo_atual << " )" << "\t\t";
-		}
-	}else{
-			std::cout << "< " << modulo->pega_estado_atual() << ":\t\t";
-	}
-
-	mt->imprimir_fita();
-}
-
-/*!
- *
- *	Verifica, de acordo com a configuracao atual, qual o proximo modulo a ser executado
- *
- *	@param[in]: Um ponteiro para a maquina de turing em execucao *
- *	return: true, se um proximo modulo pode ser executado, false do contrario
- */
-bool Diagrama::verifica_prox_modulo(Maquina *mt)
-{
-	std::string simbolo_atual = "";
-	std::map<std::string,RegraDiagrama*>::iterator regra_it;
-	//Pega o nome do proximo modulo a ser executado
-	//e poe 'm_modulo_atual' para receber esse valor
-	regra_it = m_regras_modulos.find(m_modulo_atual);
-	if(regra_it != m_regras_modulos.end()){
-		//O simbolo atual na cabeca de leitura da maquina de turing
-		simbolo_atual = mt->simbolo_atual();
-		m_modulo_atual = (*regra_it).second->pegar_prox_modulo(simbolo_atual);
-	}else{
-		//Se nao houver nenhuma regra para o estado atual, retorna 'false'
-		return false;
-	}
-	return true;
-}
-
-

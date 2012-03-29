@@ -7,16 +7,17 @@
 
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include "modulo.h"
 
 Modulo::Modulo(const std::string &arquivo)
 : m_arquivo(arquivo),
-  m_linha_incorreta(0),
+  m_linha_atual(0),
   m_inicializado(false),
+  m_recebe_var(false),
   m_var('\0'),
   m_var_value('\0')
 {
-
 }
 
 Modulo::~Modulo()
@@ -39,7 +40,7 @@ bool Modulo::carregar()
 	if( !fs ) {
 		resultado_ok = false;
 	} else {
-		m_linha_incorreta = 1;
+		m_linha_atual = 1;
 		m_regras.clear();
 
 		std::getline(fs, linha);
@@ -57,27 +58,30 @@ bool Modulo::carregar()
 
 	while( resultado_ok && !fs.eof() ) {
 		std::getline(fs, linha);
+		if( linha.find("var") != std::string::npos){
+			processa_declaracao_variavel(linha);
+		}else{
+			if( !linha.empty() && linha != "\r" && linha != "\n") {
+				ss << linha;
+				ss >> estado1 >> simbolo >> estado2 >> acao;
 
-		if( !linha.empty() && linha != "\r" && linha != "\n") {
-			ss << linha;
-			ss >> estado1 >> simbolo >> estado2 >> acao;
+				if( !ss.fail() ) {
+					if( (simbolo == '*' && m_regras.find(estado1) == m_regras.end()) ||
+						(simbolo != '*' && !procura_regra(estado1, simbolo)) ) {
+						Regra regra_atual = { simbolo, estado2, acao };
+						std::pair<std::string, Regra> elem(estado1, regra_atual);
 
-			if( !ss.fail() ) {
-				if( (simbolo == '*' && m_regras.find(estado1) == m_regras.end()) ||
-					(simbolo != '*' && !procura_regra(estado1, simbolo)) ) {
-					Regra regra_atual = { simbolo, estado2, acao };
-					std::pair<std::string, Regra> elem(estado1, regra_atual);
-
-					m_regras.insert( elem );
+						m_regras.insert( elem );
+					} else {
+						resultado_ok = false;
+					}
 				} else {
 					resultado_ok = false;
 				}
-			} else {
-				resultado_ok = false;
+				ss.clear();
 			}
-			ss.clear();
 		}
-		++m_linha_incorreta;
+		++m_linha_atual;
 	}
 
 	fs.close();
@@ -144,7 +148,7 @@ bool Modulo::aplica_regra(Maquina *m, const Regrap r)
 
 unsigned int Modulo::linha_incorreta()
 {
-	return m_linha_incorreta;
+	return m_linha_atual;
 }
 
 const Regrap Modulo::procura_regra(std::string estado, char simbolo)
@@ -165,23 +169,72 @@ const Regrap Modulo::procura_regra(std::string estado, char simbolo)
 	return regra;
 }
 
-bool Modulo::processa_cabecalho(std::string linha)
-{
-	return false;
-}
 
-bool Modulo::processa_variavel(std::string linha)
-{
-	return false;
-}
 
 std::string Modulo::pega_estado_atual()
 {
 	return m_estado_atual;
 }
 
+bool Modulo::recebe_variavel()
+{
+	return m_recebe_var;
+}
+
+bool Modulo::processa_cabecalho(std::string linha)
+{
+	std::string tamanho_fita;
+	int num_iteracoes;
+	std::stringstream ss;
+	bool resultado = false;
+
+	ss << linha;
+	ss >> m_estado_atual >> tamanho_fita >> num_iteracoes;
+	if( !ss.fail() ) {
+		m_estado_inicial = m_estado_atual;
+	}
+	return resultado;
+}
+
+bool Modulo::processa_declaracao_variavel(std::string linha)
+{
+	std::stringstream ss;
+	std::string marcador;
+	char var;
+	bool resultado = false;
+
+	ss << linha;
+	ss >> marcador >> var;
+	if( !ss.fail() && marcador == "var") {
+		resultado = true;
+		m_var = var;
+		m_recebe_var = true;
+	}
+
+	return resultado;
+}
+
 bool Modulo::processa_regra(std::string linha)
 {
-	return false;
+	bool resultado = false;
+	std::stringstream ss;
+	std::string estado1, estado2;
+	char simbolo, acao;
+
+	ss << linha;
+	ss >> estado1 >> simbolo >> estado2 >> acao;
+
+	if( !ss.fail() &&
+			((simbolo == '*' && m_regras.find(estado1) == m_regras.end()) ||
+					(simbolo != '*' && !procura_regra(estado1, simbolo))) ) {
+
+		Regra regra_atual = { simbolo, estado2, acao };
+		std::pair<std::string, Regra> elem(estado1, regra_atual);
+		m_regras.insert( elem );
+		resultado = true;
+	}
+
+	return resultado;
 }
+
 
