@@ -6,7 +6,6 @@
  */
 
 
-
 #include "diagrama/diagrama.h"
 
 #include <iostream>
@@ -20,7 +19,7 @@ int main(int argc, char** argv){
 		std::cout << "Caso nenhum modulo inicial seja especificado, o primeiro modulo a ser carregado sera o inicial." << std::endl;
 	}else{
 		std::cout << std::endl;
-		std::string arquivo =  argv[1];
+		std::string arquivo = argv[1];
 		std::string fita = argv[2];
 		Diagrama *d = new Diagrama();
 		if(d->carregar_diagrama(arquivo)){
