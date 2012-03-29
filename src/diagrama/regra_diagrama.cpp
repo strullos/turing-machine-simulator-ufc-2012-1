@@ -26,13 +26,13 @@ std::string RegraDiagrama::pegar_prox_modulo(std::string simbolo_atual)
 	if(m_regras.size() > 0){
 		std::map<std::string, DescritorRegra*>::iterator it;
 		//Se nao importar o siimbolo, retorna o primeiro modulo do hash
-		if(m_qualquer_simbolo){
-			it = m_regras.begin();
-			return ((*it).second)->m_prox_modulo;
-		}else{
-			//Senao, retorna o proximo modulo
-			if(m_regras.find(simbolo_atual) != m_regras.end()){
-				return m_regras[simbolo_atual]->m_prox_modulo;
+		//Senao, retorna o proximo modulo
+		if(m_regras.find(simbolo_atual) != m_regras.end()){
+			return m_regras[simbolo_atual]->m_prox_modulo;
+		}else {
+			if(m_qualquer_simbolo){
+					it = m_regras.begin();
+					return ((*it).second)->m_prox_modulo;
 			}
 		}
 	}
@@ -45,11 +45,16 @@ RegraDiagrama::~RegraDiagrama()
 
 DescritorRegra* RegraDiagrama::pegar_descritor_regra(std::string simbolo_atual)
 {
-	std::map<std::string,std::string>::iterator it;
+	std::map<std::string,DescritorRegra*>::iterator it;
 	if(m_regras.size() > 0){
 		//Retorna o descritor da regra
 		if(m_regras.find(simbolo_atual) != m_regras.end()){
 			return m_regras[simbolo_atual];
+		}else{
+			if(m_qualquer_simbolo){
+					it = m_regras.begin();
+					return ((*it).second);
+			}
 		}
 	}
 	return NULL;
