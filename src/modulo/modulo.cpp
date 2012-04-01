@@ -33,52 +33,28 @@ bool Modulo::carregar()
 	std::string estado1, estado2;
 	std::string linha;
 	std::stringstream ss;
-	int tamanho_fita, num_iteracoes;
-	char acao, simbolo;
+
+	m_regras.clear();
+	m_linha_atual = 1;
+	m_var = '\0';
 
 	// Se nao conseguiu abrir o arquivo, retorna erro
 	if( !fs ) {
 		resultado_ok = false;
 	} else {
-		m_linha_atual = 1;
-		m_regras.clear();
-
+		// Processa cabecalho da maquina
 		std::getline(fs, linha);
-		ss << linha;
-		// Le cabecalho - se a primeira linha do arquivo nao estiver no formato certo, retorna erro
-		ss >> estado_inicial >> tamanho_fita >> num_iteracoes;
-		if( ss.fail() ) {
-			resultado_ok = false;
-		} else {
-			m_estado_atual = estado_inicial;
-			m_estado_inicial = estado_inicial;
-		}
-		ss.clear();
+		resultado_ok = processa_cabecalho(linha);
 	}
 
+	// Processa quadruplas
 	while( resultado_ok && !fs.eof() ) {
 		std::getline(fs, linha);
-		if( linha.find("var") != std::string::npos){
-			processa_declaracao_variavel(linha);
-		}else{
-			if( !linha.empty() && linha != "\r" && linha != "\n") {
-				ss << linha;
-				ss >> estado1 >> simbolo >> estado2 >> acao;
-
-				if( !ss.fail() ) {
-					if( (simbolo == '*' && m_regras.find(estado1) == m_regras.end()) ||
-						(simbolo != '*' && !procura_regra(estado1, simbolo)) ) {
-						Regra regra_atual = { simbolo, estado2, acao };
-						std::pair<std::string, Regra> elem(estado1, regra_atual);
-
-						m_regras.insert( elem );
-					} else {
-						resultado_ok = false;
-					}
-				} else {
-					resultado_ok = false;
-				}
-				ss.clear();
+		if( !linha.empty() && linha != "\r" && linha != "\n") {
+			if( linha.find("var") != std::string::npos ) {
+				resultado_ok = processa_declaracao_variavel(linha);
+			} else {
+				resultado_ok = processa_regra(linha);
 			}
 		}
 		++m_linha_atual;
@@ -88,7 +64,6 @@ bool Modulo::carregar()
 	m_inicializado = resultado_ok;
 	return resultado_ok;
 }
-
 
 bool Modulo::inicializar()
 {
@@ -191,6 +166,7 @@ bool Modulo::processa_cabecalho(std::string linha)
 	ss << linha;
 	ss >> m_estado_atual >> tamanho_fita >> num_iteracoes;
 	if( !ss.fail() ) {
+		resultado = true;
 		m_estado_inicial = m_estado_atual;
 	}
 	return resultado;
@@ -203,12 +179,14 @@ bool Modulo::processa_declaracao_variavel(std::string linha)
 	char var;
 	bool resultado = false;
 
-	ss << linha;
-	ss >> marcador >> var;
-	if( !ss.fail() && marcador == "var") {
-		resultado = true;
-		m_var = var;
-		m_recebe_var = true;
+	if( !m_var ) {
+		ss << linha;
+		ss >> marcador >> var;
+		if( !ss.fail() && marcador == "var") {
+			resultado = true;
+			m_var = var;
+			m_recebe_var = true;
+		}
 	}
 
 	return resultado;
@@ -226,7 +204,7 @@ bool Modulo::processa_regra(std::string linha)
 
 	if( !ss.fail() &&
 			((simbolo == '*' && m_regras.find(estado1) == m_regras.end()) ||
-					(simbolo != '*' && !procura_regra(estado1, simbolo))) ) {
+			(simbolo != '*' && !procura_regra(estado1, simbolo))) ) {
 
 		Regra regra_atual = { simbolo, estado2, acao };
 		std::pair<std::string, Regra> elem(estado1, regra_atual);
