@@ -271,7 +271,7 @@ bool Diagrama::carregar_regra(std::string& linha_regra)
 		return false;
 	}
 
-	unsigned int aux_pos = simbolos.find("=");
+	size_t aux_pos = simbolos.find("=");
 	//Verifica se a regra utiliza alguma variavel
 	if( aux_pos != std::string::npos){
 		atualiza_var = true;
