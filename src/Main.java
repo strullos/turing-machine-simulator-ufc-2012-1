@@ -10,7 +10,7 @@ public class Main {
 		IModulo raiz = null;
 		Maquina fita = null;
 		Diagrama d = new Diagrama();
-		d.carregar("shiftString.dt");
+		d.carregar("char_copy.dt");
 		d.imprime_diagrama();
 		d.executar("aabb");
 //		

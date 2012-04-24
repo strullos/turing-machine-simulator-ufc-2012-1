@@ -27,8 +27,9 @@ public class Diagrama extends Modulo {
 			}
 			if(caminho_arquivo.endsWith(".dt")){
 				String linha_atual;
-				for(int i = 0; i < m_linhas_arquivo; i++){
+				for(int i = 0; i < m_linhas_arquivo; i++){					
 					linha_atual = m_dados_arquivo[i];
+					System.out.println("Linha atual: " + linha_atual);
 					int pos = 0;
 					if(caminho_arquivo.lastIndexOf("/") > caminho_arquivo.lastIndexOf("\\")){
 						pos = caminho_arquivo.lastIndexOf("/");
@@ -42,9 +43,11 @@ public class Diagrama extends Modulo {
 							return false;
 						}
 					}else{
-						if(!carregar_regra(linha_atual)){
-							System.out.println("Falha ao carregar regra");
-							return false;
+						if(!linha_atual.isEmpty() && (!linha_atual.equals("\n"))) {
+							if(!carregar_regra(linha_atual)){
+								System.out.println("Falha ao carregar regra");
+								return false;
+							}
 						}
 					}
 				}
@@ -105,7 +108,7 @@ public class Diagrama extends Modulo {
 		if(simbolos.contains("=")){
 			aux_pos = simbolos.indexOf("=");
 			atualiza_var = true;
-			var_atualizada = simbolos.substring(1,aux_pos - 1);
+			var_atualizada = simbolos.substring(1,aux_pos);
 			simbolos = (simbolos.substring(0,aux_pos-1) + (simbolos.substring(aux_pos + 1, simbolos.length() - aux_pos + 1)) );
 			m_tabela_var.put(var_atualizada, "");
 		}
@@ -116,7 +119,7 @@ public class Diagrama extends Modulo {
 				return false;
 			}
 			envia_var = true;
-			var_enviada = modulo_final.substring(aux_pos+1, 1);
+			var_enviada = modulo_final.substring(aux_pos+1, modulo_final.length()-1);
 			modulo_final = modulo_final.substring(0,aux_pos);
 		}
 		boolean qualquer_simbolo = false;		
@@ -202,15 +205,15 @@ public class Diagrama extends Modulo {
 	public boolean carregar_modulo(String linha_atual, String dir)
 	{		
 		String[] tokens = linha_atual.split("[\\s0-9+-]+");
-		String nome_modulo;
-		String arquivo_modulo;
+		String nome_modulo = "";
+		String arquivo_modulo = "";
 		boolean modulo_inicial_especificado = false;
 		if(!m_arquivo_mt){
 			nome_modulo = tokens[1];
 			arquivo_modulo = tokens[2];
 			System.out.println("Modulo: \t" +  nome_modulo + "\t" + arquivo_modulo);
 			if(nome_modulo.contains("%")){
-				nome_modulo = nome_modulo.substring(1);
+				nome_modulo = nome_modulo.substring(1,nome_modulo.length());
 				modulo_inicial_especificado = true;
 				m_modulo_atual = nome_modulo;
 			}
@@ -337,12 +340,12 @@ public class Diagrama extends Modulo {
 		if(!m_arquivo_mt){
 			if(modulo != null){
 				if(!m_var_atual.isEmpty()){
-					String valor_var = m_tabela_var.get(m_var_atual);
+					String valor_var = m_tabela_var.get(m_var_atual);					
 					if(valor_var.isEmpty()){
 						valor_var = "NULL";
-					}
-					System.out.print("( " + modulo_atual + " , " + modulo.estado_atual() + " , " + m_var_atual + "=" + valor_var + " )" + "\t\t");
+					}						
 					
+					System.out.print("( " + modulo_atual + " , " + modulo.estado_atual() + " , " + m_var_atual + "=" + valor_var + " )" + "\t\t");
 				}else{
 					System.out.print("( " + modulo_atual + " , " + modulo.estado_atual() + " )" + "\t\t\t");
 				}
@@ -402,7 +405,16 @@ public class Diagrama extends Modulo {
 				while(executando_modulo){
 					var_modulo = String.valueOf(mt.simbolo_atual());
 					//TODO: Variaveis
-					//if(modulo.)
+					if(modulo.recebe_var()){
+						//Caso receba, pega o valor dessa variavel e passa para o modulo						
+						if(m_tabela_var.containsKey(m_var_atual)){
+							var_modulo = m_tabela_var.get(m_var_atual);
+							if(var_modulo.isEmpty()){
+								var_modulo = "#";
+							}
+							modulo.set_valor_var(var_modulo.charAt(0));
+						}						
+					}					
 					if(modulo.executar_passo(mt)){
 						imprime_config_atual(mt,modulo,m_modulo_atual,passos);
 						passos++;
