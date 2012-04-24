@@ -1,13 +1,15 @@
 package teoria.simulador.modulo;
 
+import java.util.HashMap;
 import java.util.Map;
 import teoria.simulador.modulo.DescritorRegra;
 
 public class RegraDiagrama {
 	public RegraDiagrama(){
 		m_qualquer_simbolo = false;
+		m_regras = new HashMap<String, DescritorRegra>();
 	}
-	public void inserir(String simbolo, String modulo_final, boolean atualiza_var, String var_atualizada, String var_enviada, boolean envia_var)
+	public void inserir(String simbolo, String modulo_final, boolean atualiza_var, String var_atualizada,boolean envia_var, String var_enviada )
 	{
 		DescritorRegra nova_regra = new DescritorRegra();
 		nova_regra.m_prox_modulo = modulo_final;
@@ -43,6 +45,6 @@ public class RegraDiagrama {
 		return null;
 	}
 	
-	private Map<String,DescritorRegra> m_regras;
-	private boolean m_qualquer_simbolo;
+	public HashMap<String,DescritorRegra> m_regras;
+	public boolean m_qualquer_simbolo;
 }

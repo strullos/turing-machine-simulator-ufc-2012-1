@@ -20,10 +20,12 @@ public class Modulo extends IModulo {
 	private char m_var = '\0';
 	private int m_max_iter = 0;
 	private int m_curr_iter = 0;
+	public boolean m_recebe_variavel;
 
 	public Modulo() {
 		m_curr_iter = 0;
 		m_quadruplas = new MultiValueMap();
+		m_recebe_variavel = false;
 	}
 
 	@Override
