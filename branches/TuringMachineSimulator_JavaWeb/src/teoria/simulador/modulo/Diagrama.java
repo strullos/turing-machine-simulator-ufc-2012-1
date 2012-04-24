@@ -15,7 +15,20 @@ public class Diagrama extends Modulo {
 	public Diagrama(){
 		inicializar();
 	}
-	
+	public boolean carregar_diagrama_buffer(String conteudo){
+		if(m_carregado){
+			limpar();
+		}	
+		System.out.println("Arquivo .mt detectado.");
+		m_arquivo_mt = true;
+		if(!carregar_modulo_buffer(conteudo)){
+			System.out.println("Falha ao carregar MT.");
+			return false;
+		}		
+		System.out.println("Diagrama carregado com sucesso.");
+		m_carregado = true;
+		return true;
+	}
 	@Override
 	public boolean carregar(String caminho_arquivo) {
 		if(m_carregado){
@@ -201,7 +214,29 @@ public class Diagrama extends Modulo {
 	public void limpar(){
 		
 	}
-	
+	public boolean carregar_modulo_buffer(String conteudo)
+	{		
+		String[] tokens = conteudo.split("[\\s0-9+-]+");
+		String arquivo_modulo = tokens[0];
+		String nome_modulo = tokens[0];		
+		boolean modulo_inicial_especificado = false;
+		Modulo novo_modulo = new Modulo();		
+		if(!novo_modulo.carregar_buffer(conteudo)){
+			System.out.println("Falha ao inicializar modulo. Abortado.");
+			return false;
+		}		 
+		m_modulos_carregados.put(arquivo_modulo, novo_modulo);
+		if(!m_modulos.containsKey(nome_modulo)){
+			m_modulos.put(nome_modulo, novo_modulo);
+			if((m_modulos_carregados.size() == 1) && (modulo_inicial_especificado == false)){
+				m_modulo_atual = nome_modulo;
+			}
+		}else{
+			System.out.println("Uma referencia com esse nome ja existe. Ignorando referencia duplicada.");
+		}		
+		return true;
+	}
+
 	public boolean carregar_modulo(String linha_atual, String dir)
 	{		
 		String[] tokens = linha_atual.split("[\\s0-9+-]+");

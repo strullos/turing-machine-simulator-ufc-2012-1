@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -28,6 +29,34 @@ public class Modulo extends IModulo {
 		m_recebe_var = false;
 	}
 
+	public boolean carregar_buffer(String conteudo){
+		BufferedReader reader = new BufferedReader(new StringReader(conteudo));
+		try {
+			String linha = null;;
+			boolean res = false;
+
+			linha = acha_proxima_linha(reader);
+			res = processa_cabecalho(linha);
+
+			while( res && (linha = acha_proxima_linha(reader)) != null ) {
+				res = processa_quad(linha) || processa_decl_var(linha);
+			}
+
+			return res;
+
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			reader.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+	
 	@Override
 	public boolean carregar(String arquivo) throws FileNotFoundException {
 		BufferedReader reader = new BufferedReader(new FileReader(arquivo));
