@@ -10,7 +10,9 @@ public class Main {
 		IModulo raiz = null;
 		Maquina fita = null;
 		Diagrama d = new Diagrama();
-		d.carregar("E:/Comp 2012.1/Teoria da Computação/Implementações/branches/TMSimulator_Java/shiftString.dt");
+		d.carregar("shiftString.dt");
+		d.imprime_diagrama();
+		d.executar("aabb");
 //		
 //		if( args.length == 2) {
 //			raiz = ModuloFactory.construir(args[0]);

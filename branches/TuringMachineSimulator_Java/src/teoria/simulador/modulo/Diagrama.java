@@ -3,7 +3,10 @@ package teoria.simulador.modulo;
 import java.io.*;
 import java.sql.Array;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Vector;
 
 import teoria.simulador.maquina.Maquina;
@@ -48,6 +51,7 @@ public class Diagrama extends Modulo {
 			}
 		}else{
 			System.out.println("Falha ao carregar arquivo.");
+			return false;
 		}
 		System.out.println("Diagrama carregado com sucesso.");
 		m_carregado = true;
@@ -61,6 +65,7 @@ public class Diagrama extends Modulo {
 		m_modulos = new HashMap<String, Modulo>();			
 		m_tabela_var = new HashMap<String, String>();		
 		m_carregado = false;
+		m_var_atual = "";
 	}
 
 	@Override
@@ -73,128 +78,122 @@ public class Diagrama extends Modulo {
 		return null;
 	}
 	
-	public boolean carregar_regra(String linha_atual){
+	public boolean carregar_regra(String linha_regra){
 		String[] tokens;
 		boolean atualiza_var = false;
-		String var_atualizada;
-		String var_enviada;
-		String modulo_inicial;
-		Vector<String> lista_de_simbolos;
-		String simbolos;
-		String modulo_final;
-		tokens = linha_atual.split("[\\s0-9+-]+");
-		return true;
-	}
-	/*bool Diagrama::carregar_regra(std::string& linha_regra)
-	{
-		//Tokenizamos a linha contendo a instrução da regra
-		std::stringstream tokens;
-
-		bool atualiza_var = false;
-		bool envia_var = false;
-		std::string var_atualizada;
-		std::string var_enviada;
-		std::string modulo_inicial;
-		//Podemos ter uma regra relativa a um conjunto de simbolos
-		std::vector<std::string> lista_de_simbolos;
-		std::string simbolos;
-		std::string modulo_final;
-
-		//Linhas de regra tem o seguinte formato:
-		// A [a,b,c...] B
-		tokens << linha_regra;
-		tokens >> modulo_inicial >> simbolos >> modulo_final;
-
-//		std::cout << "Regra: " << modulo_inicial << " ";
-//		std::cout << simbolos << " ";
-//		std::cout<< modulo_final << std::endl;
-
-		//Verifica se qualquer um dos componentes da regra é vazio. Caso qualquer um seja,
-		//o arquivo está inválido.
-		if( (modulo_inicial.size() == 0) || (simbolos.size() == 0) || (modulo_final.size() == 0) ){
-			std::cout << "Erro lendo instrucao de carregamento de regra: " << std::endl;
-			std::cout << linha_regra << std::endl;
+		boolean envia_var = false;
+		String var_atualizada = "";
+		String var_enviada = "";
+		String modulo_inicial = "";
+		Vector<String> lista_de_simbolos = new Vector<String>();
+		String simbolos = "";
+		String modulo_final = "";
+		tokens = linha_regra.split("[\\s0-9+-]+");
+		modulo_inicial = tokens[0];
+		simbolos = tokens[1];
+		modulo_final = tokens[2];
+		
+		if(modulo_inicial.isEmpty() || simbolos.isEmpty() || modulo_final.isEmpty() ){
+			System.out.println("Erro lendo instrução de carregamento de regra. Regra incompleta: " + linha_regra);
 			return false;
 		}
-		//Verifica se a lista de simbolos esta no formato apropriado
-		if( (simbolos.find("[") == std::string::npos) || (simbolos.find("]") == std::string::npos) ){
-			std::cout << "Erro lendo instrucao de carregamento de regra: " << std::endl;
-			std::cout << linha_regra << std::endl;
+		if( (!simbolos.contains("[")) || (!simbolos.contains("]")) ){
+			System.out.println("Erro lendo instrução de carregamento de regra. Erro de sintaxe: " + linha_regra);
 			return false;
-		}
-
-		size_t aux_pos = simbolos.find("=");
-		//Verifica se a regra utiliza alguma variavel
-		if( aux_pos != std::string::npos){
+		}		
+		int aux_pos;
+		if(simbolos.contains("=")){
+			aux_pos = simbolos.indexOf("=");
 			atualiza_var = true;
-			var_atualizada = simbolos.substr(1,aux_pos - 1);
-			//Remove a declaração de variável da regra. Por exemplo R [x=a,b] S -> R [a,b] S
-			simbolos = (simbolos.substr(0,aux_pos - 1)).append(simbolos.substr(aux_pos +1, simbolos.size() - aux_pos +1));
-			m_tabela_var.insert(std::pair<std::string,std::string>(var_atualizada, ""));
+			var_atualizada = simbolos.substring(1,aux_pos - 1);
+			simbolos = (simbolos.substring(0,aux_pos-1) + (simbolos.substring(aux_pos + 1, simbolos.length() - aux_pos + 1)) );
+			m_tabela_var.put(var_atualizada, "");
 		}
-
-		aux_pos = modulo_final.find("(");
-		if(aux_pos != std::string::npos){
-			if(modulo_final.find(")") == std::string::npos){
-				std::cout << "Erro lendo instrucao de carregamento de regra: " << std::endl;
-				std::cout << linha_regra << std::endl;
+		if(modulo_final.contains("(")){
+			aux_pos = modulo_final.indexOf("(");
+			if(!modulo_final.contains(")")){
+				System.out.println("Erro lendo instrucao de carregamento de regra. Erro de sintaxe: " + linha_regra);
 				return false;
 			}
 			envia_var = true;
-			var_enviada = modulo_final.substr(aux_pos+1,1);
-			modulo_final = modulo_final.substr(0,aux_pos);
+			var_enviada = modulo_final.substring(aux_pos+1, 1);
+			modulo_final = modulo_final.substring(0,aux_pos);
 		}
-
-		bool qualquer_simbolo = false;
-		std::string::iterator string_it;
-		std::string aux;
-		//O conjunto de simbolos e percorrido
-		for(string_it = simbolos.begin(); string_it != simbolos.end(); string_it++){
-			aux = (*string_it);
-			//Se o caractere for diferente dos caracteres de controle, entao deve ser um caractere
-			//referente a um simbolo
-			if( (aux.compare("[") != 0) && (aux.compare(",") != 0) && (aux.compare("]") != 0) ){
-				//Se o simbolo referente a regra for '*', entao essa regra vale para qualquer simbolo
-				if(aux.compare("*") == 0){
+		boolean qualquer_simbolo = false;		
+		char aux;
+		for(int i = 0; i < simbolos.length(); i++){
+			aux = simbolos.charAt(i);
+			if((aux != '[') && (aux != ',') && (aux != ']')){
+				if(aux == '*'){
 					qualquer_simbolo = true;
-				}
-				//Adiciona o simbolo na lista de simbolos
-				lista_de_simbolos.push_back(aux);
+				}					
+				lista_de_simbolos.addElement(simbolos.substring(i, i+1));
 			}
 		}
-
-		//Se a lista de simbolos estiver vazia, o arquivo nao eh valido
-		if(lista_de_simbolos.size() == 0){
-			std::cout << "Erro lendo instrução de carregamento de regra: " << std::endl;
-			std::cout << linha_regra << std::endl;
+		if(lista_de_simbolos.isEmpty()){
+			System.out.println("Erro lendo instrucao de carregamento de regra. Falha ao parsear simbolos: " + linha_regra);
 			return false;
 		}
-		//Adiciona a nova regra
-		RegraDiagrama *regra = NULL;
-		std::map<std::string,RegraDiagrama*>::iterator regras_it = m_regras_modulos.find(modulo_inicial);
-		std::vector<std::string>::iterator simbolos_it;
+		RegraDiagrama regra;
 		//Se ainda nao existe um conjunto de regras para o modulo definido por modulo inicial
-		if(regras_it == m_regras_modulos.end()){
+		if(!m_regras_modulos.containsKey(modulo_inicial)){
 			//Entao, criar esse conjunto e adicionar na tabela de regras, indexado por 'modulo_inicial'
 			regra = new RegraDiagrama();
 			//Para cada simbolo, inserir uma entrada nas regras para esse modulo
-			for(simbolos_it = lista_de_simbolos.begin(); simbolos_it != lista_de_simbolos.end(); simbolos_it++){
-				regra->inserir((*simbolos_it),modulo_final,atualiza_var,var_atualizada,envia_var,var_enviada);
+			for(int i = 0; i < lista_de_simbolos.size(); i++){
+				regra.inserir(lista_de_simbolos.elementAt(i), modulo_final, atualiza_var, var_atualizada, envia_var, var_enviada);					
 			}
 			//Armazena o conjunto de regras desse modulo
-			m_regras_modulos.insert(std::pair<std::string,RegraDiagrama*>(modulo_inicial,regra));
+			m_regras_modulos.put(modulo_inicial, regra);
 		}else{
 			//Se ja houver um conjunto de regras para esse modulo, apenas
 			//adiciona as novas regras a esse conjunto
-			regra = (*regras_it).second;
-			for(simbolos_it = lista_de_simbolos.begin(); simbolos_it != lista_de_simbolos.end(); simbolos_it++){
-				regra->inserir((*simbolos_it),modulo_final,atualiza_var,var_atualizada,envia_var,var_enviada);
-			}
+			regra = m_regras_modulos.get(modulo_inicial);
+			for(int i = 0; i < lista_de_simbolos.size(); i++){
+				regra.inserir(lista_de_simbolos.elementAt(i), modulo_final, atualiza_var, var_atualizada, envia_var, var_enviada);					
+			}				
 		}
 		//Se a regra era referente a '*', 'qualquer_simbolo' será true
-		regra->m_qualquer_simbolo = qualquer_simbolo;
-		return true;
-	}*/
+		regra.m_qualquer_simbolo = qualquer_simbolo;
+		return true;		
+	}
+	/*!
+	 *
+	 *	Imprime o diagrama
+	 *
+	 *	@param[in]: none
+	 *	@param[out]: none
+	 *	return: none
+	 */
+	public void imprime_diagrama()
+	{	
+		if(!m_arquivo_mt){
+			String modulo_inicial;
+			String simbolo;
+			String modulo_final;
+			System.out.println("");
+			System.out.println("Regras: ");
+			RegraDiagrama regra;
+			
+			Iterator<Entry<String, RegraDiagrama>> iter = m_regras_modulos.entrySet().iterator();
+			Iterator<Entry<String, DescritorRegra>> desc_iter;
+			Entry<String, RegraDiagrama> item_regra;
+			while(iter.hasNext()){				
+				item_regra =  iter.next();
+				modulo_inicial = item_regra.getKey();
+				regra = item_regra.getValue();
+				desc_iter = regra.m_regras.entrySet().iterator();
+				while(desc_iter.hasNext()){
+					Entry<String, DescritorRegra> item_descritor;
+					item_descritor = desc_iter.next();
+					simbolo = item_descritor.getKey();
+					modulo_final = item_descritor.getValue().m_prox_modulo;
+					System.out.println("( " + modulo_inicial + " , " + simbolo + ") -> " + modulo_final);
+				}				
+			}	
+			System.out.println();
+		}
+	}	
 
 	public void limpar(){
 		
@@ -253,7 +252,6 @@ public class Diagrama extends Modulo {
 		return true;
 	}
 	
-	
 	void detecta_num_linhas(String nome_arquivo) throws IOException{
 		 FileReader arquivo = new FileReader(nome_arquivo);	
 		 BufferedReader arquivo_buffer_linhas = new BufferedReader(arquivo);
@@ -292,6 +290,136 @@ public class Diagrama extends Modulo {
 		 return true;
 	}	
 	
+	/*!
+	 *
+	 *	Verifica, de acordo com a configuracao atual, qual o proximo modulo a ser executado
+	 *
+	 *	@param[in]: Um ponteiro para a maquina de turing em execucao *
+	 *	return: true, se um proximo modulo pode ser executado, false do contrario
+	 */
+	
+	public boolean verifica_prox_modulo(Maquina mt){
+		
+		String simbolo_atual = "";
+		DescritorRegra descritor_regra;
+		RegraDiagrama regra;
+		if(m_regras_modulos.containsKey(m_modulo_atual)){
+			regra = m_regras_modulos.get(m_modulo_atual);
+			m_var_atual = "";
+			simbolo_atual = String.valueOf(mt.simbolo_atual());
+			descritor_regra = regra.pegar_descritor_regra(simbolo_atual);
+			if(descritor_regra != null){
+				if(descritor_regra.m_atualiza_var){
+					m_tabela_var.put(descritor_regra.m_variavel_atualizada, simbolo_atual);
+				}
+				if(descritor_regra.m_envia_var){
+					m_var_atual = descritor_regra.m_variavel_enviada;
+				}
+				m_modulo_atual = regra.pegar_prox_modulo(simbolo_atual);
+			}else{
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	/*!
+	 *
+	 *	Imprime a configuracao atual do diagrama
+	 *
+	 *	@param[in]: Um ponteiro para a maquina de turing em execucao
+	 *	@param[in]: Um ponteiro para o modulo atual em execucao
+	 *	return: none
+	 */
+	public void imprime_config_atual(Maquina mt, Modulo modulo, String modulo_atual, int passos){
+		System.out.print(passos + ":\t");
+		if(!m_arquivo_mt){
+			if(modulo != null){
+				if(!m_var_atual.isEmpty()){
+					String valor_var = m_tabela_var.get(m_var_atual);
+					if(valor_var.isEmpty()){
+						valor_var = "NULL";
+					}
+					System.out.print("( " + modulo_atual + " , " + modulo.estado_atual() + " , " + m_var_atual + "=" + valor_var + " )" + "\t\t");
+					
+				}else{
+					System.out.print("( " + modulo_atual + " , " + modulo.estado_atual() + " )" + "\t\t\t");
+				}
+			}else{
+				if( !m_var_atual.isEmpty() ){
+					String valor_var = m_tabela_var.get(m_var_atual);
+					if(valor_var.isEmpty()){
+						valor_var = "NULL";
+					}
+					System.out.print("( " + modulo_atual + " , " +  m_var_atual + "=" + valor_var + " )" + "\t\t");
+				}else{
+					System.out.print("( " + modulo_atual + " )" + "\t\t\t");
+				}
+			}
+		}else{
+			System.out.print("< " + modulo.estado_atual() + ":\t\t");
+		}
+		System.out.println(mt.toString());
+	}	
+	
+	
+	/*!
+	 *
+	 *	Executa o diagrama
+	 *
+	 *	@param[in]: Uma string contendo o estado inicial da fita
+	 *	@param[in]: O tamanho maximo da fita
+	 *	@param[out]: none
+	 *	return: none
+	 */
+	public void executar(String fita_inicial){
+		if(m_carregado){
+			Maquina mt = new Maquina(fita_inicial);
+			Modulo modulo = null;
+			String ultimo_modulo = "";
+			String var_modulo = "";
+			boolean executando_diagrama = true;
+			boolean executando_modulo = false;
+			int passos = 0;
+			System.out.println("Iniciando.");
+			System.out.println("Modulo inicial: " + m_modulo_atual);
+			System.out.println("Fita: " + mt.toString());
+			System.out.println("");
+			while(executando_diagrama){
+				modulo = m_modulos.get(m_modulo_atual);
+				if(modulo == null){
+					if(!m_modulo_atual.equals("")){
+						ultimo_modulo = m_modulo_atual;
+						modulo = null;
+					}
+					break;
+				}
+				modulo.inicializar();
+				executando_modulo = true;
+				imprime_config_atual(mt, modulo, m_modulo_atual, passos);
+				passos++;
+				while(executando_modulo){
+					var_modulo = String.valueOf(mt.simbolo_atual());
+					//TODO: Variaveis
+					//if(modulo.)
+					if(modulo.executar_passo(mt)){
+						imprime_config_atual(mt,modulo,m_modulo_atual,passos);
+						passos++;
+					}else{
+						ultimo_modulo = m_modulo_atual;
+						executando_modulo = false;
+						executando_diagrama = verifica_prox_modulo(mt);
+					}
+				}			
+			}
+			System.out.println("");
+			passos--;
+			System.out.println("Terminada em: " + passos + " passos.");
+			imprime_config_atual(mt, modulo, ultimo_modulo, passos);
+			System.out.println("");			
+		}
+	}
 	
 	private HashMap<String, RegraDiagrama> m_regras_modulos; 	//!< Hash indexado pelo nome do modulo, contendo as acoes que ele pode realizar.
 	private HashMap<String, Modulo> m_modulos_carregados;		//!< Hash dos modulos carregados, indexado pelo nome do arquivo do modulo.
@@ -303,6 +431,7 @@ public class Diagrama extends Modulo {
 	private boolean m_arquivo_mt;
 	private String m_modulo_atual;
 	private boolean m_carregado;
+	private String m_var_atual;
 
 
 }
