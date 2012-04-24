@@ -20,12 +20,12 @@ public class Modulo extends IModulo {
 	private char m_var = '\0';
 	private int m_max_iter = 0;
 	private int m_curr_iter = 0;
-	public boolean m_recebe_variavel;
+	public boolean m_recebe_var;
 
 	public Modulo() {
 		m_curr_iter = 0;
 		m_quadruplas = new MultiValueMap();
-		m_recebe_variavel = false;
+		m_recebe_var = false;
 	}
 
 	@Override
@@ -110,16 +110,19 @@ public class Modulo extends IModulo {
 	private boolean processa_decl_var(String linha) {
 		if( linha != null ) {
 			StringTokenizer tokenizer = new StringTokenizer(linha);
-
 			if( tokenizer.countTokens() == 2 ) {
 				tokenizer.nextToken();
 				m_var = tokenizer.nextToken().charAt(0);
-				
+				m_recebe_var = true;
 				return true;
 			}
 		}
 		
 		return false;
+	}
+	
+	public boolean recebe_var(){
+		return m_recebe_var;
 	}
 
 	private boolean processa_quad(String linha) {
