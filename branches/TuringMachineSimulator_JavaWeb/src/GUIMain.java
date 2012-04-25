@@ -46,6 +46,7 @@ public class GUIMain extends JApplet implements ActionListener {
 	private JLabel saida_label;
 	@Override
 	public void actionPerformed(ActionEvent evt) {
+		saida_maquina.setText(null);
 		String conteudo = entrada_maquina.getText();
 		Diagrama d = new Diagrama();
 		d.carregar_diagrama_buffer(conteudo);

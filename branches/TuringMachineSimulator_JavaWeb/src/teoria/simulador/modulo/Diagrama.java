@@ -36,7 +36,20 @@ public class Diagrama extends Modulo {
 		}
 		if(abre_arquivo(caminho_arquivo)){
 			if(caminho_arquivo.endsWith(".mt")){
+				int pos = 0;
 				m_arquivo_mt = true;
+				System.out.println("Arquivo .mt detectado.");
+				m_arquivo_mt = true;
+				if(caminho_arquivo.lastIndexOf("/") > caminho_arquivo.lastIndexOf("\\")){
+					pos = caminho_arquivo.lastIndexOf("/");
+				}else{
+					pos = caminho_arquivo.lastIndexOf("\\");
+				}
+				String dir = caminho_arquivo.substring(0, pos+1);
+				if(!carregar_modulo(caminho_arquivo, dir)){
+					System.out.println("Falha ao carregar MT.");					
+					return false;
+				}
 			}
 			if(caminho_arquivo.endsWith(".dt")){
 				String linha_atual;
@@ -253,7 +266,7 @@ public class Diagrama extends Modulo {
 				m_modulo_atual = nome_modulo;
 			}
 		}else{
-			arquivo_modulo = tokens[0];
+			arquivo_modulo = linha_atual.substring(linha_atual.lastIndexOf("\\") + 1,  linha_atual.length());
 			nome_modulo = arquivo_modulo;
 		}
 		if(!m_modulos_carregados.containsKey(arquivo_modulo)){
@@ -438,8 +451,7 @@ public class Diagrama extends Modulo {
 				imprime_config_atual(mt, modulo, m_modulo_atual, passos);
 				passos++;
 				while(executando_modulo){
-					var_modulo = String.valueOf(mt.simbolo_atual());
-					//TODO: Variaveis
+					var_modulo = String.valueOf(mt.simbolo_atual());					
 					if(modulo.recebe_var()){
 						//Caso receba, pega o valor dessa variavel e passa para o modulo						
 						if(m_tabela_var.containsKey(m_var_atual)){
