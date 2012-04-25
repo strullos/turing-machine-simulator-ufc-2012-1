@@ -11,11 +11,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
-import net.miginfocom.swing.MigLayout;
 
 import teoria.simulador.modulo.Diagrama;
 
 import java.io.PrintStream;
+import net.miginfocom.swing.MigLayout;
 
 
 public class TuringMachineSimulatorWebApplet extends JApplet  {
@@ -41,21 +41,21 @@ public class TuringMachineSimulatorWebApplet extends JApplet  {
 		
 		JPanel diagrama_panel = new JPanel();
 		getContentPane().add(diagrama_panel);
-		diagrama_panel.setLayout(new MigLayout("", "[22px][11px][15px][5px][66px][265px][119px]", "[20px][20px][23px][324px][20px][23px]"));
+		diagrama_panel.setLayout(new MigLayout("", "[88px][16px][332px]", "[20px][20px][23px][160px][20px][23px]"));
 		
 		diagrama_fita_textField = new JTextField();
 		diagrama_fita_textField.setColumns(10);
-		diagrama_panel.add(diagrama_fita_textField, "cell 4 0 3 1,growx,aligny top");
+		diagrama_panel.add(diagrama_fita_textField, "cell 2 0,growx,aligny top");
 		
 		JLabel arquivo_diagrama_lblNewLabel = new JLabel("Arquivo diagrama:");
-		diagrama_panel.add(arquivo_diagrama_lblNewLabel, "cell 0 1,growx,aligny center");
+		diagrama_panel.add(arquivo_diagrama_lblNewLabel, "cell 0 1,alignx left,aligny center");
 		
 		arquivo_diagrama_textField = new JTextField();
-		diagrama_panel.add(arquivo_diagrama_textField, "cell 4 1 3 1,growx,aligny top");
+		diagrama_panel.add(arquivo_diagrama_textField, "cell 2 1,growx,aligny top");
 		arquivo_diagrama_textField.setColumns(10);
 		
 		JLabel label_1 = new JLabel("Resultado");
-		diagrama_panel.add(label_1, "cell 0 2 3 1,alignx left,aligny center");
+		diagrama_panel.add(label_1, "cell 0 2,alignx left,aligny center");
 		
 		JLabel label_2 = new JLabel("Log:");
 		diagrama_panel.add(label_2, "cell 0 4,alignx left,aligny center");
@@ -63,10 +63,10 @@ public class TuringMachineSimulatorWebApplet extends JApplet  {
 		diagrama_log_textField = new JTextField();
 		diagrama_log_textField.setEditable(false);
 		diagrama_log_textField.setColumns(10);
-		diagrama_panel.add(diagrama_log_textField, "cell 4 4 3 1,growx,aligny top");
+		diagrama_panel.add(diagrama_log_textField, "cell 2 4,growx,aligny top");
 		
 		JScrollPane diagrama_resultado_scrollPane = new JScrollPane();
-		diagrama_panel.add(diagrama_resultado_scrollPane, "cell 0 3 7 1,grow");
+		diagrama_panel.add(diagrama_resultado_scrollPane, "cell 0 3 3 1,grow");
 		
 		diagrama_resultado_textArea = new JTextArea();
 		diagrama_resultado_textArea.setEditable(false);
@@ -91,7 +91,7 @@ public class TuringMachineSimulatorWebApplet extends JApplet  {
 				}
 			}
 		});
-		diagrama_panel.add(btnCarregarDiagrama, "cell 6 2,growx,aligny top");
+		diagrama_panel.add(btnCarregarDiagrama, "cell 2 2,alignx right,aligny top");
 		
 		JButton diagrama_executar_btn = new JButton("Executar Diagrama");
 		diagrama_executar_btn.addActionListener(new ActionListener() {
@@ -111,7 +111,7 @@ public class TuringMachineSimulatorWebApplet extends JApplet  {
 				}				
 			}
 		});
-		diagrama_panel.add(diagrama_executar_btn, "cell 6 5,alignx center,aligny top");
+		diagrama_panel.add(diagrama_executar_btn, "cell 2 5,alignx right,aligny top");
 		
 		JLabel label = new JLabel("Fita:");
 		diagrama_panel.add(label, "cell 0 0,alignx left,aligny center");		
