@@ -227,10 +227,7 @@ public class Diagrama extends Modulo {
 	}
 	
 	public boolean carregar_modulo(String linha_atual, String dir)
-	{		
-		if(linha_atual.startsWith("#")){
-			
-		}
+	{	
 		String[] tokens = linha_atual.split("\\s");
 		String nome_modulo = "";
 		String arquivo_modulo = "";

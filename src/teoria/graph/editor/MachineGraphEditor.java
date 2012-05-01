@@ -34,13 +34,13 @@ public class MachineGraphEditor extends GraphEditor {
 		add(editor_panel, "cell 0 0 2 1,grow");
 		
 		iniciaGraph(false);
-		editor_panel.setLayout(new MigLayout("", "[549px,grow,fill][150px:n:150px,fill]", "[258px,grow,fill]"));
+		editor_panel.setLayout(new MigLayout("", "[549px,grow,fill][200px:n:200px,fill]", "[258px,grow,fill]"));
 		
 		editor_panel.add(m_graphComponent, "cell 0 0,alignx center,aligny center");		
 		
 		JPanel panel = new JPanel();
 		editor_panel.add(panel, "cell 1 0,grow");
-		panel.setLayout(new MigLayout("", "[133px]", "[23px][][][23px][]"));
+		panel.setLayout(new MigLayout("", "[200px]", "[23px][][][23px][]"));
 		
 		JButton btnNovoNo = new JButton("Adicionar N\u00F3");
 		panel.add(btnNovoNo, "cell 0 0,growx,aligny top");
@@ -79,6 +79,7 @@ public class MachineGraphEditor extends GraphEditor {
 						carregaGraph(dir);						
 						m_diagrama.carregar(dir);
 						m_diagrama.imprime_diagrama();
+						m_salvo = true;
 					} catch (IOException e) {
 						e.printStackTrace();
 					}						
@@ -104,7 +105,9 @@ public class MachineGraphEditor extends GraphEditor {
 					if(returnVal == JFileChooser.APPROVE_OPTION){						
 						dir = fc.getSelectedFile().getAbsolutePath().toString();
 						arquivo_textField.setText(dir);
-						salvaArquivoMt(dir);						
+						salvaArquivoMt(dir);
+						m_diagrama.carregar(dir);
+						m_diagrama.imprime_diagrama();
 					}		
 					
 				} catch (IOException e) {
@@ -113,9 +116,13 @@ public class MachineGraphEditor extends GraphEditor {
 			}
 		});
 		btnNovoNo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				String nome = "q" + String.valueOf(m_count);
-				adicionarVertice(nome,0, 0);
+			public void actionPerformed(ActionEvent evt) {				
+				String nome = "q" + String.valueOf(m_count);				
+				if(m_no_inicial == null){
+					m_no_inicial = adicionarVertice(nome,0, 0);
+				}else{
+					adicionarVertice(nome,0, 0);
+				}
 			}
 		});
 	}	
@@ -137,12 +144,11 @@ public class MachineGraphEditor extends GraphEditor {
 		int pos_separador = 0;
 		boolean primeiro_estado = true;
 		salvaGraph(out);
-		out.write("\r\n");
 		//Itera sobre os estados
 		for(Object o : objs){		
 			vertice = (mxCell)o;	
-			if(primeiro_estado){
-				out.write(vertice.getValue().toString() + " 1000 " + "1000\r\n\r\n");
+			if(primeiro_estado){				
+				out.write(m_no_inicial.toString() + " 1000 " + "1000\r\n\r\n");
 				primeiro_estado = false;
 			}
 			int num_edges = vertice.getEdgeCount();
@@ -173,6 +179,7 @@ public class MachineGraphEditor extends GraphEditor {
 				//out.write(vertice.getValue().toString() + " NULL " + " NULL " + " NULL ");
 			}
 		}
+		m_salvo = true;
 		out.close();
 	}
 

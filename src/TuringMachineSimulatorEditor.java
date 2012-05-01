@@ -11,6 +11,7 @@ import java.awt.Color;
 import javax.swing.JButton;
 
 import teoria.graph.editor.DiagramGraphEditor;
+import teoria.graph.editor.GraphEditor;
 import teoria.graph.editor.MachineGraphEditor;
 import teoria.simulador.modulo.Diagrama;
 
@@ -80,11 +81,17 @@ public class TuringMachineSimulatorEditor extends JApplet {
 			public void actionPerformed(ActionEvent arg0) {
 				String fita = fita_textField.getText();
 				Diagrama d;
+				GraphEditor g;
 				if(tabbedPane.getSelectedIndex() == 0){
-					d = m_diagrama_editor.pegaDiagrama();
+					g = m_diagrama_editor;					
 				}else{
-					d = m_maquina_editor.pegaDiagrama();
-				}				
+					g = m_maquina_editor;
+				}		
+				if(!g.estaSalvo()){
+					System.out.println("Salve o arquivo primeiro.");
+					return;
+				}
+				d = g.pegaDiagrama();
 				d.executar(fita);
 			}
 		});

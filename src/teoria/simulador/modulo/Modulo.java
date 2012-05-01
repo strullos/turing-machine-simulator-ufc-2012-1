@@ -37,6 +37,9 @@ public class Modulo extends IModulo {
 			boolean res = false;
 
 			linha = acha_proxima_linha(reader);
+			while(linha.startsWith("#")){
+				linha = acha_proxima_linha(reader);
+			}
 			res = processa_cabecalho(linha);
 
 			while( res && (linha = acha_proxima_linha(reader)) != null ) {
