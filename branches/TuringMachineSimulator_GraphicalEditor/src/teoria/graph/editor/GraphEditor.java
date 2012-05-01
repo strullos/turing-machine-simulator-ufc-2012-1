@@ -36,10 +36,13 @@ public abstract class GraphEditor extends JPanel {
 	protected JTextField arquivo_textField;
 	protected Object m_no_inicial;
 	protected Diagrama m_diagrama;
+	protected boolean m_salvo;
 	
 	public GraphEditor(){
 		m_vertices = new Vector<Object>();
 		m_diagrama = new Diagrama();
+		m_no_inicial = null;
+		m_salvo = false;
 	}
 	
 	public Diagrama pegaDiagrama(){
@@ -104,7 +107,7 @@ public abstract class GraphEditor extends JPanel {
 			edge = (mxCell)o;
 			out.write("#e " + edge.getValue().toString() + " " + edge.getSource().getValue().toString() + " " + edge.getTarget().getValue().toString() + "\r\n");
 		}
-		out.write("\r\n");
+		out.write("\r\n");		
 	}
 	
 	void ajustaArestas(){
@@ -125,6 +128,10 @@ public abstract class GraphEditor extends JPanel {
 		m_vertices.add(vertice);
 		m_count++;
 		return vertice;
+	}
+	
+	void removerVertice(String nome){
+		
 	}
 	
 	void adicionarAresta(String label,  Object v1, Object v2){
@@ -206,11 +213,19 @@ public abstract class GraphEditor extends JPanel {
 	
 	protected void setaNoInicial(){
 		Object[] selecionados = m_graph.getSelectionCells();
-		if(selecionados.length > 0){
-			m_no_inicial = selecionados[0];
-			mxCell c = (mxCell)selecionados[0];
-			c.setAttribute("fillColor", "#FF0000");
-			System.out.println(c.getValue().toString());
+		if(selecionados.length > 0){			
+			mxCell c;			
+			for(int i = 0; i < m_vertices.size(); i++){
+				c = (mxCell)m_vertices.elementAt(i);
+				m_graph.getModel().setStyle(c, "ROUNDED");
+			}
+			c = (mxCell)selecionados[0];
+			m_graph.getModel().setStyle(c, "ROUNDED;fillColor=#FF0000");
+			m_no_inicial = c.getValue().toString();
 		}
+	}
+	
+	public boolean estaSalvo(){
+		return m_salvo;
 	}
 }

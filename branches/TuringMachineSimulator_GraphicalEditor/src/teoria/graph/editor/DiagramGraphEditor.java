@@ -161,6 +161,7 @@ public class DiagramGraphEditor extends GraphEditor {
 							carregaGraph(caminho_arquivo);							
 							m_diagrama.carregar(caminho_arquivo);
 							m_diagrama.imprime_diagrama();
+							m_salvo = true;
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}						
@@ -185,9 +186,10 @@ public class DiagramGraphEditor extends GraphEditor {
 						if(returnVal == JFileChooser.APPROVE_OPTION){
 							dir = fc.getSelectedFile().getAbsolutePath().toString();
 							arquivo_textField.setText(dir);
-							salvaArquivoDt(dir);						
-						}		
-						
+							salvaArquivoDt(dir);		
+							m_diagrama.carregar(dir);
+							m_diagrama.imprime_diagrama();
+						}						
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -196,8 +198,6 @@ public class DiagramGraphEditor extends GraphEditor {
 			btnNovoNo.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
 					if(!txtNome.getText().isEmpty()){
-						Object parent = m_graph.getDefaultParent();
-						m_graph.getModel().beginUpdate();					
 						String nome = txtNome.getText();
 						String modulo = modulos_comboBox.getSelectedItem().toString();						
 						DiagramaNode novo_no = new DiagramaNode();
@@ -205,18 +205,12 @@ public class DiagramGraphEditor extends GraphEditor {
 						novo_no.m_arquivo_modulo = modulo;
 						Object vertice;
 						if(modulo.equals("#END")){
-							vertice = m_graph.insertVertex(parent, null, "#END", 0, 0, m_tamanho_estado, m_tamanho_estado, "ROUNDED");
-							m_graph.getModel().endUpdate();
+							vertice = adicionarVertice("#END", 0,0);
 							return;
 						}
-						if(m_count == 0){
-							vertice = m_graph.insertVertex(parent, null, nome, 0, 0, m_tamanho_estado, m_tamanho_estado, "ROUNDED;fillColor=#FF0000");
-						}else{
-							vertice = m_graph.insertVertex(parent, null, nome, 0, 0, m_tamanho_estado, m_tamanho_estado, "ROUNDED");
-						}			
+						vertice = adicionarVertice(nome, 0,0);							
 						novo_no.m_vertice = vertice;
 						m_nos.add(novo_no);
-						m_graph.getModel().endUpdate();
 						m_count++;
 					}else{
 						System.out.println("Digite um nome para o novo nó.");
@@ -245,9 +239,12 @@ public class DiagramGraphEditor extends GraphEditor {
 			salvaGraph(out);
 			out.write("\r\n");
 			for(DiagramaNode n : m_nos){
-				out.write("modulo " + n.m_nome + " " + n.m_arquivo_modulo + "\r\n");
+				if(n.m_nome.equals(super.m_no_inicial)){
+					out.write("modulo %" + n.m_nome + " " + n.m_arquivo_modulo + "\r\n");
+				}else{
+					out.write("modulo " + n.m_nome + " " + n.m_arquivo_modulo + "\r\n");
+				}
 			}
-			out.write("\r\n");
 			for(DiagramaNode n : m_nos){
 				vertice = (mxCell)n.m_vertice;
 				int num_edges = vertice.getEdgeCount();
@@ -262,6 +259,7 @@ public class DiagramGraphEditor extends GraphEditor {
 					}
 				}
 			}
+			m_salvo = true;
 			out.close();
 		}	
 		
