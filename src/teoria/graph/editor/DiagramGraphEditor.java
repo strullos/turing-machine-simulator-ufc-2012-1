@@ -176,6 +176,7 @@ public class DiagramGraphEditor extends GraphEditor {
 			propriedades_panel.add(btnCarregar, "cell 0 10,growx");
 			
 			arquivo_textField = new JTextField();
+			arquivo_textField.setEditable(false);
 			add(arquivo_textField, "flowy,cell 1 1,growx");
 			arquivo_textField.setColumns(10);
 			
