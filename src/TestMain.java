@@ -1,94 +1,124 @@
-
-import java.awt.Color;
-import java.awt.Composite;
+import javax.swing.JApplet;
+import javax.swing.JTabbedPane;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.Image;
-import java.awt.Paint;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Stroke;
-import java.awt.RenderingHints.Key;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ImageObserver;
-import java.awt.image.RenderedImage;
-import java.awt.image.renderable.RenderableImage;
-import java.text.AttributedCharacterIterator;
-import java.util.Hashtable;
-import java.util.Map;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
+import net.miginfocom.swing.MigLayout;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.JTextArea;
+import java.awt.Color;
+import javax.swing.JButton;
 
-import org.omg.CORBA.PUBLIC_MEMBER;
+import teoria.graph.editor.DiagramGraphEditor;
+import teoria.graph.editor.GraphEditor;
+import teoria.graph.editor.MachineGraphEditor;
+import teoria.simulador.modulo.Diagrama;
 
-import com.mxgraph.layout.mxParallelEdgeLayout;
-import com.mxgraph.swing.*;
-import com.mxgraph.util.mxConstants;
-import com.mxgraph.view.mxGraph;
-import com.mxgraph.view.mxStylesheet;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.io.PrintStream;
+import javax.swing.JSplitPane;
+import javax.swing.BoxLayout;
+import javax.swing.JScrollPane;
 
-public class TestMain extends JPanel {
-	mxGraph graph;
-	mxGraphComponent graphComponent;
+
+public class TuringMachineSimulatorEditor extends JApplet {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private MachineGraphEditor m_maquina_editor;
+	private DiagramGraphEditor m_diagrama_editor;
+	private JTextField fita_textField;
+	private JTabbedPane tabbedPane;
+	private JTextArea console_textArea;
 
-	public TestMain(){
-		initGUI();
-	}
-	
-	public void initGUI(){
-		setSize(800,600);
-		graph = new mxGraph();
+	/**
+	 * Create the applet.
+	 */
+	public TuringMachineSimulatorEditor() {
+		this.resize(new Dimension(800,600));
+		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
 		
+		JSplitPane splitPane = new JSplitPane();
+		splitPane.setResizeWeight(1.0);
+		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		getContentPane().add(splitPane);		
 		
+		JPanel console_panel = new JPanel();
+		splitPane.setRightComponent(console_panel);
+		console_panel.setLayout(new MigLayout("", "[22px][16px][4px][9px][398px,grow,fill][4px][75px,fill]", "[20px][14px][35px,grow,fill][23px,grow,fill][grow,fill][grow,fill][]"));
+		splitPane.getBottomComponent().setMinimumSize(new Dimension(0,200));
 		
-		graphComponent = new mxGraphComponent(graph);
-		graphComponent.setPreferredSize(new Dimension(400,400));
-	
-		add(graphComponent);
+		JLabel label = new JLabel("Fita:");
+		console_panel.add(label, "cell 0 0,alignx left,growy");
 		
-		graph.getModel().beginUpdate();
-		Object parent = graph.getDefaultParent();
-		mxStylesheet stylesheet = graph.getStylesheet();
-		Hashtable<String, Object> style = new Hashtable<String, Object>();
-		style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
-		style.put(mxConstants.STYLE_OPACITY, 50);
-		style.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+		fita_textField = new JTextField();
+		fita_textField.setText("aabb");
+		fita_textField.setColumns(10);
+		console_panel.add(fita_textField, "cell 4 0 3 1,growx,aligny top");
 		
-		stylesheet.putCellStyle("ROUNDED", style);
-		Object test = new Object();
-		Object v1 = graph.insertVertex(parent, null, "q0", 30, 80, 50, 50, "ROUNDED");
-		Object v2 = graph.insertVertex(parent, "a", "q1", 100, 80, 50, 50, "ROUNDED");
-		Object e1 = graph.insertEdge(parent, null, "A / >", v1, v2,"labelBackgroundColor=white");
-		Object e2 = graph.insertEdge(parent, null, "B / >", v2, v1,"labelBackgroundColor=white");
+		JScrollPane scrollPane = new JScrollPane();
+		console_panel.add(scrollPane, "cell 0 2 7 4,grow");
 		
+		console_textArea = new JTextArea();
+		scrollPane.setViewportView(console_textArea);
+		console_textArea.setRows(1);
+		console_textArea.setColumns(1);
+		console_textArea.setEditable(false);
+		console_textArea.setBackground(Color.WHITE);
+		TextAreaOutputStream console_stream = new TextAreaOutputStream(console_textArea);
 		
-		graph.getModel().endUpdate();
-		graph.setCellsResizable(false);
-		graph.setAllowDanglingEdges(false);
-		graph.setAllowLoops(true);
+		JLabel label_1 = new JLabel("Console:");
+		console_panel.add(label_1, "cell 0 1 3 1,alignx left,aligny top");		
 		
-		mxParallelEdgeLayout layout = new mxParallelEdgeLayout(graph);
-		layout.execute(graph.getDefaultParent());
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		splitPane.setLeftComponent(tabbedPane);
 		
-		Object[] edges = graph.getChildEdges(graph.getDefaultParent());
+		JButton button = new JButton("Executar");
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String fita = fita_textField.getText();
+				Diagrama d;
+				GraphEditor g;
+				if(tabbedPane.getSelectedIndex() == 0){
+					g = m_diagrama_editor;					
+				}else{
+					g = m_maquina_editor;
+				}		
+				if(!g.estaSalvo()){
+					System.out.println("Salve o arquivo primeiro.");
+					return;
+				}
+				d = g.pegaDiagrama();
+				d.executar(fita);
+			}
+		});
 		
-		for(Object e : edges){
-			System.out.println(graph.getView().getState(e,true).getLabel());
-		}
+		JButton btnLimparConsole = new JButton("Limpar Console");
+		btnLimparConsole.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				console_textArea.setText(null);
+			}
+		});
+		console_panel.add(btnLimparConsole, "cell 0 6");
 		
+		console_panel.add(button, "cell 6 6,alignx left,aligny top");
+		
+		JPanel editorDiagrama_panel = new JPanel();
+		tabbedPane.addTab("Editor de Diagramas", null, editorDiagrama_panel, null);
+		editorDiagrama_panel.setLayout(new MigLayout("", "[513.00px,grow]", "[301.00px,grow,fill]"));
+		m_diagrama_editor = new DiagramGraphEditor();
+		editorDiagrama_panel.add(m_diagrama_editor, "cell 0 0,growx,aligny top");
+		
+		JPanel editorMaquina_panel = new JPanel();
+		tabbedPane.addTab("Editor de Máquinas", null, editorMaquina_panel, null);		
+		editorMaquina_panel.setLayout(new MigLayout("", "[70px,grow][356px,grow]", "[251.00px,grow,fill][25.00px][19px][15px]"));
+		m_maquina_editor = new MachineGraphEditor();
+		
+		editorMaquina_panel.add(m_maquina_editor, "cell 0 0 2 4,grow");
+		PrintStream outStream = new PrintStream(console_stream, true);
+		System.setOut(outStream);			
 	}
 }
