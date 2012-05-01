@@ -1,7 +1,6 @@
 package teoria.simulador.modulo;
 
 import java.util.HashMap;
-import java.util.Map;
 import teoria.simulador.modulo.DescritorRegra;
 
 public class RegraDiagrama {

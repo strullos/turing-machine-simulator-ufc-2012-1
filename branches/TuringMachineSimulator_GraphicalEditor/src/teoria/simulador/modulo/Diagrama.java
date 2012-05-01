@@ -1,12 +1,9 @@
 package teoria.simulador.modulo;
 
 import java.io.*;
-import java.sql.Array;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Vector;
 
 import teoria.simulador.maquina.Maquina;
@@ -23,30 +20,43 @@ public class Diagrama extends Modulo {
 		}
 		if(abre_arquivo(caminho_arquivo)){
 			if(caminho_arquivo.endsWith(".mt")){
+				int pos = 0;
+				System.out.println("Arquivo .mt detectado.");
 				m_arquivo_mt = true;
+				if(caminho_arquivo.lastIndexOf("/") > caminho_arquivo.lastIndexOf("\\")){
+					pos = caminho_arquivo.lastIndexOf("/");
+				}else{
+					pos = caminho_arquivo.lastIndexOf("\\");
+				}
+				String dir = caminho_arquivo.substring(0, pos+1);
+				if(!carregar_modulo(caminho_arquivo, dir)){
+					System.out.println("Falha ao carregar MT.");					
+					return false;
+				}
 			}
 			if(caminho_arquivo.endsWith(".dt")){
 				String linha_atual;
 				for(int i = 0; i < m_linhas_arquivo; i++){					
 					linha_atual = m_dados_arquivo[i];
-					System.out.println("Linha atual: " + linha_atual);
-					int pos = 0;
-					if(caminho_arquivo.lastIndexOf("/") > caminho_arquivo.lastIndexOf("\\")){
-						pos = caminho_arquivo.lastIndexOf("/");
-					}else{
-						pos = caminho_arquivo.lastIndexOf("\\");
-					}
-					String dir = caminho_arquivo.substring(0, pos+1);
-					if(linha_atual.contains("modulo")){
-						if(!carregar_modulo(linha_atual, dir)){
-							System.out.println("Falha ao carregar modulo");
-							return false;
+					if(!linha_atual.startsWith("#")){
+						int pos = 0;
+						if(caminho_arquivo.lastIndexOf("/") > caminho_arquivo.lastIndexOf("\\")){
+							pos = caminho_arquivo.lastIndexOf("/");
+						}else{
+							pos = caminho_arquivo.lastIndexOf("\\");
 						}
-					}else{
-						if(!linha_atual.isEmpty() && (!linha_atual.equals("\n"))) {
-							if(!carregar_regra(linha_atual)){
-								System.out.println("Falha ao carregar regra");
+						String dir = caminho_arquivo.substring(0, pos+1);
+						if(linha_atual.contains("modulo")){
+							if(!carregar_modulo(linha_atual, dir)){
+								System.out.println("Falha ao carregar modulo");
 								return false;
+							}
+						}else{
+							if(!linha_atual.isEmpty() && (!linha_atual.equals("\n"))) {
+								if(!carregar_regra(linha_atual)){
+									System.out.println("Falha ao carregar regra");
+									return false;
+								}
 							}
 						}
 					}
@@ -91,7 +101,7 @@ public class Diagrama extends Modulo {
 		Vector<String> lista_de_simbolos = new Vector<String>();
 		String simbolos = "";
 		String modulo_final = "";
-		tokens = linha_regra.split("[\\s0-9+-]+");
+		tokens = linha_regra.split("\\s");
 		modulo_inicial = tokens[0];
 		simbolos = tokens[1];
 		modulo_final = tokens[2];
@@ -204,7 +214,7 @@ public class Diagrama extends Modulo {
 	
 	public boolean carregar_modulo(String linha_atual, String dir)
 	{		
-		String[] tokens = linha_atual.split("[\\s0-9+-]+");
+		String[] tokens = linha_atual.split("\\s");
 		String nome_modulo = "";
 		String arquivo_modulo = "";
 		boolean modulo_inicial_especificado = false;
