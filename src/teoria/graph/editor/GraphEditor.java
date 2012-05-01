@@ -214,7 +214,10 @@ public abstract class GraphEditor extends JPanel {
 	protected void setaNoInicial(){
 		Object[] selecionados = m_graph.getSelectionCells();
 		if(selecionados.length > 0){			
-			mxCell c;			
+			mxCell c = (mxCell)selecionados[0];
+			if(c.isEdge()){
+				return;
+			}
 			for(int i = 0; i < m_vertices.size(); i++){
 				c = (mxCell)m_vertices.elementAt(i);
 				m_graph.getModel().setStyle(c, "ROUNDED");

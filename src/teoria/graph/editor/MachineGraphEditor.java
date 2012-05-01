@@ -15,6 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MachineGraphEditor extends GraphEditor {
 	/**
@@ -45,7 +46,7 @@ public class MachineGraphEditor extends GraphEditor {
 		JButton btnNovoNo = new JButton("Adicionar N\u00F3");
 		panel.add(btnNovoNo, "cell 0 0,growx,aligny top");
 		
-		JButton btnRemoverSelecionado = new JButton("Remover Selecionado");
+		JButton btnRemoverSelecionado = new JButton("Remover Item Selecionado");
 		btnRemoverSelecionado.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Object[] selecionados = m_graph.getSelectionCells();				
@@ -69,6 +70,10 @@ public class MachineGraphEditor extends GraphEditor {
 		btnCarregar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				JFileChooser fc = new JFileChooser(new File("."));		
+				FileNameExtensionFilter filter = new FileNameExtensionFilter(
+				        "Arquivos de Máquina (.mt)", "mt");
+				fc.setFileFilter(filter);
+				fc.setAcceptAllFileFilterUsed(false);
 				//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				int returnVal = fc.showOpenDialog(null);
 				String dir;
@@ -98,7 +103,11 @@ public class MachineGraphEditor extends GraphEditor {
 		btnSalvar.addActionListener(new ActionListener() {			
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-					JFileChooser fc = new JFileChooser(new File("."));		
+					JFileChooser fc = new JFileChooser(new File("."));
+					FileNameExtensionFilter filter = new FileNameExtensionFilter(
+					        "Arquivos de Máquina (.mt)", "mt");
+					fc.setFileFilter(filter);
+					fc.setAcceptAllFileFilterUsed(false);
 					//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 					int returnVal = fc.showSaveDialog(null);
 					String dir;
