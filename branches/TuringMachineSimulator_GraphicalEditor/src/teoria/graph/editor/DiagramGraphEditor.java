@@ -22,6 +22,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class DiagramGraphEditor extends GraphEditor {	
 		/**
@@ -114,7 +115,7 @@ public class DiagramGraphEditor extends GraphEditor {
 			});
 			propriedades_panel.add(btnMarcarNoInicial, "flowy,cell 0 6,growx");
 			
-			JButton btnRemoverN = new JButton("Remover Selecionado");
+			JButton btnRemoverN = new JButton("Remover Item Selecionado");
 			btnRemoverN.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					Object[] selecionados = m_graph.getSelectionCells();
@@ -140,7 +141,11 @@ public class DiagramGraphEditor extends GraphEditor {
 			JButton btnCarregar = new JButton("Carregar .dt");
 			btnCarregar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					JFileChooser fc = new JFileChooser(new File("."));					
+					JFileChooser fc = new JFileChooser(new File("."));		
+					FileNameExtensionFilter filter = new FileNameExtensionFilter(
+					        "Arquivos de Diagrama (.dt)", "dt");
+					fc.setFileFilter(filter);
+					fc.setAcceptAllFileFilterUsed(false);
 					int returnVal = fc.showOpenDialog(null);
 					String caminho_arquivo;
 					if(returnVal == JFileChooser.APPROVE_OPTION){
@@ -181,6 +186,10 @@ public class DiagramGraphEditor extends GraphEditor {
 					try {
 						JFileChooser fc = new JFileChooser(new File("."));		
 						//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+						FileNameExtensionFilter filter = new FileNameExtensionFilter(
+						        "Arquivos de Diagrama (.dt)", "dt");
+						fc.setFileFilter(filter);
+						fc.setAcceptAllFileFilterUsed(false);
 						int returnVal = fc.showSaveDialog(null);
 						String dir;
 						if(returnVal == JFileChooser.APPROVE_OPTION){
