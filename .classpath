@@ -5,6 +5,6 @@
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="miglayout15-swing.jar" sourcepath="miglayout-src.zip"/>
-	<classpathentry kind="lib" path="/media/Vitor/Comp 2012.1/Teoria da Computação/Implementações/jgraphx/lib/jgraphx.jar"/>
+	<classpathentry kind="lib" path="E:/Comp 2012.1/Teoria da Computação/Implementações/jgraphx/lib/jgraphx.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
