@@ -16,7 +16,7 @@ public class Diagrama extends Modulo {
 	@Override
 	public boolean carregar(String caminho_arquivo) {
 		if(m_carregado){
-			limpar();
+			limpa();
 		}
 		if(abre_arquivo(caminho_arquivo)){
 			if(caminho_arquivo.endsWith(".mt")){
@@ -29,7 +29,8 @@ public class Diagrama extends Modulo {
 					pos = caminho_arquivo.lastIndexOf("\\");
 				}
 				String dir = caminho_arquivo.substring(0, pos+1);
-				if(!carregar_modulo(caminho_arquivo, dir)){
+				String nome_arquivo = caminho_arquivo.substring(pos+1,caminho_arquivo.length());
+				if(!carregar_modulo(nome_arquivo, dir)){
 					System.out.println("Falha ao carregar MT.");					
 					return false;
 				}
@@ -91,6 +92,15 @@ public class Diagrama extends Modulo {
 		return null;
 	}
 	
+	void limpa(){
+		m_regras_modulos.clear();
+		m_modulos_carregados.clear();
+		m_modulos.clear();
+		m_tabela_var.clear();
+		m_carregado = false;
+		m_var_atual = "";
+	}
+	
 	public boolean carregar_regra(String linha_regra){
 		String[] tokens;
 		boolean atualiza_var = false;
@@ -106,6 +116,10 @@ public class Diagrama extends Modulo {
 		simbolos = tokens[1];
 		modulo_final = tokens[2];
 		
+		if(tokens.length != 3){
+			System.out.println("Erro lendo instrução de carregamento de regra. Regra mal formatada: " + linha_regra);
+			return false;
+		}
 		if(modulo_inicial.isEmpty() || simbolos.isEmpty() || modulo_final.isEmpty() ){
 			System.out.println("Erro lendo instrução de carregamento de regra. Regra incompleta: " + linha_regra);
 			return false;
@@ -208,12 +222,15 @@ public class Diagrama extends Modulo {
 		}
 	}	
 
-	public void limpar(){
-		
+	public void reseta(){
+		m_modulo_atual = m_modulo_inicial;
 	}
 	
 	public boolean carregar_modulo(String linha_atual, String dir)
 	{		
+		if(linha_atual.startsWith("#")){
+			
+		}
 		String[] tokens = linha_atual.split("\\s");
 		String nome_modulo = "";
 		String arquivo_modulo = "";
@@ -226,6 +243,7 @@ public class Diagrama extends Modulo {
 				nome_modulo = nome_modulo.substring(1,nome_modulo.length());
 				modulo_inicial_especificado = true;
 				m_modulo_atual = nome_modulo;
+				m_modulo_inicial = nome_modulo;
 			}
 		}else{
 			arquivo_modulo = tokens[0];
@@ -249,6 +267,7 @@ public class Diagrama extends Modulo {
 				m_modulos.put(nome_modulo, novo_modulo);
 				if((m_modulos_carregados.size() == 1) && (modulo_inicial_especificado == false)){
 					m_modulo_atual = nome_modulo;
+					m_modulo_inicial = nome_modulo;
 				}
 			}else{
 				System.out.println("Uma referencia com esse nome ja existe. Ignorando referencia duplicada.");
@@ -388,6 +407,7 @@ public class Diagrama extends Modulo {
 	 */
 	public void executar(String fita_inicial){
 		if(m_carregado){
+			reseta();
 			Maquina mt = new Maquina(fita_inicial);
 			Modulo modulo = null;
 			String ultimo_modulo = "";
@@ -454,6 +474,7 @@ public class Diagrama extends Modulo {
 	private String m_modulo_atual;
 	private boolean m_carregado;
 	private String m_var_atual;
+	private String m_modulo_inicial;
 
 
 }

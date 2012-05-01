@@ -22,8 +22,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
 
 public class DiagramGraphEditor extends GraphEditor {	
 		/**
@@ -53,14 +51,14 @@ public class DiagramGraphEditor extends GraphEditor {
 			JPanel editor_panel = new JPanel();
 			add(editor_panel, "cell 0 0 2 1,grow");
 			
-			iniciaGraph();
-			editor_panel.setLayout(new MigLayout("", "[258.00px,grow,fill][150px:n:150px,grow,fill]", "[67.00px,grow,fill]"));
+			iniciaGraph(true);
+			editor_panel.setLayout(new MigLayout("", "[258.00px,grow,fill][200px:n:200px,grow,fill]", "[67.00px,grow,fill]"));
 			
 			editor_panel.add(m_graphComponent, "cell 0 0,alignx center,aligny center");		
 			
 			JPanel propriedades_panel = new JPanel();
 			editor_panel.add(propriedades_panel, "cell 1 0,grow");
-			propriedades_panel.setLayout(new MigLayout("", "[200px]", "[14px][20px][14px][20px][][][][]"));
+			propriedades_panel.setLayout(new MigLayout("", "[225px]", "[14px][20px][14px][20px][][][][][][][]"));
 			
 			JLabel lblNome = new JLabel("Nome:");
 			propriedades_panel.add(lblNome, "cell 0 0,alignx left,aligny top");
@@ -74,28 +72,70 @@ public class DiagramGraphEditor extends GraphEditor {
 			propriedades_panel.add(lblMdulo, "cell 0 2,alignx left,aligny top");
 			
 			modulos_comboBox = new JComboBox<String>();
-			modulos_comboBox.addItemListener(new ItemListener() {
-				public void itemStateChanged(ItemEvent arg0) {
-					String selecionado = modulos_comboBox.getSelectedItem().toString();
-					if(selecionado.equals("#END")){
-						txtNome.setText("#END");
-						txtNome.setEnabled(false);
-					}else{						
-						txtNome.setEnabled(true);
+			modulos_comboBox.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(modulos_comboBox.getItemCount() > 0){
+						String selecionado = modulos_comboBox.getSelectedItem().toString();
+						if(selecionado.equals("#END")){
+							txtNome.setText("#END");
+							txtNome.setEnabled(false);
+						}else{						
+							txtNome.setEnabled(true);
+						}
 					}
 				}
-			});
+			});		
 			modulos_comboBox.setEnabled(false);
 			propriedades_panel.add(modulos_comboBox, "cell 0 3,growx,aligny top");
+			
+			JButton btnProcurarMdulos = new JButton("Procurar M\u00F3dulos");
+			propriedades_panel.add(btnProcurarMdulos, "flowy,cell 0 4,growx");
+			btnProcurarMdulos.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					JFileChooser fc = new JFileChooser(new File("."));						
+					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					int returnVal = fc.showOpenDialog(null);
+					String dir;
+					if(returnVal == JFileChooser.APPROVE_OPTION){
+						dir = fc.getSelectedFile().getAbsolutePath().toString();
+						procuraModulos(dir);						
+					}					
+				}
+			});
 			
 			JButton btnNovoNo = new JButton("Adicionar N\u00F3");
 			propriedades_panel.add(btnNovoNo, "cell 0 4,grow");
 			
-			JButton btnProcurarMdulos = new JButton("Procurar M\u00F3dulos");
-			propriedades_panel.add(btnProcurarMdulos, "cell 0 5,growx");
+			JButton btnMarcarNoInicial = new JButton("Marcar N\u00F3 Inicial");
+			btnMarcarNoInicial.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					setaNoInicial();
+				}
+			});
+			propriedades_panel.add(btnMarcarNoInicial, "flowy,cell 0 6,growx");
+			
+			JButton btnRemoverN = new JButton("Remover Selecionado");
+			btnRemoverN.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					Object[] selecionados = m_graph.getSelectionCells();
+					String nome;
+					mxCell no;
+					for(int i = 0; i < selecionados.length; i++){
+						no = (mxCell)(selecionados[i]);
+						nome = no.getValue().toString();
+						for(int j = 0; j < m_nos.size(); j++){
+							if(nome.equals(m_nos.elementAt(j).m_nome)){
+								m_nos.removeElementAt(j);
+							}						
+						}
+					}
+					m_graph.removeCells(selecionados);
+				}
+			});
+			propriedades_panel.add(btnRemoverN, "cell 0 7,growx");
 			
 			JButton btnSalvar = new JButton("Salvar .dt");
-			propriedades_panel.add(btnSalvar, "cell 0 6,growx");
+			propriedades_panel.add(btnSalvar, "cell 0 9,growx");
 			
 			JButton btnCarregar = new JButton("Carregar .dt");
 			btnCarregar.addActionListener(new ActionListener() {
@@ -118,14 +158,16 @@ public class DiagramGraphEditor extends GraphEditor {
 							String dir = caminho_arquivo.substring(0, index3);
 							procuraModulos(dir);
 							resetaGraph();
-							carregaGraph(caminho_arquivo);
+							carregaGraph(caminho_arquivo);							
+							m_diagrama.carregar(caminho_arquivo);
+							m_diagrama.imprime_diagrama();
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}						
 					}			
 				}
 			});
-			propriedades_panel.add(btnCarregar, "cell 0 7,growx");
+			propriedades_panel.add(btnCarregar, "cell 0 10,growx");
 			
 			arquivo_textField = new JTextField();
 			add(arquivo_textField, "flowy,cell 1 1,growx");
@@ -149,18 +191,6 @@ public class DiagramGraphEditor extends GraphEditor {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-				}
-			});
-			btnProcurarMdulos.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					JFileChooser fc = new JFileChooser(new File("."));						
-					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-					int returnVal = fc.showOpenDialog(null);
-					String dir;
-					if(returnVal == JFileChooser.APPROVE_OPTION){
-						dir = fc.getSelectedFile().getAbsolutePath().toString();
-						procuraModulos(dir);						
-					}					
 				}
 			});
 			btnNovoNo.addActionListener(new ActionListener() {
@@ -238,7 +268,7 @@ public class DiagramGraphEditor extends GraphEditor {
 		
 		public void procuraModulos(String dir){
 			modulos_comboBox.setEnabled(false);
-			modulos_comboBox = new JComboBox<String>();
+			modulos_comboBox.removeAllItems();
 			txtNome.setEnabled(false);
 			File actual = new File(dir);
 			//Procura no diretorio atual por arquivos .mt
@@ -252,7 +282,8 @@ public class DiagramGraphEditor extends GraphEditor {
 	        }
 	        if(m_lista_de_modulos.isEmpty()){
 	        	System.out.println("Nenhum modulo encontrado no diretorio.");
-	        }else{	        	
+	        }else{
+	        	
 	        	for(String s : m_lista_de_modulos){
 	        		modulos_comboBox.addItem(s);
 	        	}

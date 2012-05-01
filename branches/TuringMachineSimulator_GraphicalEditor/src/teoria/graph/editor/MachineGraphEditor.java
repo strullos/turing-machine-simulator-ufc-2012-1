@@ -1,7 +1,5 @@
 package teoria.graph.editor;
 
-import java.util.Vector;
-
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JButton;
@@ -18,7 +16,6 @@ import java.io.IOException;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-
 public class MachineGraphEditor extends GraphEditor {
 	/**
 	 * 
@@ -30,27 +27,43 @@ public class MachineGraphEditor extends GraphEditor {
 	 * Create the frame.
 	 */
 	public MachineGraphEditor() {
-		m_vertices = new Vector<Object>();
 		setBackground(Color.LIGHT_GRAY);
 		setLayout(new MigLayout("", "[48.00px,fill][grow,fill]", "[263.00px,grow][27.00px]"));
 		
 		JPanel editor_panel = new JPanel();
 		add(editor_panel, "cell 0 0 2 1,grow");
 		
-		iniciaGraph();
+		iniciaGraph(false);
 		editor_panel.setLayout(new MigLayout("", "[549px,grow,fill][150px:n:150px,fill]", "[258px,grow,fill]"));
 		
 		editor_panel.add(m_graphComponent, "cell 0 0,alignx center,aligny center");		
 		
 		JPanel panel = new JPanel();
 		editor_panel.add(panel, "cell 1 0,grow");
-		panel.setLayout(new MigLayout("", "[133px]", "[23px][23px][]"));
+		panel.setLayout(new MigLayout("", "[133px]", "[23px][][][23px][]"));
 		
 		JButton btnNovoNo = new JButton("Adicionar N\u00F3");
 		panel.add(btnNovoNo, "cell 0 0,growx,aligny top");
 		
+		JButton btnRemoverSelecionado = new JButton("Remover Selecionado");
+		btnRemoverSelecionado.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Object[] selecionados = m_graph.getSelectionCells();				
+				m_graph.removeCells(selecionados);
+			}
+		});
+		panel.add(btnRemoverSelecionado, "cell 0 1,growx");
+		
+		JButton btnMarcarNInicial = new JButton("Marcar N\u00F3 Inicial");
+		btnMarcarNInicial.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setaNoInicial();
+			}
+		});
+		panel.add(btnMarcarNInicial, "cell 0 2,growx");
+		
 		JButton btnSalvar = new JButton("Salvar .mt");
-		panel.add(btnSalvar, "cell 0 1,growx,aligny top");
+		panel.add(btnSalvar, "cell 0 3,growx,aligny top");
 		
 		JButton btnCarregar = new JButton("Carregar .mt");
 		btnCarregar.addActionListener(new ActionListener() {
@@ -63,19 +76,22 @@ public class MachineGraphEditor extends GraphEditor {
 					dir = fc.getSelectedFile().getAbsolutePath().toString();
 					arquivo_textField.setText(dir);
 					try {
-						carregaGraph(dir);
+						carregaGraph(dir);						
+						m_diagrama.carregar(dir);
+						m_diagrama.imprime_diagrama();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}						
 				}		
 			}
 		});
-		panel.add(btnCarregar, "cell 0 2,growx");
+		panel.add(btnCarregar, "cell 0 4,growx");
 		
 		JLabel lblArquivo = new JLabel("Arquivo:");
 		add(lblArquivo, "flowx,cell 0 1,alignx trailing");
 		
 		arquivo_textField = new JTextField();
+		arquivo_textField.setEditable(false);
 		add(arquivo_textField, "cell 1 1,growx");
 		arquivo_textField.setColumns(10);
 		btnSalvar.addActionListener(new ActionListener() {			
