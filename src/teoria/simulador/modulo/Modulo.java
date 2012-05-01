@@ -23,7 +23,7 @@ public class Modulo extends IModulo {
 	public boolean m_recebe_var;
 
 	public Modulo() {
-		m_curr_iter = 0;
+		setaCurrIter(0);
 		m_quadruplas = new MultiValueMap();
 		m_recebe_var = false;
 	}
@@ -64,7 +64,7 @@ public class Modulo extends IModulo {
 	@Override
 	public void inicializar() {
 		m_estado_atual = m_estado_inicial;
-		m_curr_iter = 0;
+		setaCurrIter(0);
 	}
 
 	@Override
@@ -72,7 +72,8 @@ public class Modulo extends IModulo {
 		boolean ret = false;
 		
 		if( m_quadruplas.containsKey(m_estado_atual) ) {
-			Iterator<Quadrupla> iter = ((Collection) m_quadruplas.get(m_estado_atual)).iterator();
+			@SuppressWarnings("unchecked")
+			Iterator<Quadrupla> iter = ((Collection<Quadrupla>) m_quadruplas.get(m_estado_atual)).iterator();
 			Quadrupla quad = null;
 			
 			while( iter.hasNext() ) {
@@ -102,7 +103,7 @@ public class Modulo extends IModulo {
 
 			if( tokenizer.countTokens() == 3 ) {
 				m_estado_inicial = tokenizer.nextToken();
-				m_max_iter = Integer.parseInt(tokenizer.nextToken());
+				setaMaxIter(Integer.parseInt(tokenizer.nextToken()));
 				return true;
 			}
 		}
@@ -139,7 +140,8 @@ public class Modulo extends IModulo {
 				char acao = tokenizer.nextToken().charAt(0);
 
 				if( m_quadruplas.containsKey(estado1) ) {
-					Iterator<Quadrupla> iter = ((Collection)m_quadruplas.get(estado1)).iterator();
+					@SuppressWarnings("unchecked")
+					Iterator<Quadrupla> iter = ((Collection<Quadrupla>)m_quadruplas.get(estado1)).iterator();
 					while(iter.hasNext()) {
 						Quadrupla quad = (Quadrupla) iter.next();
 						if( quad.simbolo == '*' || quad.simbolo == simbolo ) {
@@ -162,6 +164,22 @@ public class Modulo extends IModulo {
 		while( (ret = reader.readLine()) != null && (ret.isEmpty() || ret.equals("\n") || ret.equals("\r") || ret.equals("\r\n")) );
 
 		return ret;
+	}
+
+	public int pegaMaxIter() {
+		return m_max_iter;
+	}
+
+	public void setaMaxIter(int m_max_iter) {
+		this.m_max_iter = m_max_iter;
+	}
+
+	public int pegaCurrIter() {
+		return m_curr_iter;
+	}
+
+	public void setaCurrIter(int m_curr_iter) {
+		this.m_curr_iter = m_curr_iter;
 	}
 
 	private class Quadrupla {
