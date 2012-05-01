@@ -9,6 +9,8 @@ import java.util.Vector;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import teoria.simulador.modulo.Diagrama;
+
 import com.mxgraph.layout.mxParallelEdgeLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
@@ -32,9 +34,16 @@ public abstract class GraphEditor extends JPanel {
 	protected int m_count = 0;	
 	protected static int m_tamanho_estado = 50; 
 	protected JTextField arquivo_textField;
+	protected Object m_no_inicial;
+	protected Diagrama m_diagrama;
 	
 	public GraphEditor(){
 		m_vertices = new Vector<Object>();
+		m_diagrama = new Diagrama();
+	}
+	
+	public Diagrama pegaDiagrama(){
+		return m_diagrama;
 	}
 	
 	public abstract String pegaNomeDiagrama();
@@ -53,8 +62,10 @@ public abstract class GraphEditor extends JPanel {
 		String v1;
 		String v2;
 		Hashtable<String, Object> nos = new Hashtable<String, Object>();
+		boolean tem_graph_info = false;
 		while((linha = reader.readLine()) != null){
 			if(linha.startsWith("#o")){
+				tem_graph_info = true;
 				tokens = linha.split("\\s");
 				if(tokens.length == 4){
 					nome = tokens[1];
@@ -72,6 +83,11 @@ public abstract class GraphEditor extends JPanel {
 					adicionarAresta(nome, nos.get(v1), nos.get(v2));
 				}
 			}
+		}
+		if(!tem_graph_info){
+			System.out.println("Não é possível exibir o grafo: ");
+			System.out.println("O arquivo carregado não tem informações de grafo.");
+			
 		}
 	}
 	
@@ -122,7 +138,7 @@ public abstract class GraphEditor extends JPanel {
 		m_graph.removeCells(m_graph.getChildCells(m_graph.getDefaultParent(), true, true));
 	}
 	
-	void iniciaGraph()
+	void iniciaGraph(final boolean graph_dt)
 	{
 		m_graph = new mxGraph();/* {
 			@Override
@@ -177,10 +193,24 @@ public abstract class GraphEditor extends JPanel {
 			@Override
 			public void invoke(Object arg0, mxEventObject evt) {
 				mxCell cell = (mxCell) evt.getProperty("cell");
-				cell.setValue("[a,b]");					
+				if(graph_dt){
+					cell.setValue("[a,b]");
+				}else{
+					cell.setValue("[a,b];>");
+				}
 				ajustaArestas();
 				
 			}
 		});		
+	}
+	
+	protected void setaNoInicial(){
+		Object[] selecionados = m_graph.getSelectionCells();
+		if(selecionados.length > 0){
+			m_no_inicial = selecionados[0];
+			mxCell c = (mxCell)selecionados[0];
+			c.setAttribute("fillColor", "#FF0000");
+			System.out.println(c.getValue().toString());
+		}
 	}
 }

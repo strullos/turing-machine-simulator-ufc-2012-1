@@ -31,6 +31,7 @@ public class TuringMachineSimulatorEditor extends JApplet {
 	private DiagramGraphEditor m_diagrama_editor;
 	private JTextField fita_textField;
 	private JTabbedPane tabbedPane;
+	private JTextArea console_textArea;
 
 	/**
 	 * Create the applet.
@@ -60,7 +61,7 @@ public class TuringMachineSimulatorEditor extends JApplet {
 		JScrollPane scrollPane = new JScrollPane();
 		console_panel.add(scrollPane, "cell 0 2 7 4,grow");
 		
-		JTextArea console_textArea = new JTextArea();
+		console_textArea = new JTextArea();
 		scrollPane.setViewportView(console_textArea);
 		console_textArea.setRows(1);
 		console_textArea.setColumns(1);
@@ -78,18 +79,23 @@ public class TuringMachineSimulatorEditor extends JApplet {
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String fita = fita_textField.getText();
-				Diagrama d = new Diagrama();
-				String arquivo;
+				Diagrama d;
 				if(tabbedPane.getSelectedIndex() == 0){
-					arquivo = m_diagrama_editor.pegaNomeDiagrama();
+					d = m_diagrama_editor.pegaDiagrama();
 				}else{
-					arquivo = m_maquina_editor.pegaNomeDiagrama();
-				}
-				d.carregar(arquivo);		
-				d.imprime_diagrama();
+					d = m_maquina_editor.pegaDiagrama();
+				}				
 				d.executar(fita);
 			}
 		});
+		
+		JButton btnLimparConsole = new JButton("Limpar Console");
+		btnLimparConsole.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				console_textArea.setText(null);
+			}
+		});
+		console_panel.add(btnLimparConsole, "cell 0 6");
 		
 		console_panel.add(button, "cell 6 6,alignx left,aligny top");
 		
