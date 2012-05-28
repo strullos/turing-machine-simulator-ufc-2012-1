@@ -1,7 +1,0 @@
-modulo %R r.mt
-modulo R# r#.mt
-modulo W wx.mt
-
-R [x=a,b] R#
-R# [*] W(x)
-W [*] END
