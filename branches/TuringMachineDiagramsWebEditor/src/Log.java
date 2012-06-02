@@ -15,6 +15,7 @@ public class Log {
 	
 	public void writeLn(String line){
 		content.add(line + "\n");
+		System.out.println(line);
 	}
 	
 	public void clear(){

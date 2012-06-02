@@ -1,7 +1,7 @@
 import java.util.Vector;
 
 
-public class Diagram implements Module {
+public class Diagram extends Module {
 
 	@Override
 	public boolean loadFromFile(String filename) {
@@ -10,7 +10,7 @@ public class Diagram implements Module {
 	}
 
 	@Override
-	public boolean loadFromString(Vector<String> content) {
+	public boolean load(Vector<String> content) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -37,6 +37,31 @@ public class Diagram implements Module {
 	public boolean processHeader(String line) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public boolean loadFromString(String text) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+
+	@Override
+	public boolean execute(Tape t) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void printStep(Tape t) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void printSummary(Tape t) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

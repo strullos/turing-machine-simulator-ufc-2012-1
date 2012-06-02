@@ -8,12 +8,14 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 
-public class Machine implements Module {
+public class Machine extends Module {
 	
 	Machine(){ 
 		m_rules = new HashMap<String, MachineRule>();
-		m_initial_state = "q0";
+		m_initial_state = "";
 		m_current_state = m_initial_state;
+		m_variable = "";
+		m_variable_value = "";
 	}
 	
 	@Override
@@ -26,7 +28,7 @@ public class Machine implements Module {
 				content.add(line);
 			}
 			
-			return loadFromString(content);
+			return load(content);
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -40,12 +42,14 @@ public class Machine implements Module {
 	}
 
 	@Override
-	public boolean loadFromString(Vector<String> content) {
+	public boolean load(Vector<String> content) {
 		Iterator<String> it = content.iterator();
 		String line;		
 		while( it.hasNext() ){
+			m_current_line++;
 			line = it.next();
 			if(processHeader(line)) continue;
+			if(processVarDeclaration(line)) continue;
 			if(processRule(line)) continue;
 			m_log.writeLn("Failed to load machine file while reading line " + m_current_line + ":" + line);
 			return false;
@@ -54,10 +58,32 @@ public class Machine implements Module {
 	}
 	
 	@Override
+	public boolean loadFromString(String text){
+		Vector<String> content = new Vector<String>();
+		StringTokenizer lines = new StringTokenizer(text,"\n");
+		while( lines.hasMoreTokens() ){
+			content.add(lines.nextToken());
+		}
+		return load(content);		
+	}
+	
+	@Override
 	public boolean processHeader(String line) {
-		// TODO Auto-generated method stub
+		StringTokenizer tokens = new StringTokenizer(line);
+		m_initial_state = tokens.nextToken();
+		m_max_steps = Integer.parseInt(tokens.nextToken());
 		return false;
 	}	
+	
+	public boolean processVarDeclaration(String line){
+		StringTokenizer tokens = new StringTokenizer(line);
+		if(tokens.countTokens() == 2){
+			tokens.nextToken();
+			m_variable = tokens.nextToken();
+			return true;
+		}
+		return false;
+	}
 	
 	@Override
 	public boolean processRule(String line) {
@@ -90,25 +116,56 @@ public class Machine implements Module {
 	
 
 	@Override
-	public boolean executeStep(Tape t) {		
-		MachineRule rule = m_rules.get(m_current_state);
+	public boolean executeStep(Tape t) {	
+		if(m_steps == m_max_steps){
+			m_log.writeLn("Maximum number of steps reached. Aborting execution.");
+			return false;
+		}
+		MachineRule rule = m_rules.get(m_current_state);		
 		if(rule != null){
 			m_current_state = rule.m_final_states.get(t.readCurrentSymbol());
+			m_steps++;
 			return rule.applyAction(t);
 		}
 		return false;
+	}	
+	
+	@Override
+	public boolean execute(Tape t){
+		m_log.writeLn("Initial state: " + m_initial_state);
+		m_log.writeLn("Tape initial configuration: " + t.toString());
+		while(executeStep(t)){
+			printStep(t);			
+		}
+		printSummary(t);
+		return true;		
+	}
+	
+	@Override
+	public void printStep(Tape t) {				
+			m_log.writeLn(Integer.toString(m_steps) + "." + m_current_state + ": " + t.toString());
+	}	
+	
+	@Override
+	public void printSummary(Tape t) {
+		m_log.writeLn("Finished executing in " + --m_steps + " steps.");
+		m_log.writeLn("Tape final configuration is: " + t.toString());
 	}
 
 	@Override
 	public String getCurrentState() {
-		// TODO Auto-generated method stub
-		return null;
+		return m_current_state;
 	}	
 	
+	public void setVariableValue(String value){
+		m_variable_value = value;
+	}
 	
 	private HashMap<String, MachineRule> m_rules; //Maps from state
 	private String m_initial_state;
 	private String m_current_state;
+	private String m_variable;
+	private String m_variable_value;
 	
 	private class MachineRule
 	{
@@ -140,8 +197,7 @@ public class Machine implements Module {
 		{	
 			String symbol = tape.readCurrentSymbol();
 			if(m_actions.containsKey(symbol) || m_actions.containsKey("*")){			
-				char action = m_actions.get(symbol).charAt(0);
-				
+				char action = m_actions.get(symbol).charAt(0);			
 				switch(action){
 				case '>':
 					tape.moveHeadRight();
@@ -150,6 +206,9 @@ public class Machine implements Module {
 					tape.moveHeadLeft();
 					return true;		
 				default:
+					if(action == m_variable.charAt(0)){
+						action = m_variable_value.charAt(0);
+					}
 					tape.writeSymbol(action);
 					return true;
 				}			
@@ -158,6 +217,5 @@ public class Machine implements Module {
 		}	
 	
 	}	
-	
 	
 }
