@@ -1,5 +1,7 @@
+import java.util.Vector;
 
-public class Diagram implements IModule {
+
+public class Diagram implements Module {
 
 	@Override
 	public boolean loadFromFile(String filename) {
@@ -23,6 +25,18 @@ public class Diagram implements IModule {
 	public String getCurrentState() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean processRule(String line) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean processHeader(String line) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }
