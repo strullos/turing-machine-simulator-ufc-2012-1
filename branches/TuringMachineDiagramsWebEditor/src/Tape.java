@@ -13,7 +13,7 @@ public class Tape {
 	public String toString()
 	{
 		StringBuffer tape_string = new StringBuffer(m_tape.toString());
-		m_tape.insert(m_position, '_');
+		tape_string.insert(m_position, '_');
 		int j = 0;		
 		for( int i = m_position; i<tape_string.length() ; i++ ) {
 			if( tape_string.charAt(i) != '#' )
@@ -32,10 +32,16 @@ public class Tape {
 	{
 		m_tape.setCharAt(m_position, symbol);
 	}
-	
+	//Unused method, remove later?
 	public char readSymbol()
 	{
 		return m_tape.charAt(m_position);
+	}
+	
+	public String readCurrentSymbol(){
+		String s = "";
+		s += m_tape.charAt(m_position);
+		return s;
 	}
 	
 	public int moveHeadLeft()
