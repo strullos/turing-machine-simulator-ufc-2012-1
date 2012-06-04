@@ -29,7 +29,7 @@ public class Diagram extends Module {
 	
 	@Override
 	public String getCurrentState() {
-		return m_module_name;
+		return m_current_module;
 	}
 
 	@Override
@@ -157,28 +157,26 @@ public class Diagram extends Module {
 		boolean executing = true;
 		if(m_loaded){
 			printStep(t);
+			m_steps++;
 			while(executing){
+				if(!m_loaded_modules.containsKey(m_current_module)){
+					break;
+				}
 				Module current_module = m_loaded_modules.get(m_current_module);		
-				current_module.setInitialStep(m_steps+1);
-				m_steps++;
+				current_module.setInitialStep(m_steps);
 				while(current_module.executeStep(t)){
 					printStep(t);
 					m_steps++;
 				}		
 			  m_steps = current_module.getSteps();
+			  executing = false;
 			  if(m_modules_rules.containsKey(m_current_module)){
 				  if(m_modules_rules.get(m_current_module).hasTransition(t.readCurrentSymbol())){
 					  m_current_module = m_modules_rules.get(m_current_module).getNexModule(t.readCurrentSymbol());
-					 
-				  }else{
-					  executing = false;
+					  executing = true;
 				  }
-			  }else{
-				  executing = false;
 			  }
-			
-			}
-		
+			}		
 			printSummary(t);
 			return true;
 		}
@@ -186,27 +184,32 @@ public class Diagram extends Module {
 	}
 	
 	@Override
-	public boolean executeStep(Tape t) {
-		if(!m_loaded_modules.containsKey(m_current_module)){
-			return false;
-		}
+	public boolean executeStep(Tape t) {		
 	    Module current_module = m_loaded_modules.get(m_current_module);
+	    current_module.setInitialStep(m_steps);
 	    printStep(t);
+	    m_steps++;
 	    while(current_module.executeStep(t)){	    	
 	    	printStep(t);
 	    	m_steps++;
 	    }
-	    if(m_modules_rules.get(m_current_module).hasTransition(t.readCurrentSymbol())){
-	    	m_current_module = m_modules_rules.get(m_current_module).getNexModule(t.readCurrentSymbol());
-	    	return true;	
-	    }
+	    m_steps = current_module.getSteps();
+	    if(m_modules_rules.containsKey(m_current_module)){
+	    	if(m_modules_rules.get(m_current_module).hasTransition(t.readCurrentSymbol())){
+	  	    	m_current_module = m_modules_rules.get(m_current_module).getNexModule(t.readCurrentSymbol());
+	  	    	if(!m_loaded_modules.containsKey(m_current_module)){
+	  				return false;
+	  			}
+	  	    	return true;	
+	  	    }
+	    }	  
 	    return false;		
 	}
 
 	@Override
 	public void printStep(Tape t) {
 		Module current_module = m_loaded_modules.get(m_current_module);
-		m_log.writeLn(Integer.toString(m_steps) + ".<"+ m_module_name + "." + m_current_module + "," +  current_module.getCurrentState() + ">: " + t.toString());
+		m_log.writeLn(Integer.toString(m_steps) + ".\t\t<"+ m_current_module + "," +  current_module.getCurrentState() + ">:\t\t" + t.toString());
 	}
 
 	@Override
@@ -214,7 +217,9 @@ public class Diagram extends Module {
 		m_log.writeLn("Finished executing in " + (m_steps-1) + " steps.");
 		m_log.writeLn("Tape final configuration is: " + t.toString());
 		m_log.writeLn("Stopped on module: " + m_current_module);
-		m_log.writeLn("With state: " + m_loaded_modules.get(m_current_module).getCurrentState());
+		if(m_loaded_modules.containsKey(m_current_module)){
+			m_log.writeLn("With state: " + m_loaded_modules.get(m_current_module).getCurrentState());
+		}
 	}
 
 	@Override
