@@ -18,7 +18,7 @@ public abstract class Module {
 			return false;
 		}		
 	}
-	public abstract boolean load(BufferedReader reader) throws IOException;
+	protected abstract boolean load(BufferedReader reader) throws IOException;
 	protected boolean loadFromString(String text) throws IOException
 	{
 		BufferedReader reader = new BufferedReader(new StringReader(text));	
@@ -31,11 +31,23 @@ public abstract class Module {
 	public abstract boolean executeStep(Tape t);
 	public abstract boolean execute(Tape t);
 	public abstract String getCurrentState();	
-	public abstract boolean processRule(String line);
-	public abstract boolean processHeader(String line);
+	protected abstract boolean processRule(String line);
+	protected abstract boolean processHeader(String line);
+	protected void setModuleName(String name) {
+		m_module_name = name;
+	}
+	protected void setInitialStep(int initial_step){
+		m_steps = initial_step;
+	}
+	protected int getSteps(){
+		return m_steps;
+	}
 	
 	protected final Log m_log = new Log();
 	protected int m_current_line = 0;
 	protected int m_steps = 0;
 	protected int m_max_steps;
+	protected String m_module_name;
+	protected String m_module_parent;
+	protected boolean m_loaded;
 }
