@@ -117,7 +117,7 @@ public class Machine extends Module {
 	
 	@Override
 	public void printStep(Tape t) {				
-			m_log.writeLn(Integer.toString(m_steps) + "." + m_current_state + ":" + t.toString());
+			m_log.writeLn(Integer.toString(m_steps) + ".\t\t" + m_current_state + ":\t\t" + t.toString());
 	}	
 	
 	@Override
