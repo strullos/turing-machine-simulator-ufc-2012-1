@@ -87,7 +87,17 @@ public class Machine extends Module {
 		}
 		return false;
 	}
-	
+
+	@Override
+	public boolean execute(Tape t){
+		m_log.writeLn("Initial state: " + m_initial_state);
+		m_log.writeLn("Tape initial configuration: " + t.toString());
+		while(executeStep(t)){
+			printStep(t);			
+		}
+		printSummary(t);
+		return true;		
+	}
 
 	@Override
 	public boolean executeStep(Tape t) {	
@@ -105,19 +115,9 @@ public class Machine extends Module {
 	}	
 	
 	@Override
-	public boolean execute(Tape t){
-		m_log.writeLn("Initial state: " + m_initial_state);
-		m_log.writeLn("Tape initial configuration: " + t.toString());
-		while(executeStep(t)){
-			printStep(t);			
-		}
-		printSummary(t);
-		return true;		
-	}
-	
-	@Override
 	public void printStep(Tape t) {				
-			m_log.writeLn(Integer.toString(m_steps) + ".\t\t" + m_current_state + ":\t\t" + t.toString());
+			m_log.writeLn(Integer.toString(Module.test_steps) + ".\t\t" + m_current_state + ":\t\t\t\t" + t.toString());
+			Module.test_steps++;	
 	}	
 	
 	@Override
@@ -131,6 +131,11 @@ public class Machine extends Module {
 		return m_current_state;
 	}	
 	
+	@Override
+	protected String getFinalState() {
+		return "<" + m_module_name + "," + m_current_state + ">";
+	}	
+	
 	public void setVariableValue(String value){
 		m_variable_value = value;
 	}
@@ -141,7 +146,6 @@ public class Machine extends Module {
 	private String m_variable;
 	private String m_variable_value;
 	private boolean m_uses_variable;
-	private String m_machine_name;
 	
 	private class MachineRule
 	{
