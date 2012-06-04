@@ -11,6 +11,7 @@ public abstract class Module {
 	{
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		try {
+			setModulePath(filename);
 			return load(reader);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -36,6 +37,17 @@ public abstract class Module {
 	protected void setModuleName(String name) {
 		m_module_name = name;
 	}
+	protected void setModulePath(String path){
+		m_module_path = path;
+	}
+	protected String getModuleName(){
+		return m_module_name;
+	}
+	
+	protected String getModulePath(){
+		return m_module_path;
+	}
+	
 	protected void setInitialStep(int initial_step){
 		m_steps = initial_step;
 	}
@@ -43,11 +55,16 @@ public abstract class Module {
 		return m_steps;
 	}
 	
+	protected abstract String getFinalState();
+	
 	protected final Log m_log = new Log();
 	protected int m_current_line = 0;
 	protected int m_steps = 0;
 	protected int m_max_steps;
 	protected String m_module_name;
 	protected String m_module_parent;
+	protected String m_module_path;
 	protected boolean m_loaded;
+	
+	public static int test_steps = 0;
 }
