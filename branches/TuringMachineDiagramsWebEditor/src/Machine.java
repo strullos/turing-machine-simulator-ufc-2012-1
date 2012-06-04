@@ -4,16 +4,18 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 
 
-public class Machine extends Module {
+public class Machine extends Module {	
 	
-	Machine(){ 
+	Machine(){
 		m_rules = new HashMap<String, MachineRule>();
 		m_initial_state = "";
 		m_current_state = m_initial_state;
 		m_variable = "";
 		m_variable_value = "";
 		m_uses_variable = false;
-	}
+		m_module_name = "";
+	}	
+
 	
 	@Override
 	public boolean load(BufferedReader reader) throws IOException {
@@ -24,7 +26,7 @@ public class Machine extends Module {
 			if(processHeader(line)) continue;
 			if(processVarDeclaration(line)) continue;
 			if(processRule(line)) continue;
-			m_log.writeLn("Failed to load machine file while reading line " + m_current_line + ":" + line);
+			m_log.writeLn("Failed to load machine " + m_module_name + " file while reading line " + m_current_line + ":" + line);
 			return false;
 		}	
 		return true;
@@ -76,8 +78,7 @@ public class Machine extends Module {
 					symbol + " " + rule.m_next_states.get(symbol) + " " + rule.m_actions.get(symbol));
 					return false;					
 				}
-				rule.addFinalState(symbol, final_state);
-				rule.addAction(symbol, action);
+				rule.addTransition(symbol, final_state, action);
 				return true;
 			}
 			MachineRule rule = new MachineRule(symbol,final_state, action);
@@ -116,7 +117,7 @@ public class Machine extends Module {
 	
 	@Override
 	public void printStep(Tape t) {				
-			m_log.writeLn(Integer.toString(m_steps) + "." + m_current_state + ": " + t.toString());
+			m_log.writeLn(Integer.toString(m_steps) + "." + m_current_state + ":" + t.toString());
 	}	
 	
 	@Override
@@ -140,6 +141,7 @@ public class Machine extends Module {
 	private String m_variable;
 	private String m_variable_value;
 	private boolean m_uses_variable;
+	private String m_machine_name;
 	
 	private class MachineRule
 	{
@@ -150,17 +152,14 @@ public class Machine extends Module {
 		{
 			m_next_states = new HashMap<String,String>();
 			m_actions = new HashMap<String,String>();
-			addFinalState(symbol, final_state);
-			addAction(symbol, action);			
+			addTransition(symbol, final_state, action);
 		}
 		
-		public void addFinalState(String symbol, String final_state){			
+		public void addTransition(String symbol, String final_state, String action){
 			m_next_states.put(symbol, final_state);
-		}
-		
-		public void addAction(String symbol, String action){
 			m_actions.put(symbol, action);
 		}
+	
 		
 		public boolean hasRule(String symbol){
 			return m_actions.containsKey(symbol);
