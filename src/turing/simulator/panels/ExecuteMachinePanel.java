@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.StringReader;
 
-import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -36,10 +35,6 @@ public class ExecuteMachinePanel extends JPanel {
 	
 	private void build() {
 		/** Panels and Frames **/
-//		JFrame frame = new JFrame();
-//		frame.setSize(640, 480);
-//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		executeButton.addActionListener(new ActionListener() {
 			@Override
@@ -87,16 +82,11 @@ public class ExecuteMachinePanel extends JPanel {
 		texts.add(textPanelRight);
 		bottom.add(BorderLayout.WEST, executeButton);
 		
-//		frame.getContentPane().add(top);
-//		frame.getContentPane().add(texts);
-//		frame.getContentPane().add(bottom);
-		
 		this.add(top);
 		this.add(texts);
 		this.add(bottom);
 		
 		code.requestFocus();
-//		frame.setVisible(true);
 	}
 	
 	private void executeButtonAction() {
