@@ -1,9 +1,14 @@
+package turing.simulator.module;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Vector;
+
+import turing.simulator.log.Log;
+import turing.simulator.tape.Tape;
 
 
 public abstract class Module {
@@ -51,7 +56,7 @@ public abstract class Module {
 	protected void setInitialStep(int initial_step){
 		m_steps = initial_step;
 	}
-	protected int getSteps(){
+	public int getSteps(){
 		return m_steps;
 	}
 	

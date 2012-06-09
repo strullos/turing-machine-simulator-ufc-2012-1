@@ -1,8 +1,13 @@
+package turing.simulator.module;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+
+import turing.simulator.tape.Tape;
+
 
 
 public class Diagram extends Module {
@@ -30,10 +35,11 @@ public class Diagram extends Module {
 	public boolean load(BufferedReader reader) throws IOException {
 		String line;		
 		while( (line = reader.readLine()) != null ){
-			m_current_line++;			
-			if(line.equals("\n") || line.equals("\r") || line.equals("\r\n") || line.isEmpty()) continue;
-			if(processHeader(line)) continue;			
+			m_current_line++;
 			if(processRule(line)) continue;
+			if(processHeader(line)) continue;
+			if( isEmptyLine(line) ) continue;
+			
 			if(m_module_name.isEmpty()){
 				m_log.writeLn("An error occurred loading diagram file " + m_module_name + "(" + m_module_path + ")" + ", while processing an instruction on line " + m_current_line + ": " + line);
 			}else{
@@ -287,6 +293,10 @@ public class Diagram extends Module {
 		}
 	}	
 	
+	private boolean isEmptyLine(String line) {
+		return line.equals("\n") || line.equals("\r") || line.equals("\r\n") || line.isEmpty();
+	}
+	
 	private class DiagramRule
 	{	
 		HashMap<String, String> m_next_modules; //Maps from symbol to module;
@@ -326,7 +336,5 @@ public class Diagram extends Module {
 		public String getNexModule(String symbol){
 			return m_next_modules.get(symbol);
 		}
-		
-		
 	}
 }

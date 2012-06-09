@@ -1,3 +1,4 @@
+package turing.simulator.tape;
 /*
  * This class represents the turing machine's tape
  */

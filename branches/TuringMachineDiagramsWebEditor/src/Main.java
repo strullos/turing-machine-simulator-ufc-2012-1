@@ -2,6 +2,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Vector;
 
+import turing.simulator.applet.DiagramSimulatorApplet;
+import turing.simulator.module.Diagram;
+import turing.simulator.tape.Tape;
+
 
 public class Main {
 
@@ -9,28 +13,8 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {		
-		Tape t = new Tape("aabb");
-//		Machine m = new Machine();		
-//		try {
-//			m.loadFromString(
-//					"q0 1000\n" +
-//					"q0 * q1 >\n" +
-//					"q1 a q2 >\n" +
-//					"q2 a q3 b");
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}				
-//		m.execute(t);
-		Diagram d = new Diagram();
-		try {
-			d.loadFromFile("ex.dt");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		d.execute(t);
-		
+		DiagramSimulatorApplet app = new DiagramSimulatorApplet();
+		app.show();
 	}
 
 }
