@@ -1,10 +1,11 @@
+package turing.simulator.log;
 import java.util.Vector;
 
 
 public class Log {
 	private Vector<String> content;
 	
-	Log(){
+	public Log(){
 		content = new Vector<String>();		
 	}
 	

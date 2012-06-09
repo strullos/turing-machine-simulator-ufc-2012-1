@@ -1,12 +1,15 @@
+package turing.simulator.module;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
+import turing.simulator.tape.Tape;
 
 public class Machine extends Module {	
 	
-	Machine(){
+	public Machine(){
 		m_rules = new HashMap<String, MachineRule>();
 		m_initial_state = "";
 		m_current_state = m_initial_state;
@@ -18,16 +21,21 @@ public class Machine extends Module {
 
 	
 	@Override
-	public boolean load(BufferedReader reader) throws IOException {
+	public boolean load(BufferedReader reader) {
 		String line;		
-		while( (line = reader.readLine()) != null ){
-			m_current_line++;			
-			if(line.equals("\n") || line.equals("\r") || line.equals("\r\n") || line.isEmpty()) continue;
-			if(processHeader(line)) continue;
-			if(processVarDeclaration(line)) continue;
-			if(processRule(line)) continue;
-			m_log.writeLn("Failed to load machine " + m_module_name + " file while reading line " + m_current_line + ":" + line);
-			return false;
+		try {
+			while( (line = reader.readLine()) != null ){
+				m_current_line++;			
+				if(line.equals("\n") || line.equals("\r") || line.equals("\r\n") || line.isEmpty()) continue;
+				if(processHeader(line)) continue;
+				if(processVarDeclaration(line)) continue;
+				if(processRule(line)) continue;
+				m_log.writeLn("Failed to load machine " + m_module_name + " file while reading line " + m_current_line + ":" + line);
+				return false;
+			}
+		} catch (IOException e) {
+			m_log.writeLn("Can't read stream from input");
+			e.printStackTrace();
 		}	
 		return true;
 	}	
@@ -35,12 +43,8 @@ public class Machine extends Module {
 	@Override
 	public boolean processHeader(String line) {
 		StringTokenizer tokens = new StringTokenizer(line);
-		if(tokens.countTokens() == 2){
+		if(tokens.countTokens() == 3){
 			m_initial_state = tokens.nextToken();	
-			if(m_initial_state.equals("var")){
-				m_initial_state = "";
-				return false;
-			}
 			m_current_state = m_initial_state;
 			m_max_steps = Integer.parseInt(tokens.nextToken().toString());
 			return true;
@@ -132,7 +136,7 @@ public class Machine extends Module {
 	}	
 	
 	@Override
-	protected String getFinalState() {
+	public String getFinalState() {
 		return "<" + m_module_name + "," + m_current_state + ">";
 	}	
 	
