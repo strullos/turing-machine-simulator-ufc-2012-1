@@ -91,15 +91,17 @@ public class ExecuteMachinePanel extends JPanel {
 	
 	private void executeButtonAction() {
 		Machine m = new Machine();
+		
 		if( m.load(new BufferedReader(new StringReader(code.getText()))) ) {
 			Tape tape = new Tape(input.getText());
 			
-			output.setText("");
 			output.setText("Executando máquina na fita '" + tape.toString() + "'\n");
 			while( m.executeStep(tape) ) {
 				output.append(m.getCurrentState() + ": " + tape.toString() + "\n");
 			}
 			output.append("\nExecução encerrada em " + Integer.toString(m.getSteps()) + " passos no estado " + m.getCurrentState() + "!");
+		} else {
+			output.setText("Falha ao processar quádruplas - erro na linha " + Integer.toString(m.getLine()));
 		}
 	}
 }
