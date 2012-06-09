@@ -12,6 +12,17 @@ import turing.simulator.tape.Tape;
 
 
 public abstract class Module {
+	protected final Log m_log = new Log();
+	protected int m_current_line = 0;
+	protected int m_steps = 0;
+	protected int m_max_steps;
+	protected String m_module_name;
+	protected String m_module_parent;
+	protected String m_module_path;
+	protected boolean m_loaded;
+	
+	public static int test_steps = 0;
+	
 	protected boolean loadFromFile(String filename) throws FileNotFoundException
 	{
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
@@ -62,14 +73,7 @@ public abstract class Module {
 	
 	protected abstract String getFinalState();
 	
-	protected final Log m_log = new Log();
-	protected int m_current_line = 0;
-	protected int m_steps = 0;
-	protected int m_max_steps;
-	protected String m_module_name;
-	protected String m_module_parent;
-	protected String m_module_path;
-	protected boolean m_loaded;
-	
-	public static int test_steps = 0;
+	public int getLine() {
+		return m_current_line;
+	}
 }
