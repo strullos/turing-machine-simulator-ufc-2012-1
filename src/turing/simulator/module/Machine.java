@@ -43,7 +43,7 @@ public class Machine extends Module {
 	@Override
 	public boolean processHeader(String line) {
 		StringTokenizer tokens = new StringTokenizer(line);
-		if(tokens.countTokens() == 3){
+		if(tokens.countTokens() == 2){
 			m_initial_state = tokens.nextToken();	
 			m_current_state = m_initial_state;
 			m_max_steps = Integer.parseInt(tokens.nextToken().toString());
@@ -111,9 +111,12 @@ public class Machine extends Module {
 		}		
 		if(m_rules.containsKey(m_current_state)){
 			MachineRule rule = m_rules.get(m_current_state);
-			m_current_state = rule.getNextState(t.readCurrentSymbol());
-			m_steps++;
-			return rule.applyAction(t);
+			String m_next_state = rule.getNextState(t.readCurrentSymbol());
+			if(m_next_state != null){
+				m_current_state = m_next_state;
+				m_steps++;
+				return rule.applyAction(t);
+			}
 		}
 		return false;
 	}	
@@ -170,14 +173,14 @@ public class Machine extends Module {
 	
 		
 		public boolean hasRule(String symbol){
-			return m_actions.containsKey(symbol);
+			return (m_actions.containsKey(symbol) || m_next_states.containsKey("*"));
 		}
 	
 		public String getNextState(String symbol){
 			if(m_next_states.containsKey("*")){
 				return m_next_states.get("*");
 			}else{
-				return m_next_states.get(symbol);
+				return m_next_states.get(symbol);			
 			}			
 		}
 		
