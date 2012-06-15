@@ -5,8 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Vector;
-
 import turing.simulator.log.Log;
 import turing.simulator.tape.Tape;
 

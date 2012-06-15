@@ -1,18 +1,12 @@
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Vector;
-
-import turing.simulator.applet.DiagramSimulatorApplet;
-import turing.simulator.module.Diagram;
-import turing.simulator.tape.Tape;
 
 
 public class Main {
-
 	/**
 	 * @param args
 	 */
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) {		
+		System.out.println("Editor de Máquinas de Turing - Web - Comp UFC 2012.1");
 		DiagramSimulatorApplet app = new DiagramSimulatorApplet();
 		app.show();
 	}
