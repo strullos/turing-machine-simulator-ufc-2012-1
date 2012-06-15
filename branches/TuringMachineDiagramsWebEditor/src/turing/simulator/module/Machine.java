@@ -43,8 +43,10 @@ public class Machine extends Module {
 	@Override
 	public boolean processHeader(String line) {
 		StringTokenizer tokens = new StringTokenizer(line);
-		if(tokens.countTokens() == 2){
-			m_initial_state = tokens.nextToken();	
+		int tokens_count = tokens.countTokens();
+		String first_token = tokens.nextToken();
+		if((tokens_count == 2) && (!first_token.equals("var"))){
+			m_initial_state = first_token;	
 			m_current_state = m_initial_state;
 			m_max_steps = Integer.parseInt(tokens.nextToken().toString());
 			return true;
@@ -54,12 +56,12 @@ public class Machine extends Module {
 	
 	public boolean processVarDeclaration(String line){
 		StringTokenizer tokens = new StringTokenizer(line);
-		if(tokens.countTokens() == 2){
-			if(tokens.nextToken().equals("var")){
+		int tokens_count = tokens.countTokens();
+		String first_token = tokens.nextToken();
+		if(tokens_count == 2 && first_token.equals("var")){
 				m_variable = tokens.nextToken();
 				m_uses_variable = true;
 				return true;
-			}			
 		}
 		return false;
 	}
@@ -143,9 +145,14 @@ public class Machine extends Module {
 		return "<" + m_module_name + "," + m_current_state + ">";
 	}	
 	
+	@Override
+	public void reset(){
+		m_current_state = m_initial_state;
+	}
+	
 	public void setVariableValue(String value){
 		m_variable_value = value;
-	}
+	}	
 	
 	private HashMap<String, MachineRule> m_rules; //Maps from state to rule
 	private String m_initial_state;
