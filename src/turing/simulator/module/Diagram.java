@@ -166,6 +166,7 @@ public class Diagram extends Module {
 				//first character after the "["
 				set_variable = symbols.substring(0, pos); 
 				symbols = symbols.substring(pos+1);
+				m_variables_table.put(set_variable, "");
 			}	
 			String sent_variable = "";
 			boolean sends_variable = false;
@@ -323,15 +324,7 @@ public class Diagram extends Module {
 		//Checks if the rule already has a transition for the given symbol
 		public boolean hasTransition(String symbol){
 			return m_next_modules.containsKey(symbol);
-		}
-		
-		public boolean setsVariable(String symbol){
-			return m_set_variables.containsKey(symbol);
-		}
-		
-		public boolean sendsVariable(String symbol){
-			return m_sent_variables.containsKey(symbol);				
-		}
+		}	
 		
 		public String getNexModule(String symbol){
 			return m_next_modules.get(symbol);
