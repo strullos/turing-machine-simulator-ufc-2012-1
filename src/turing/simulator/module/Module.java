@@ -21,7 +21,7 @@ public abstract class Module {
 	
 	public static int test_steps = 0;
 	
-	protected boolean loadFromFile(String filename) throws FileNotFoundException
+	public boolean loadFromFile(String filename) throws FileNotFoundException
 	{
 		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		try {
@@ -34,7 +34,7 @@ public abstract class Module {
 		}		
 	}
 	protected abstract boolean load(BufferedReader reader) throws IOException;
-	protected boolean loadFromString(String text) throws IOException
+	public boolean loadFromString(String text) throws IOException
 	{
 		BufferedReader reader = new BufferedReader(new StringReader(text));	
 		return load(reader);	
@@ -45,7 +45,8 @@ public abstract class Module {
 	
 	public abstract boolean executeStep(Tape t);
 	public abstract boolean execute(Tape t);
-	public abstract String getCurrentState();	
+	public abstract String getCurrentState();
+		
 	protected abstract boolean processRule(String line);
 	protected abstract boolean processHeader(String line);
 	protected void setModuleName(String name) {
@@ -53,7 +54,8 @@ public abstract class Module {
 	}
 	protected void setModulePath(String path){
 		m_module_path = path;
-	}
+	}	
+		
 	protected String getModuleName(){
 		return m_module_name;
 	}
@@ -70,6 +72,7 @@ public abstract class Module {
 	}
 	
 	protected abstract String getFinalState();
+	public abstract void reset();
 	
 	public int getLine() {
 		return m_current_line;

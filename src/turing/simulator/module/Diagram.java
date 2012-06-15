@@ -19,7 +19,7 @@ public class Diagram extends Module {
 	private String m_initial_module;
 	private String m_current_module;
 	
-	Diagram(){
+	public Diagram(){
 		m_loaded_modules = new HashMap<String, Module>();
 		m_modules_path = new HashMap<String, String>();
 		m_modules_rules = new HashMap<String, DiagramRule>();
@@ -32,7 +32,7 @@ public class Diagram extends Module {
 	}
 	
 	@Override
-	public boolean load(BufferedReader reader) throws IOException {
+	protected boolean load(BufferedReader reader) throws IOException {
 		String line;		
 		while( (line = reader.readLine()) != null ){
 			m_current_line++;
@@ -50,6 +50,11 @@ public class Diagram extends Module {
 		m_current_module = m_initial_module;
 		m_loaded = true;
 		return true;
+	}
+	
+	@Override
+	public void reset(){
+		m_current_module = m_initial_module;
 	}
 	
 	@Override
@@ -217,17 +222,19 @@ public class Diagram extends Module {
 	public boolean execute(Tape t) {	
 		boolean executing = true;
 		if(m_loaded){
-			printStep(t);
-			m_steps++;
+			//printStep(t);
+			//m_steps++;
 			while(executing){
 				if(!m_loaded_modules.containsKey(m_current_module)){
 					break;
 				}
 				Module current_module = m_loaded_modules.get(m_current_module);		
 				current_module.setInitialStep(m_steps);		
+				current_module.reset();
 				if((current_module instanceof Diagram)){					    						
 					   m_log.writeLn("Diagram " + current_module.getModuleName() + ":");
 				}
+				printStep(t);
 				while(current_module.executeStep(t)){
 				   if(!(current_module instanceof Diagram)){
 				    	printStep(t);
@@ -237,10 +244,27 @@ public class Diagram extends Module {
 			  m_steps = current_module.getSteps();
 			  executing = false;
 			  if(m_modules_rules.containsKey(m_current_module)){
-				  if(m_modules_rules.get(m_current_module).hasTransition(t.readCurrentSymbol())){
-					  m_current_module = m_modules_rules.get(m_current_module).getNexModule(t.readCurrentSymbol());
-					 
+				  String curr_symbol = t.readCurrentSymbol();
+				  DiagramRule rule = m_modules_rules.get(m_current_module);
+				  if(rule.hasTransition(curr_symbol)){
+					  m_current_module = rule.getNexModule(curr_symbol);	
+					  if(!m_loaded_modules.containsKey(m_current_module)){
+						 printStep(t);
+		  				 break;
+		  			  }
 					  executing = true;
+					  if(rule.setsVariable(curr_symbol)){
+						  String var = rule.getSetVariable(curr_symbol);
+						  m_variables_table.put(var, curr_symbol);
+					  }
+					  if(rule.sendsVariable(curr_symbol)){
+						  String var = rule.getSentVariable(curr_symbol);
+						  Module module = m_loaded_modules.get(m_current_module);
+						  if(module instanceof Machine){
+							  Machine m = (Machine)module;
+							  m.setVariableValue(m_variables_table.get(var));
+						  }
+					  }
 				  }
 			  }
 			}		
@@ -254,6 +278,7 @@ public class Diagram extends Module {
 	public boolean executeStep(Tape t) {		
 	    Module current_module = m_loaded_modules.get(m_current_module);
 	    current_module.setInitialStep(m_steps);
+	    current_module.reset();
 	    if(!(current_module instanceof Diagram)){
 	    	printStep(t);
 	    	m_steps++;	    
@@ -266,12 +291,26 @@ public class Diagram extends Module {
 	    }
 	    m_steps = current_module.getSteps();
 	    if(m_modules_rules.containsKey(m_current_module)){
-	    	if(m_modules_rules.get(m_current_module).hasTransition(t.readCurrentSymbol())){
-	  	    	m_current_module = m_modules_rules.get(m_current_module).getNexModule(t.readCurrentSymbol());
+	    	String curr_symbol = t.readCurrentSymbol();
+	    	DiagramRule rule = m_modules_rules.get(m_current_module);
+	    	if(rule.hasTransition(curr_symbol)){
+	  	    	m_current_module =rule.getNexModule(curr_symbol);
 	  	    	if(!m_loaded_modules.containsKey(m_current_module)){
 	  				return false;
 	  			}
-	  	    	return true;	
+	  	    	if(rule.setsVariable(curr_symbol)){
+					String var = rule.getSetVariable(curr_symbol);
+					m_variables_table.put(var, curr_symbol);
+	  	    	}
+	  	    	if(rule.sendsVariable(curr_symbol)){
+					String var = rule.getSentVariable(curr_symbol);
+					Module module = m_loaded_modules.get(m_current_module);
+					if(module instanceof Machine){
+						Machine m = (Machine)module;
+						m.setVariableValue(m_variables_table.get(var));
+					}
+	  	    	}
+	  	    	return true;		  	    	
 	  	    }
 	    }	  
 	    return false;		
@@ -280,17 +319,23 @@ public class Diagram extends Module {
 	@Override
 	public void printStep(Tape t) {
 		Module current_module = m_loaded_modules.get(m_current_module);
-		m_log.writeLn(Integer.toString(Module.test_steps) + ".\t\t<"+ m_current_module + "," +  current_module.getCurrentState() + ">:\t\t\t\t" + t.toString());
+		if(m_loaded_modules.containsKey(m_current_module)){
+			m_log.writeLn(Integer.toString(Module.test_steps) + ".\t\t<"+ m_current_module + "," +  current_module.getCurrentState() + ">:\t\t\t\t" + t.toString());			
+		}else{
+			m_log.writeLn(Integer.toString(Module.test_steps) + ".\t\t<"+ m_current_module + ">:\t\t\t\t" + t.toString());
+		}		
 		Module.test_steps++;		
 	}
 
 	@Override
 	public void printSummary(Tape t) {
 		m_log.writeLn("Finished executing in " + (Module.test_steps-1) + " steps.");
-		m_log.writeLn("Tape final configuration is: " + t.toString());
-		m_log.writeLn("Stopped on module: " + m_loaded_modules.get(m_current_module).getModuleName());
+		m_log.writeLn("Tape final configuration is: " + t.toString());	
 		if(m_loaded_modules.containsKey(m_current_module)){
+			m_log.writeLn("Stopped on module: " + m_loaded_modules.get(m_current_module).getModuleName());
 			m_log.writeLn("Final state is: " + m_loaded_modules.get(m_current_module).getFinalState());
+		}else{
+			m_log.writeLn("Stopped on module: " + m_current_module);
 		}
 	}	
 	
@@ -321,6 +366,23 @@ public class Diagram extends Module {
 				m_sent_variables.put(symbol, sent_variable);
 			}
 		}
+		
+		public boolean setsVariable(String symbol){
+			return m_set_variables.containsKey(symbol);
+		}
+		
+		public boolean sendsVariable(String symbol){
+			return m_sent_variables.containsKey(symbol);
+		}
+		
+		public String getSetVariable(String symbol){
+			return m_set_variables.get(symbol);
+		}
+		
+		public String getSentVariable(String symbol){
+			return m_sent_variables.get(symbol);
+		}
+		
 		//Checks if the rule already has a transition for the given symbol
 		public boolean hasTransition(String symbol){
 			return m_next_modules.containsKey(symbol);
