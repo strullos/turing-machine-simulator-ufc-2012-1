@@ -8,6 +8,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JTextArea;
@@ -27,11 +28,17 @@ import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 
 public class DiagramTextEditor extends JPanel {
@@ -43,7 +50,7 @@ public class DiagramTextEditor extends JPanel {
 	private JTextField tapeInput;	
 	private JTree modulesTree;
 	
-	private HashMap<String, String> m_modules_path;
+	private HashMap<String, String> m_modules_path;	
 	private JTextArea consoleOutput;
 	private JTextArea diagramInput;
 
@@ -191,6 +198,7 @@ public class DiagramTextEditor extends JPanel {
 		JButton exportButton = new JButton("Export");
 		exportButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				exportDiagram();
 			}
 		});
 		bottomPanel.add(exportButton, "cell 2 0,alignx left");
@@ -198,6 +206,7 @@ public class DiagramTextEditor extends JPanel {
 		JButton importButton = new JButton("Import");
 		importButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				importDiagram();
 			}
 		});
 		bottomPanel.add(importButton, "cell 3 0,alignx left");
@@ -213,28 +222,31 @@ public class DiagramTextEditor extends JPanel {
 		fc.setAcceptAllFileFilterUsed(false);
 		int returnVal = fc.showOpenDialog(null);
 		String file_path;
-		if(returnVal == JFileChooser.APPROVE_OPTION){
+		String file_name;
+		if(returnVal == JFileChooser.APPROVE_OPTION){			
+			file_name = fc.getSelectedFile().getName();
 			file_path = fc.getSelectedFile().getAbsolutePath().toString();
-			int index;
-			if(file_path.lastIndexOf("\\") > file_path.lastIndexOf("/")){
-				index = file_path.lastIndexOf("\\");
-			}else{
-				index = file_path.lastIndexOf("/");
-			}
-			String file_name = file_path.substring(index+1, file_path.length());
-			m_modules_path.put(file_name, file_path);
-			String prefix = "";
-			if(file_name.endsWith(".mt")){
-				prefix = "Machines";				
-			}
-			if(file_name.endsWith(".dt")){			
-				prefix = "Diagrams";				
-			}
-			if(!prefix.isEmpty()){
-				addTreeNode(file_name,prefix,0);	
-				addTreeNode(file_path,file_name,0);
-				consoleOutput.append("Module " + file_name + " added successfully.\n");				
-			}
+			addRequiredModule(file_name, file_path);
+		}
+	}
+	
+	private void addRequiredModule(String file_name, String file_path){
+		if(m_modules_path.containsKey(file_name)){
+			consoleOutput.append("Already contains a " + file_name + " module. Duplicates are not allowed.");
+			return;
+		}
+		m_modules_path.put(file_name, file_path);
+		String prefix = "";
+		if(file_name.endsWith(".mt")){
+			prefix = "Machines";				
+		}
+		if(file_name.endsWith(".dt")){			
+			prefix = "Diagrams";				
+		}
+		if(!prefix.isEmpty()){
+			addTreeNode(file_name,prefix,0);	
+			addTreeNode(file_path,file_name,0);
+			consoleOutput.append("Module " + file_name + " added successfully.\n");				
 		}
 	}
 	
@@ -258,7 +270,7 @@ public class DiagramTextEditor extends JPanel {
 	}
 	
 	private void addTreeNode(String file_name, String prefix, int start_row){
-		TreePath path = modulesTree.getNextMatch(prefix, start_row, Position.Bias.Forward);
+		TreePath path = modulesTree.getNextMatch(prefix, start_row, Position.Bias.Forward);	
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
 		DefaultMutableTreeNode new_node = new DefaultMutableTreeNode(file_name);
 		DefaultTreeModel model = (DefaultTreeModel)modulesTree.getModel();
@@ -383,6 +395,131 @@ public class DiagramTextEditor extends JPanel {
 				}				
 			}			
 		}		
+		return true;
+	}
+	
+	private String getRequiredModule(String line)
+	{
+		StringTokenizer tokens = new StringTokenizer(line);
+		if(tokens.countTokens() == 3){
+			String module_type = tokens.nextToken();
+			String module_name = tokens.nextToken();
+			if(module_type.equals("diagram") || module_type.equals("machine")){
+					return module_name;
+			}			
+		}		
+		return "";
+	}
+	
+	private void exportDiagram(){		
+		if(diagramInput.getText().isEmpty()){
+			consoleOutput.setText("Empty diagram.");
+		}else{
+			JFileChooser fc = new JFileChooser(new File("."));
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(
+			        "Diagram file(.dt)", ".dt");
+			fc.setFileFilter(filter);
+			fc.setAcceptAllFileFilterUsed(false);
+			//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			int returnVal = fc.showSaveDialog(null);
+			String file_path;
+			if(returnVal == JFileChooser.APPROVE_OPTION){				
+				String file_directory =  fc.getSelectedFile().getAbsolutePath().toString() + "_contents";				
+				File diagram_folder = new File(file_directory);				
+				String file_name = fc.getSelectedFile().getName() + ".dt";
+				file_path = file_directory + "\\" + file_name;				
+				FileWriter fstream; 				
+				try {
+					diagram_folder.mkdir();						
+					if(exportRequiredModules(file_directory)){
+						fstream = new FileWriter(file_path);
+						BufferedWriter out = new BufferedWriter(fstream);
+						out.write(diagramInput.getText());
+						out.close();				
+						consoleOutput.setText("Diagram file saved succesfully.\n");
+					}else{
+						consoleOutput.setText("Failed to export diagram.\n");
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+						
+			}		
+		}
+	}
+	
+	private boolean exportRequiredModules(String path){
+		Collection<String> modules = m_modules_path.values();
+		Iterator<String> it = modules.iterator();		
+		while(it.hasNext()){			
+			File source = new File(it.next().toString());
+			File destination = new File(path + "\\" + source.getName());
+			try {
+				Files.copy(source.toPath(), destination.toPath());
+			} catch (IOException e) {
+				e.printStackTrace();
+				consoleOutput.setText("Problem exporting required modules.\n");
+				return false;
+			}			
+		}	
+		consoleOutput.setText("Required modules exported succesfully.\n");
+		return true;
+	}
+	
+	private void importDiagram(){
+		JFileChooser fc = new JFileChooser(new File("."));		
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+		        "Diagram files (.dt)", "dt");
+		fc.setFileFilter(filter);
+		fc.setAcceptAllFileFilterUsed(false);
+		int returnVal = fc.showOpenDialog(null);
+		String file_path;
+		boolean required_modules = true;
+		if(returnVal == JFileChooser.APPROVE_OPTION){
+			file_path = fc.getSelectedFile().getAbsolutePath().toString();
+			try {
+				BufferedReader reader = new BufferedReader(new FileReader(file_path));
+				String line;
+				try {
+					while( (line = reader.readLine()) != null ){
+						diagramInput.append(line);		
+						diagramInput.append("\n");
+					}
+					importRequiredModules(file_path);
+					consoleOutput.append("Diagram file loaded successfully.\n");
+					if(!required_modules){
+						consoleOutput.append("Some of the required modules are not available," +
+								" diagram won't be able to execute. Consider adding the required modules.\n");
+					}
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private boolean importRequiredModules(String path)
+	{
+		String dir;
+		if(path.lastIndexOf("\\") > path.lastIndexOf("/"))		{
+			dir = path.substring(0, path.lastIndexOf("\\"));
+		}else{
+			dir = path.substring(0, path.lastIndexOf("/"));
+		}
+		File directory = new File(dir);
+	    File[] children = directory.listFiles();
+	    if (children != null) {
+	        for (File child : children) {
+	        	String file_name = child.getName();
+	        	String file_path = child.getAbsolutePath();
+	        	if(file_name.endsWith(".mt") || file_name.endsWith(".dt")){
+	        		addRequiredModule(file_name, file_path);
+	        	}
+	        }
+	    }
 		return true;
 	}
 	
