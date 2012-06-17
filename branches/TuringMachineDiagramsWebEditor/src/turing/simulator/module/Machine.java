@@ -31,6 +31,7 @@ public class Machine extends Module {
 				if(processVarDeclaration(line)) continue;
 				if(processRule(line)) continue;
 				m_log.writeLn("Failed to load machine " + m_module_name + " file while reading line " + m_current_line + ":" + line);
+				m_error = "Failed to load machine " + m_module_name + " file while reading line " + m_current_line + ":" + line;
 				return false;
 			}
 		} catch (IOException e) {

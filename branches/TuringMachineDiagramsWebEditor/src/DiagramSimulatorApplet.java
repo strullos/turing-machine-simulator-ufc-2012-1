@@ -1,10 +1,6 @@
-
-
-
 import javax.swing.JApplet;
 
-import turing.simulator.panels.DiagramTextEditor;
-import turing.simulator.panels.MachineTextEditor;
+import turing.simulator.panels.ModulesEditor;
 
 @SuppressWarnings("serial")
 public class DiagramSimulatorApplet extends JApplet {
@@ -16,10 +12,9 @@ public class DiagramSimulatorApplet extends JApplet {
 	 * Creates the applet.
 	 */
 	public DiagramSimulatorApplet() {
-		MachineTextEditor machineEditor = new MachineTextEditor();
-		DiagramTextEditor diagramEditor = new DiagramTextEditor();
+		ModulesEditor modules_editor = new ModulesEditor();
 		this.setSize(FRAME_WIDTH, FRAME_HEIGHT);
-		this.getContentPane().add(diagramEditor);		
+		this.getContentPane().add(modules_editor);		
 		this.setVisible(true);
 	}
 
