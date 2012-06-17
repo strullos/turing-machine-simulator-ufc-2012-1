@@ -21,7 +21,7 @@ public class Machine extends Module {
 
 	
 	@Override
-	public boolean load(BufferedReader reader) {
+	protected boolean load(BufferedReader reader) {
 		String line;		
 		try {
 			while( (line = reader.readLine()) != null ){

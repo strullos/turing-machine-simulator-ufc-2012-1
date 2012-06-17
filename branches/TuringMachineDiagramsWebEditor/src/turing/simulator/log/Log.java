@@ -22,4 +22,12 @@ public class Log {
 	public void clear(){
 		content.clear();
 	}
+	
+	public String getText(){
+		StringBuffer text = new StringBuffer();
+		for(int i = 0; i < content.size(); i++){
+			text.append(content.elementAt(i));
+		}
+		return text.toString();
+	}
 }

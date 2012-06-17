@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
 import javax.swing.border.LineBorder;
 
 public class MachineTextEditor extends JPanel {
@@ -47,7 +46,7 @@ public class MachineTextEditor extends JPanel {
 		add(top, "cell 0 0 2 1,grow");
 		top.setLayout(new MigLayout("", "[grow]", "[grow][grow]"));
 		
-		JLabel labelTape = new JLabel("Fita:");
+		JLabel labelTape = new JLabel("Tape:");
 		top.add(labelTape, "cell 0 0,alignx left");
 		
 		tapeInput = new JTextField();
@@ -62,7 +61,7 @@ public class MachineTextEditor extends JPanel {
 		middle.add(editorPanel, "cell 0 0,grow");
 		editorPanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
 		
-		JLabel machineLabel = new JLabel("M\u00E1quina:");
+		JLabel machineLabel = new JLabel("Machine:");
 		editorPanel.add(machineLabel, "cell 0 0");
 		machineLabel.setForeground(Color.BLACK);
 		machineLabel.setBackground(Color.WHITE);
@@ -95,7 +94,7 @@ public class MachineTextEditor extends JPanel {
 		add(bottom, "cell 0 2 2 1,grow");
 		bottom.setLayout(new MigLayout("", "[left][105.00,grow,left][grow]", "[]"));
 		
-		JButton saveButton = new JButton("Salvar");
+		JButton saveButton = new JButton("Save");
 		saveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveMachineFile();
@@ -103,7 +102,7 @@ public class MachineTextEditor extends JPanel {
 		});
 		bottom.add(saveButton, "cell 0 0,alignx left");
 		
-		JButton loadButton = new JButton("Carregar");
+		JButton loadButton = new JButton("Load");
 		loadButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				loadMachineFile();
@@ -111,7 +110,7 @@ public class MachineTextEditor extends JPanel {
 		});
 		bottom.add(loadButton, "cell 1 0,alignx left");
 		
-		JButton executeButton = new JButton("Executar");
+		JButton executeButton = new JButton("Execute");
 		
 		executeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -129,24 +128,28 @@ public class MachineTextEditor extends JPanel {
 		boolean empty_fields = false;
 		consoleOutput.setText("");
 		if(machineInput.getText().isEmpty()){
-			consoleOutput.setText("Máquina vazia.\n");
+			consoleOutput.setText("Empty machine.\n");
 			empty_fields = true;
 		}
 		if(tapeInput.getText().isEmpty()){
-			consoleOutput.append("Fita vazia.\n");		
+			consoleOutput.append("Empty tape.\n");		
 			empty_fields = true;
 		}
 		if(!empty_fields){
-			if( m.load(new BufferedReader(new StringReader(machineInput.getText()))) ) {
-				Tape tape = new Tape(tapeInput.getText());				
-				consoleOutput.setText("Executando máquina na fita '" + tape.toString() + "'\n\n");
-				consoleOutput.append(m.getCurrentState() + ": " + tape.toString() + "\n");
-				while( m.executeStep(tape) ) {
+			try {
+				if( m.loadFromString(machineInput.getText())) {
+					Tape tape = new Tape(tapeInput.getText());				
+					consoleOutput.setText("Executing machine on tape: '" + tape.toString() + "'\n\n");
 					consoleOutput.append(m.getCurrentState() + ": " + tape.toString() + "\n");
+					while( m.executeStep(tape) ) {
+						consoleOutput.append(m.getCurrentState() + ": " + tape.toString() + "\n");
+					}
+					consoleOutput.append("\nStopped execution on " + Integer.toString(m.getSteps()) + " steps on state " + m.getCurrentState());
+				} else {
+					consoleOutput.setText("Failed to process rule - error on line " + Integer.toString(m.getLine()));
 				}
-				consoleOutput.append("\nExecução encerrada em " + Integer.toString(m.getSteps()) + " passos no estado " + m.getCurrentState());
-			} else {
-				consoleOutput.setText("Falha ao processar quádruplas - erro na linha " + Integer.toString(m.getLine()));
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -154,10 +157,9 @@ public class MachineTextEditor extends JPanel {
 	private void loadMachineFile() {
 		JFileChooser fc = new JFileChooser(new File("."));		
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-		        "Arquivos de Máquina (.mt)", "mt");
+		        "Machine files (.mt)", "mt");
 		fc.setFileFilter(filter);
 		fc.setAcceptAllFileFilterUsed(false);
-		//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = fc.showOpenDialog(null);
 		String file_path;
 		if(returnVal == JFileChooser.APPROVE_OPTION){
@@ -170,7 +172,7 @@ public class MachineTextEditor extends JPanel {
 						machineInput.append(line);		
 						machineInput.append("\n");
 					}
-					consoleOutput.setText("Máquina carregada com sucesso.\n");
+					consoleOutput.setText("Machine file loaded successfully.\n");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -182,11 +184,11 @@ public class MachineTextEditor extends JPanel {
 	
 	private void saveMachineFile() {
 		if(machineInput.getText().isEmpty()){
-			consoleOutput.setText("Máquina vazia.");
+			consoleOutput.setText("Empty machine.");
 		}else{
 			JFileChooser fc = new JFileChooser(new File("."));
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
-			        "Arquivos de Máquina (.mt)", "mt");
+			        "Machine files (.mt)", "mt");
 			fc.setFileFilter(filter);
 			fc.setAcceptAllFileFilterUsed(false);
 			//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -200,7 +202,7 @@ public class MachineTextEditor extends JPanel {
 					BufferedWriter out = new BufferedWriter(fstream);
 					out.write(machineInput.getText());
 					out.close();
-					consoleOutput.setText("Máquina salva com sucesso.\n");
+					consoleOutput.setText("Machine file saved succesfully.\n");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
