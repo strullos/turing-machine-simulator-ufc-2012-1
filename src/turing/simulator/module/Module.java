@@ -17,9 +17,14 @@ public abstract class Module {
 	protected String m_module_name;
 	protected String m_module_parent;
 	protected String m_module_path;
+	protected static String m_error = new String();
 	protected boolean m_loaded;
 	
 	public static int test_steps = 0;
+	
+	public Log getLog(){
+		return m_log;
+	}
 	
 	public boolean loadFromFile(String filename) throws FileNotFoundException
 	{

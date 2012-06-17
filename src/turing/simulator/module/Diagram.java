@@ -13,7 +13,9 @@ import turing.simulator.tape.Tape;
 public class Diagram extends Module {
 
 	private HashMap<String, Module> m_loaded_modules; //Maps from module name to module object
-	private HashMap<String, String> m_modules_path; //Maps from module name to module path;
+	private HashMap<String, Module> m_loaded_files; //Maps from module file name to module object
+	private HashMap<String, String> m_modules_full_path; //Maps from module file to module full path
+	private HashMap<String, String> m_modules_file; //Maps from module name to module path;
 	private HashMap<String, DiagramRule> m_modules_rules; //Maps from module to rule;
 	private HashMap<String, String> m_variables_table; //Stores the name and value of all variables
 	private String m_initial_module;
@@ -21,7 +23,9 @@ public class Diagram extends Module {
 	
 	public Diagram(){
 		m_loaded_modules = new HashMap<String, Module>();
-		m_modules_path = new HashMap<String, String>();
+		m_loaded_files = new HashMap<String, Module>();
+		m_modules_file = new HashMap<String, String>();
+		m_modules_full_path = new HashMap<String,String>();
 		m_modules_rules = new HashMap<String, DiagramRule>();
 		m_variables_table = new HashMap<String,String>();
 		m_initial_module = "";
@@ -42,6 +46,7 @@ public class Diagram extends Module {
 			
 			if(m_module_name.isEmpty()){
 				m_log.writeLn("An error occurred loading diagram file " + m_module_name + "(" + m_module_path + ")" + ", while processing an instruction on line " + m_current_line + ": " + line);
+				m_log.writeLn("Error: " + m_error);
 			}else{
 				m_log.writeLn(m_module_name + ": " + "An error occurred loading diagram file " + m_module_name + "(" + m_module_path + ")" + ", while processing an instruction on line " + m_current_line + ": " + line);
 			}
@@ -67,8 +72,7 @@ public class Diagram extends Module {
 		String final_state = "";
 		if(m_loaded_modules.containsKey(m_current_module)){
 			Module last_module = m_loaded_modules.get(m_current_module);
-			if(last_module instanceof Diagram){
-			
+			if(last_module instanceof Diagram){			
 				return last_module.getFinalState();
 			}
 			if(last_module instanceof Machine){
@@ -86,11 +90,23 @@ public class Diagram extends Module {
 		if(tokens.countTokens() == 3){
 			String module_type = tokens.nextToken();
 			String module_name = tokens.nextToken();
-			String module_path = tokens.nextToken();
+			String module_file = tokens.nextToken();
+			String module_path;
+			if(m_modules_full_path.containsKey(module_file)){
+				module_path = m_modules_full_path.get(module_file);
+			}else{
+				module_path = module_file;
+			}			
 			if(m_loaded_modules.containsKey(module_name)){
 				m_log.writeLn("Duplicated module name detected on line: " + m_current_line);
 				m_log.writeLn("Aborting load.");
 				return false;				
+			}
+			if(m_loaded_files.containsKey(module_file)){				
+				m_log.writeLn("Module file already loaded, new reference added.");
+				Module m = m_loaded_files.get(module_file);
+				m_loaded_modules.put(module_name, m);
+				return true;
 			}
 			if(module_type.equals("machine")){
 				Module machine_module = new Machine();
@@ -100,15 +116,17 @@ public class Diagram extends Module {
 					machine_module.setModuleName(m_module_name + "->" + module_name);
 				}			
 				try {
-					if(!machine_module.loadFromFile(module_path)){
+					if(!machine_module.loadFromFile(module_path)){					
 						return false;
 					}
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
+					m_error = "Could not load machine file " + module_file;
 					return false;
 				}
 				m_loaded_modules.put(module_name, machine_module);
-				m_modules_path.put(module_name, module_path);
+				m_loaded_files.put(module_file, machine_module);
+				m_modules_file.put(module_name, module_file);
 				m_log.writeLn("Machine " + machine_module.getModuleName() + "(" + machine_module.getModulePath() + ")" + " loaded succesfully.");
 				return true;
 			}
@@ -120,15 +138,17 @@ public class Diagram extends Module {
 					diagram_module.setModuleName(m_module_name + "." + module_name);
 				}				
 				try {
-					if(!diagram_module.loadFromFile(module_path)){
+					if(!diagram_module.loadFromFile(module_file)){					
 						return false;
 					}
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
+					m_error = "Could not load diagram file " + module_file;
 					return false;
 				}
 				m_loaded_modules.put(module_name, diagram_module);
-				m_modules_path.put(module_name, module_path);
+				m_loaded_files.put(module_file, diagram_module);
+				m_modules_file.put(module_name, module_file);
 				m_log.writeLn("Diagram " + diagram_module.getModuleName() + "(" + diagram_module.getModulePath() + ")" + " loaded succesfully.");
 				return true;
 			}
@@ -343,6 +363,10 @@ public class Diagram extends Module {
 		return line.equals("\n") || line.equals("\r") || line.equals("\r\n") || line.isEmpty();
 	}
 	
+	public void setModuleFilesFullPath(HashMap<String,String> file_paths){
+		m_modules_full_path = file_paths;
+	}
+	
 	private class DiagramRule
 	{	
 		HashMap<String, String> m_next_modules; //Maps from symbol to module;
@@ -385,11 +409,19 @@ public class Diagram extends Module {
 		
 		//Checks if the rule already has a transition for the given symbol
 		public boolean hasTransition(String symbol){
-			return m_next_modules.containsKey(symbol);
+			return m_next_modules.containsKey(symbol) || m_next_modules.containsKey("#");
 		}	
 		
 		public String getNexModule(String symbol){
-			return m_next_modules.get(symbol);
+			if(m_next_modules.containsKey(symbol)){
+				return m_next_modules.get(symbol);
+			}else{
+				if(m_next_modules.containsKey("#")){
+					return m_next_modules.get("#");
+				}
+				return null;
+			}
+			
 		}
 	}
 }
