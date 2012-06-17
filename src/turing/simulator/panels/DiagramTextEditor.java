@@ -8,7 +8,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JTextArea;
@@ -28,14 +27,11 @@ import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -57,6 +53,7 @@ public class DiagramTextEditor extends JPanel {
 	/**
 	 * Create the panel.
 	 */
+	@SuppressWarnings("serial")
 	public DiagramTextEditor() {
 		m_modules_path = new HashMap<String,String>();
 		
@@ -76,22 +73,8 @@ public class DiagramTextEditor extends JPanel {
 		modulesTree.setBorder(new LineBorder(new Color(0, 0, 0)));
 		modulesTree.setModel(new DefaultTreeModel(
 			new DefaultMutableTreeNode("Modules") {
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = 1L;
-
 				{
-					DefaultMutableTreeNode node_1;
-//					DefaultMutableTreeNode node_2;
-					node_1 = new DefaultMutableTreeNode("Machines");
-//						node_2 = new DefaultMutableTreeNode("Pre-loaded");
-//							node_2.add(new DefaultMutableTreeNode("@l.mt"));
-//							node_2.add(new DefaultMutableTreeNode("@l#.mt"));
-//							node_2.add(new DefaultMutableTreeNode("@r.mt"));
-//							node_2.add(new DefaultMutableTreeNode("@r#.mt"));
-//						node_1.add(node_2);
-					add(node_1);
+					add(new DefaultMutableTreeNode("Machines"));
 					add(new DefaultMutableTreeNode("Diagrams"));
 				}
 			}
@@ -284,11 +267,11 @@ public class DiagramTextEditor extends JPanel {
 		boolean empty_fields = false;
 		consoleOutput.setText("");
 		if(diagramInput.getText().isEmpty()){
-			consoleOutput.setText("Empty machine.\n");
+			consoleOutput.setText("Error executing: empty diagram.\n");
 			empty_fields = true;
 		}
 		if(tapeInput.getText().isEmpty()){
-			consoleOutput.append("Empty tape.\n");		
+			consoleOutput.append("Error executing: empty tape.\n");		
 			empty_fields = true;
 		}
 		if(!empty_fields){
@@ -317,7 +300,7 @@ public class DiagramTextEditor extends JPanel {
 	
 	private void saveDiagramFile(){
 		if(diagramInput.getText().isEmpty()){
-			consoleOutput.setText("Empty diagram.");
+			consoleOutput.setText("Error saving diagram file: empty diagram.\n");
 		}else{
 			JFileChooser fc = new JFileChooser(new File("."));
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -398,22 +381,9 @@ public class DiagramTextEditor extends JPanel {
 		return true;
 	}
 	
-	private String getRequiredModule(String line)
-	{
-		StringTokenizer tokens = new StringTokenizer(line);
-		if(tokens.countTokens() == 3){
-			String module_type = tokens.nextToken();
-			String module_name = tokens.nextToken();
-			if(module_type.equals("diagram") || module_type.equals("machine")){
-					return module_name;
-			}			
-		}		
-		return "";
-	}
-	
 	private void exportDiagram(){		
 		if(diagramInput.getText().isEmpty()){
-			consoleOutput.setText("Empty diagram.");
+			consoleOutput.setText("Error exporting diagram file: empty diagram.");
 		}else{
 			JFileChooser fc = new JFileChooser(new File("."));
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -466,7 +436,7 @@ public class DiagramTextEditor extends JPanel {
 		return true;
 	}
 	
-	private void importDiagram(){
+	private void importDiagram(){		
 		JFileChooser fc = new JFileChooser(new File("."));		
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(
 		        "Diagram files (.dt)", "dt");
@@ -474,18 +444,24 @@ public class DiagramTextEditor extends JPanel {
 		fc.setAcceptAllFileFilterUsed(false);
 		int returnVal = fc.showOpenDialog(null);
 		String file_path;
+		String file_name;
 		boolean required_modules = true;
 		if(returnVal == JFileChooser.APPROVE_OPTION){
+			reset();
 			file_path = fc.getSelectedFile().getAbsolutePath().toString();
+			file_name = fc.getSelectedFile().getName();
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(file_path));
 				String line;
 				try {
+					importRequiredModules(file_name, file_path);
 					while( (line = reader.readLine()) != null ){
+						if(!checkRequiredModules(line)){
+							required_modules = false;
+						}
 						diagramInput.append(line);		
 						diagramInput.append("\n");
-					}
-					importRequiredModules(file_path);
+					}				
 					consoleOutput.append("Diagram file loaded successfully.\n");
 					if(!required_modules){
 						consoleOutput.append("Some of the required modules are not available," +
@@ -500,8 +476,8 @@ public class DiagramTextEditor extends JPanel {
 			}
 		}
 	}
-	
-	private boolean importRequiredModules(String path)
+	//TODO: Import only required modules, not all modules in the path
+	private boolean importRequiredModules(String diagram_name, String path)
 	{
 		String dir;
 		if(path.lastIndexOf("\\") > path.lastIndexOf("/"))		{
@@ -515,7 +491,7 @@ public class DiagramTextEditor extends JPanel {
 	        for (File child : children) {
 	        	String file_name = child.getName();
 	        	String file_path = child.getAbsolutePath();
-	        	if(file_name.endsWith(".mt") || file_name.endsWith(".dt")){
+	        	if((file_name.endsWith(".mt") || file_name.endsWith(".dt")) && !file_name.equals(diagram_name)){
 	        		addRequiredModule(file_name, file_path);
 	        	}
 	        }
@@ -523,5 +499,22 @@ public class DiagramTextEditor extends JPanel {
 		return true;
 	}
 	
+	private void reset()
+	{
+		m_modules_path.clear();
+		consoleOutput.setText("");
+		diagramInput.setText("");
+		resetTree();
+	}	
 	
+	private void resetTree(){
+		TreePath diagrams_path = modulesTree.getNextMatch("Diagrams", 0, Position.Bias.Forward);	
+		DefaultMutableTreeNode diagrams_node = (DefaultMutableTreeNode)diagrams_path.getPathComponent(1);
+		diagrams_node.removeAllChildren();
+		TreePath machines_path = modulesTree.getNextMatch("Machines", 0, Position.Bias.Forward);	
+		DefaultMutableTreeNode machines_node =  (DefaultMutableTreeNode)machines_path.getPathComponent(1);
+		machines_node.removeAllChildren();		
+		DefaultTreeModel model = (DefaultTreeModel)modulesTree.getModel();
+		model.reload();
+	}
 }
