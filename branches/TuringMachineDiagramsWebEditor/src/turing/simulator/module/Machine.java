@@ -22,7 +22,8 @@ public class Machine extends Module {
 	
 	@Override
 	protected boolean load(BufferedReader reader) {
-		String line;		
+		String line;
+		m_steps = 0;
 		try {
 			while( (line = reader.readLine()) != null ){
 				m_current_line++;			
@@ -149,6 +150,7 @@ public class Machine extends Module {
 	@Override
 	public void reset(){
 		m_current_state = m_initial_state;
+		m_steps = 0;
 	}
 	
 	public void setVariableValue(String value){

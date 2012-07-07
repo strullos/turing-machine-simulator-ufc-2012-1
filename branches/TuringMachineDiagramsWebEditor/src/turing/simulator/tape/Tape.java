@@ -20,6 +20,7 @@ public class Tape {
 			if( tape_string.charAt(i) != '#' )
 				j = i;
 		}		
+		System.out.println("String size: " + tape_string.length());
 		return tape_string.substring(0, j+2);
 	};
 	
