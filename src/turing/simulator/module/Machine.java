@@ -2,12 +2,19 @@ package turing.simulator.module;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import turing.simulator.tape.Tape;
 
 public class Machine extends Module {	
+	private HashMap<String, MachineRule> m_rules; //Maps from state to rule
+	private String m_initial_state;
+	private String m_current_state;
+	private String m_variable;
+	private String m_variable_value;
+	private boolean m_uses_variable;
 	
 	public Machine(){
 		m_rules = new HashMap<String, MachineRule>();
@@ -157,12 +164,10 @@ public class Machine extends Module {
 		m_variable_value = value;
 	}	
 	
-	private HashMap<String, MachineRule> m_rules; //Maps from state to rule
-	private String m_initial_state;
-	private String m_current_state;
-	private String m_variable;
-	private String m_variable_value;
-	private boolean m_uses_variable;
+	public ArrayList<String> getDependencies()
+	{
+		return new ArrayList<String>();
+	}
 	
 	private class MachineRule
 	{
@@ -224,6 +229,6 @@ public class Machine extends Module {
 				return true;
 			}			
 		}	
+	}
 	
-	}	
 }

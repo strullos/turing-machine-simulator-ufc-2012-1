@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+
 import turing.simulator.log.Log;
 import turing.simulator.tape.Tape;
 
@@ -82,4 +84,6 @@ public abstract class Module {
 	public int getLine() {
 		return m_current_line;
 	}
+	
+	public abstract ArrayList<String> getDependencies();
 }
