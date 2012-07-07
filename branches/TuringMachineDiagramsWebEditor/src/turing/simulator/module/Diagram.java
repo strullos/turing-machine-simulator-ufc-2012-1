@@ -3,7 +3,9 @@ package turing.simulator.module;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import turing.simulator.tape.Tape;
@@ -54,6 +56,7 @@ public class Diagram extends Module {
 		}	
 		m_current_module = m_initial_module;
 		m_loaded = true;
+		getDependencies();
 		return true;
 	}
 	
@@ -349,6 +352,32 @@ public class Diagram extends Module {
 	
 	public void setModuleFilesFullPath(HashMap<String,String> file_paths){
 		m_modules_full_path = file_paths;
+	}
+	
+	public ArrayList<String> getDependencies()
+	{
+		ArrayList<String> dependencies = new ArrayList<String>();
+		Iterator<String> it = m_modules_full_path.values().iterator();
+		while( it.hasNext() ) {
+			String dep_path = it.next();
+			Module dep = null;
+			
+			dependencies.add(dep_path);
+			try {
+				dep = ModuleFactory.loadModule(dep_path);
+				if( dep != null )
+					dependencies.addAll(dep.getDependencies());
+			} catch(IOException e) {
+				m_log.writeLn("File not found: " + dep_path);
+				e.printStackTrace();
+			}
+			
+		}
+		
+		for( String p : dependencies )  {
+			m_log.writeLn("Dep: " + p);
+		}
+		return dependencies;
 	}
 	
 	private class DiagramRule
