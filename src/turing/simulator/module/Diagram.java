@@ -9,7 +9,6 @@ import java.util.StringTokenizer;
 import turing.simulator.tape.Tape;
 
 
-
 public class Diagram extends Module {
 
 	private HashMap<String, Module> m_loaded_modules; //Maps from module name to module object
@@ -37,6 +36,7 @@ public class Diagram extends Module {
 	
 	@Override
 	protected boolean load(BufferedReader reader) throws IOException {
+		m_steps = 0;
 		String line;		
 		while( (line = reader.readLine()) != null ){
 			m_current_line++;
@@ -60,6 +60,7 @@ public class Diagram extends Module {
 	@Override
 	public void reset(){
 		m_current_module = m_initial_module;
+		m_steps = 0;
 	}
 	
 	@Override
@@ -88,10 +89,14 @@ public class Diagram extends Module {
 	public boolean processHeader(String line) {
 		StringTokenizer tokens = new StringTokenizer(line);
 		if(tokens.countTokens() == 3){
-			String module_type = tokens.nextToken();
+			String module_token = tokens.nextToken();
+			if( !module_token.equals("module") )
+				return false;
+			
 			String module_name = tokens.nextToken();
 			String module_file = tokens.nextToken();
 			String module_path;
+			Module module = null;
 			if(m_modules_full_path.containsKey(module_file)){
 				module_path = m_modules_full_path.get(module_file);
 			}else{
@@ -108,51 +113,28 @@ public class Diagram extends Module {
 				m_loaded_modules.put(module_name, m);
 				return true;
 			}
-			if(module_type.equals("machine")){
-				Module machine_module = new Machine();
-				if(m_module_name.isEmpty()){
-					machine_module.setModuleName(module_name);
-				}else{
-					machine_module.setModuleName(m_module_name + "->" + module_name);
-				}			
-				try {
-					if(!machine_module.loadFromFile(module_path)){					
-						return false;
-					}
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-					m_error = "Could not load machine file " + module_file;
+			try {
+				module = ModuleFactory.loadModule(module_path);
+				if( module == null )
 					return false;
-				}
-				m_loaded_modules.put(module_name, machine_module);
-				m_loaded_files.put(module_file, machine_module);
-				m_modules_file.put(module_name, module_file);
-				m_log.writeLn("Machine " + machine_module.getModuleName() + "(" + machine_module.getModulePath() + ")" + " loaded succesfully.");
-				return true;
+				
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				m_error = "Could not load module file " + module_file;
+				return false;
 			}
-			if(module_type.equals("diagram")){
-				Diagram diagram_module = new Diagram();
-				if(m_module_name.isEmpty()){
-					diagram_module.setModuleName(module_name);
-				}else{
-					diagram_module.setModuleName(m_module_name + "." + module_name);
-				}				
-				try {
-					if(!diagram_module.loadFromFile(module_file)){					
-						return false;
-					}
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-					m_error = "Could not load diagram file " + module_file;
-					return false;
-				}
-				m_loaded_modules.put(module_name, diagram_module);
-				m_loaded_files.put(module_file, diagram_module);
-				m_modules_file.put(module_name, module_file);
-				m_log.writeLn("Diagram " + diagram_module.getModuleName() + "(" + diagram_module.getModulePath() + ")" + " loaded succesfully.");
-				return true;
-			}
-			return false;
+			
+			if(m_module_name.isEmpty()){
+				module.setModuleName(module_name);
+			}else{
+				module.setModuleName(m_module_name + "->" + module_name);
+			}			
+			
+			m_loaded_modules.put(module_name, module);
+			m_loaded_files.put(module_file, module);
+			m_modules_file.put(module_name, module_file);
+			m_log.writeLn("Module " + module.getModuleName() + "(" + module.getModulePath() + ")" + " loaded succesfully.");
+			return true;
 		}		
 		return false;
 	}
@@ -162,10 +144,9 @@ public class Diagram extends Module {
 		StringTokenizer tokens = new StringTokenizer(line);
 		if(tokens.countTokens() == 3){
 			String initial_module = tokens.nextToken();
-			if(initial_module.equals("machine") || initial_module.equals("diagram")){
+			if( initial_module.equals("module") ){
 				return false;
 			}
-			
 			
 			if(m_initial_module.isEmpty()){
 				m_initial_module = initial_module;
@@ -227,6 +208,7 @@ public class Diagram extends Module {
 				current_symbol = symbols_tokens.nextToken();
 				if(rule.hasTransition(current_symbol)){
 					m_log.writeLn("Non-determinism detected: Current rule conflicts with previously added rule. Aborting loading.");
+					m_log.writeLn("Confliting symbol: " + current_symbol);
 					return false;
 				}
 				rule.addTransition(current_symbol, next_module, 
@@ -309,7 +291,9 @@ public class Diagram extends Module {
 	    	printStep(t);
 	    	m_steps++;
 	    }
+	    
 	    m_steps = current_module.getSteps();
+	    current_module.reset();
 	    if(m_modules_rules.containsKey(m_current_module)){
 	    	String curr_symbol = t.readCurrentSymbol();
 	    	DiagramRule rule = m_modules_rules.get(m_current_module);
@@ -409,7 +393,7 @@ public class Diagram extends Module {
 		
 		//Checks if the rule already has a transition for the given symbol
 		public boolean hasTransition(String symbol){
-			return m_next_modules.containsKey(symbol) || m_next_modules.containsKey("#");
+			return m_next_modules.containsKey(symbol) || m_next_modules.containsKey("*");
 		}	
 		
 		public String getNexModule(String symbol){
