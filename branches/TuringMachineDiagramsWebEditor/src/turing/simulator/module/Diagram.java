@@ -33,7 +33,7 @@ public class Diagram extends Module {
 		m_current_module = "";
 		m_module_name = "";
 		m_module_path = "this";
-		m_loaded = false;
+		m_loaded = false;		
 	}
 	
 	@Override
@@ -42,8 +42,8 @@ public class Diagram extends Module {
 		String line;		
 		while( (line = reader.readLine()) != null ){
 			m_current_line++;
-			if(processRule(line)) continue;
 			if(processHeader(line)) continue;
+			if(processRule(line)) continue;			
 			if( isEmptyLine(line) ) continue;
 			
 			if(m_module_name.isEmpty()){
@@ -224,7 +224,8 @@ public class Diagram extends Module {
 	}
 
 	@Override
-	public boolean execute(Tape t) {	
+	public boolean execute(Tape t) {
+		test_steps = 0;
 		boolean executing = true;
 		if(m_loaded){
 			//printStep(t);
@@ -429,8 +430,8 @@ public class Diagram extends Module {
 			if(m_next_modules.containsKey(symbol)){
 				return m_next_modules.get(symbol);
 			}else{
-				if(m_next_modules.containsKey("#")){
-					return m_next_modules.get("#");
+				if(m_next_modules.containsKey("*")){
+					return m_next_modules.get("*");
 				}
 				return null;
 			}
