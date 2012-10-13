@@ -272,6 +272,7 @@ public class DiagramTextEditor extends JPanel {
 			modules_list_model.remove(index);
 			
 			m_modules_path.remove(index);		
+			moduleViewertextArea.setText("");
 			consoleOutput.append("Module " + module_name + " removed succesfully.\n");
 		}		
 	}		
