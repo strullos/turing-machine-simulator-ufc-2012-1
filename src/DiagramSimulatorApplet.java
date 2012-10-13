@@ -5,8 +5,8 @@ import turing.simulator.panels.ModulesEditor;
 @SuppressWarnings("serial")
 public class DiagramSimulatorApplet extends JApplet {
 	
-	private static final int FRAME_WIDTH = 480;
-	private static final int FRAME_HEIGHT = 640;
+	private static final int FRAME_WIDTH = 800;
+	private static final int FRAME_HEIGHT = 600;
 	
 	/**
 	 * Creates the applet.
