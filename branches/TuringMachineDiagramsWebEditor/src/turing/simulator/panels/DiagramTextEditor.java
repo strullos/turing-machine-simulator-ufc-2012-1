@@ -7,10 +7,12 @@ import javax.swing.text.Position;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -36,6 +38,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import javax.swing.JList;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.JToolBar;
 
 public class DiagramTextEditor extends JPanel {
 
@@ -44,11 +50,15 @@ public class DiagramTextEditor extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private JTextField tapeInput;	
-	private JTree modulesTree;
 	
 	private HashMap<String, String> m_modules_path;	
+	
+	DefaultListModel<String> modulesListModel;
 	private JTextArea consoleOutput;
 	private JTextArea diagramInput;
+	private JList<String> modulesList;
+	private JButton removeModuleButton;
+	private JTextArea moduleViewertextArea;
 
 	/**
 	 * Create the panel.
@@ -56,6 +66,7 @@ public class DiagramTextEditor extends JPanel {
 	@SuppressWarnings("serial")
 	public DiagramTextEditor() {
 		m_modules_path = new HashMap<String,String>();
+		modulesListModel = new DefaultListModel<String>();
 		
 		setLayout(new MigLayout("", "[grow]", "[grow]"));
 		
@@ -66,41 +77,64 @@ public class DiagramTextEditor extends JPanel {
 		splitPane.setLeftComponent(leftPanel);
 		leftPanel.setLayout(new MigLayout("", "[194.00px:n,grow]", "[][grow][]"));
 		
-		JLabel availableModulesLabel = new JLabel("Available Modules:");
-		leftPanel.add(availableModulesLabel, "cell 0 0");
-		
-		modulesTree = new JTree();
-		modulesTree.setBorder(new LineBorder(new Color(0, 0, 0)));
-		modulesTree.setModel(new DefaultTreeModel(
-			new DefaultMutableTreeNode("Modules") {
-				{
-					add(new DefaultMutableTreeNode("Machines"));
-					add(new DefaultMutableTreeNode("Diagrams"));
-				}
-			}
-		));		
-	
-		leftPanel.add(modulesTree, "cell 0 1,grow");
-		
 		JButton addModuleButton = new JButton("+ Module");
 		addModuleButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				addModule();
 			}
 		});
-		leftPanel.add(addModuleButton, "flowx,cell 0 2,alignx left");
 		
-		JButton removeModuleButton = new JButton("- Module");
-		removeModuleButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				removeNode();
+		JSplitPane modulesSplitPane = new JSplitPane();
+		modulesSplitPane.setResizeWeight(0.6);
+		modulesSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+		leftPanel.add(modulesSplitPane, "cell 0 1,grow");		
+		
+		
+		JScrollPane modulesListScrollPane = new JScrollPane();
+		modulesSplitPane.setLeftComponent(modulesListScrollPane);
+		
+		modulesList = new JList<String>();
+		modulesListScrollPane.setViewportView(modulesList);
+		modulesList.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				int index = modulesList.getSelectedIndex();
+				if(index == -1){
+					removeModuleButton.setEnabled(false);
+				}else{
+					removeModuleButton.setEnabled(true);
+					displaySelectedModule();
+				}
 			}
 		});
-		leftPanel.add(removeModuleButton, "cell 0 2,alignx left");
+		modulesList.setModel(modulesListModel);
+		modulesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);	
+		
+		JLabel availableModulesLabel = new JLabel("Available Modules:");
+		modulesListScrollPane.setColumnHeaderView(availableModulesLabel);
+		
+		JScrollPane modulesViwerScrollPane = new JScrollPane();
+		modulesSplitPane.setRightComponent(modulesViwerScrollPane);
+		
+		JLabel lblModuleViewer = new JLabel("Module Viewer:");
+		modulesViwerScrollPane.setColumnHeaderView(lblModuleViewer);
+		
+		moduleViewertextArea = new JTextArea();
+		moduleViewertextArea.setEditable(false);
+		modulesViwerScrollPane.setViewportView(moduleViewertextArea);
+		leftPanel.add(addModuleButton, "flowx,cell 0 2,alignx left");
+		
+		removeModuleButton = new JButton("- Module");
+		removeModuleButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				removeModule();
+			}
+		});
+		removeModuleButton.setEnabled(false);
+		leftPanel.add(removeModuleButton, "cell 0 2,alignx left");				
 		
 		JPanel rightPanel = new JPanel();
 		splitPane.setRightComponent(rightPanel);
-		rightPanel.setLayout(new MigLayout("", "[grow]", "[][grow][]"));
+		rightPanel.setLayout(new MigLayout("", "[grow]", "[19.00][grow][]"));
 		
 		JPanel topPanel = new JPanel();
 		rightPanel.add(topPanel, "cell 0 0,grow");
@@ -118,38 +152,39 @@ public class DiagramTextEditor extends JPanel {
 		middlePanel.setLayout(new MigLayout("", "[grow]", "[grow]"));
 		
 		JSplitPane editorSplitPane = new JSplitPane();
+		editorSplitPane.setResizeWeight(0.2);
 		middlePanel.add(editorSplitPane, "flowx,cell 0 0,grow");
 		
 		JPanel diagramPanel = new JPanel();
 		editorSplitPane.setLeftComponent(diagramPanel);
-		diagramPanel.setLayout(new MigLayout("", "[200px:n,grow]", "[][grow]"));
-		
-		JLabel diagramLabel = new JLabel("Diagram:");
-		diagramPanel.add(diagramLabel, "cell 0 0");
+		diagramPanel.setLayout(new MigLayout("", "[200px:n,grow]", "[grow]"));
 		
 		JScrollPane diagramScrollPane = new JScrollPane();
 		diagramScrollPane.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
-		diagramPanel.add(diagramScrollPane, "cell 0 1,grow");
+		diagramPanel.add(diagramScrollPane, "cell 0 0,grow");
 		
 		diagramInput = new JTextArea();
 		diagramScrollPane.setViewportView(diagramInput);
 		
+		JLabel diagramLabel = new JLabel("Diagram:");
+		diagramScrollPane.setColumnHeaderView(diagramLabel);
+		
 		JPanel consolePanel = new JPanel();
 		editorSplitPane.setRightComponent(consolePanel);
-		consolePanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
-		
-		JLabel consoleLabel = new JLabel("Console:");
-		consolePanel.add(consoleLabel, "cell 0 0");
+		consolePanel.setLayout(new MigLayout("", "[grow]", "[grow]"));
 		
 		JScrollPane consoleScrollPane = new JScrollPane();
 		consoleScrollPane.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
-		consolePanel.add(consoleScrollPane, "cell 0 1,grow");
+		consolePanel.add(consoleScrollPane, "cell 0 0,grow");
 		
 		consoleOutput = new JTextArea();
 		consoleOutput.setForeground(Color.GREEN);
 		consoleOutput.setBackground(Color.BLACK);
 		consoleOutput.setEditable(false);
 		consoleScrollPane.setViewportView(consoleOutput);
+		
+		JLabel consoleLabel = new JLabel("Console:");
+		consoleScrollPane.setColumnHeaderView(consoleLabel);
 		
 		JPanel bottomPanel = new JPanel();
 		rightPanel.add(bottomPanel, "cell 0 2,grow");
@@ -194,13 +229,12 @@ public class DiagramTextEditor extends JPanel {
 		});
 		bottomPanel.add(importButton, "cell 3 0,alignx left");
 		bottomPanel.add(executeButton, "cell 4 0,alignx right");
-
 	}
 	
 	private void addModule(){
 		JFileChooser fc = new JFileChooser(new File("."));		
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-		        "Arquivos de Módulos(.mt ou .dt)", "mt", "dt");		
+		        "Arquivos de Mï¿½dulos(.mt ou .dt)", "mt", "dt");		
 		fc.setFileFilter(filter);
 		fc.setAcceptAllFileFilterUsed(false);
 		int returnVal = fc.showOpenDialog(null);
@@ -218,47 +252,57 @@ public class DiagramTextEditor extends JPanel {
 			consoleOutput.append("Already contains a " + file_name + " module. Duplicates are not allowed.");
 			return;
 		}
+		addModule(file_name);
 		m_modules_path.put(file_name, file_path);
-		String prefix = "";
-		if(file_name.endsWith(".mt")){
-			prefix = "Machines";				
-		}
-		if(file_name.endsWith(".dt")){			
-			prefix = "Diagrams";				
-		}
-		if(!prefix.isEmpty()){
-			addTreeNode(file_name,prefix,0);	
-			addTreeNode(file_path,file_name,0);
-			consoleOutput.append("Module " + file_name + " added successfully.\n");				
-		}
+		consoleOutput.append("Module " + file_name + " added successfully.\n");				
 	}
 	
-	private void removeNode(){
-		TreePath path = modulesTree.getSelectionPath();
-		DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
-		String node_name = node.toString();
-		if(node_name.equals("Diagrams") || node_name.equals("Machines")){
-			consoleOutput.append("Can't remove category nodes.\n");
-			return;
-		}
-		DefaultTreeModel model = (DefaultTreeModel)modulesTree.getModel();
-		if(node.isLeaf()){
-			node_name = node.getParent().toString();
-			node = (DefaultMutableTreeNode)node.getParent();
-		}
-		model.removeNodeFromParent(node);		
-		m_modules_path.remove(node_name);
-		expandTreeNodes();		
-		consoleOutput.append("Node " + node_name + "removed succesfully.");
+	private void addModule(String module_name)
+	{
+		DefaultListModel<String> list_model = (DefaultListModel<String>) modulesList.getModel();
+		int pos = list_model.getSize();
+		list_model.add(pos, module_name);	
 	}
 	
-	private void addTreeNode(String file_name, String prefix, int start_row){
-		TreePath path = modulesTree.getNextMatch(prefix, start_row, Position.Bias.Forward);	
-		DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
-		DefaultMutableTreeNode new_node = new DefaultMutableTreeNode(file_name);
-		DefaultTreeModel model = (DefaultTreeModel)modulesTree.getModel();
-		model.insertNodeInto(new_node,node,node.getChildCount());
-		expandTreeNodes();
+	private void removeModule(){	
+		int index = modulesList.getSelectedIndex();
+		if(index != -1){
+			String module_name = modulesList.getModel().getElementAt(index);
+			DefaultListModel<String> modules_list_model = (DefaultListModel<String>) modulesList.getModel();
+			modules_list_model.remove(index);
+			
+			m_modules_path.remove(index);		
+			consoleOutput.append("Module " + module_name + " removed succesfully.\n");
+		}		
+	}		
+	
+	private void displaySelectedModule() 
+	{
+		int index = modulesList.getSelectedIndex();
+		if(index != -1){	
+			moduleViewertextArea.setText("");
+			String module_name = modulesList.getModel().getElementAt(index);
+			String module_text = "";
+			try {
+				BufferedReader reader = new BufferedReader(new FileReader(m_modules_path.get(module_name)));
+				String line;
+				try {
+					while((line = reader.readLine()) != null){
+						module_text += (line + "\n");
+							
+					}
+					moduleViewertextArea.setText(module_text);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+		}
 	}
 	
 	private void executeDiagram(){
@@ -289,14 +333,9 @@ public class DiagramTextEditor extends JPanel {
 				e.printStackTrace();
 			}
 		}
-	}
+		d = null;
+	}	
 	
-	private void expandTreeNodes()
-	{
-		for(int i = 0; i < modulesTree.getRowCount(); i++){
-			modulesTree.expandRow(i);
-		}
-	}
 	
 	private void saveDiagramFile(){
 		if(diagramInput.getText().isEmpty()){
@@ -381,7 +420,8 @@ public class DiagramTextEditor extends JPanel {
 		return true;
 	}
 	
-	private void exportDiagram(){		
+	private void exportDiagram()
+	{		
 		if(diagramInput.getText().isEmpty()){
 			consoleOutput.setText("Error exporting diagram file: empty diagram.");
 		}else{
@@ -418,7 +458,8 @@ public class DiagramTextEditor extends JPanel {
 		}
 	}
 	
-	private boolean exportRequiredModules(String path){
+	private boolean exportRequiredModules(String path)
+	{
 		Collection<String> modules = m_modules_path.values();
 		Iterator<String> it = modules.iterator();		
 		while(it.hasNext()){			
@@ -436,7 +477,8 @@ public class DiagramTextEditor extends JPanel {
 		return true;
 	}
 	
-	private void importDiagram(){		
+	private void importDiagram()
+	{		
 		JFileChooser fc = new JFileChooser(new File("."));		
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(
 		        "Diagram files (.dt)", "dt");
@@ -503,18 +545,6 @@ public class DiagramTextEditor extends JPanel {
 	{
 		m_modules_path.clear();
 		consoleOutput.setText("");
-		diagramInput.setText("");
-		resetTree();
+		diagramInput.setText("");		
 	}	
-	
-	private void resetTree(){
-		TreePath diagrams_path = modulesTree.getNextMatch("Diagrams", 0, Position.Bias.Forward);	
-		DefaultMutableTreeNode diagrams_node = (DefaultMutableTreeNode)diagrams_path.getPathComponent(1);
-		diagrams_node.removeAllChildren();
-		TreePath machines_path = modulesTree.getNextMatch("Machines", 0, Position.Bias.Forward);	
-		DefaultMutableTreeNode machines_node =  (DefaultMutableTreeNode)machines_path.getPathComponent(1);
-		machines_node.removeAllChildren();		
-		DefaultTreeModel model = (DefaultTreeModel)modulesTree.getModel();
-		model.reload();
-	}
 }
