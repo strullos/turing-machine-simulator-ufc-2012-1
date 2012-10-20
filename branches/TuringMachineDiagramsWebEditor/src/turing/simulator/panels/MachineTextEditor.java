@@ -25,6 +25,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.border.LineBorder;
+import javax.swing.BoxLayout;
+import javax.swing.JSplitPane;
+import java.awt.Dimension;
 
 public class MachineTextEditor extends JPanel {
 	/**
@@ -55,10 +58,15 @@ public class MachineTextEditor extends JPanel {
 		
 		JPanel middle = new JPanel();
 		add(middle, "cell 0 1 2 1,grow");
-		middle.setLayout(new MigLayout("", "[grow][grow]", "[grow]"));
+		middle.setLayout(new BoxLayout(middle, BoxLayout.X_AXIS));
+		
+		JSplitPane splitPane = new JSplitPane();
+		middle.add(splitPane);
 		
 		JPanel editorPanel = new JPanel();
-		middle.add(editorPanel, "cell 0 0,grow");
+		editorPanel.setPreferredSize(new Dimension(300, 10));
+		editorPanel.setMinimumSize(new Dimension(200, 10));
+		splitPane.setLeftComponent(editorPanel);
 		editorPanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
 		
 		JLabel machineLabel = new JLabel("Machine:");
@@ -73,8 +81,9 @@ public class MachineTextEditor extends JPanel {
 		editorScrollPane.setViewportView(machineInput);
 		
 		JPanel consolePanel = new JPanel();
+		consolePanel.setMinimumSize(new Dimension(200, 10));
+		splitPane.setRightComponent(consolePanel);
 		consolePanel.setBorder(null);
-		middle.add(consolePanel, "cell 1 0,grow");
 		consolePanel.setLayout(new MigLayout("", "[grow]", "[][grow]"));
 		
 		JLabel consoleLabel = new JLabel("Console:");

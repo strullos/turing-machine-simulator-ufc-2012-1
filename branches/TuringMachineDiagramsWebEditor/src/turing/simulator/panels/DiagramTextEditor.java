@@ -42,6 +42,7 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.JToolBar;
+import java.awt.Dimension;
 
 public class DiagramTextEditor extends JPanel {
 
@@ -74,6 +75,8 @@ public class DiagramTextEditor extends JPanel {
 		add(splitPane, "cell 0 0,grow");
 		
 		JPanel leftPanel = new JPanel();
+		leftPanel.setPreferredSize(new Dimension(220, 10));
+		leftPanel.setMinimumSize(new Dimension(220, 10));
 		splitPane.setLeftComponent(leftPanel);
 		leftPanel.setLayout(new MigLayout("", "[194.00px:n,grow]", "[][grow][]"));
 		

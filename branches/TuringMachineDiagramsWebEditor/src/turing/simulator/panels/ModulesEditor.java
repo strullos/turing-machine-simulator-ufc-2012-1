@@ -22,8 +22,10 @@ public class ModulesEditor extends JPanel {
 		
 		MachineTextEditor machine_text_editor = new MachineTextEditor();
 		DiagramTextEditor diagram_text_editor = new DiagramTextEditor();
+		DiagramGraphEditor diagram_graph_editor = new DiagramGraphEditor();
 		tabbedPane.addTab("Diagram Text editor", null, diagram_text_editor, null);
 		tabbedPane.addTab("Machine Text editor", null, machine_text_editor, null);
+		tabbedPane.addTab("Diagram Graph editor", null, diagram_graph_editor, null);
 	}
 
 }
