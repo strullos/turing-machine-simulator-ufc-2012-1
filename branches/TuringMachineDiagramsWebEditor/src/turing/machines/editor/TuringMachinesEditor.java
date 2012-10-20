@@ -7,6 +7,10 @@ import turing.machines.editor.perspectives.MachineTextEditor;
 import java.awt.BorderLayout;
 
 public class TuringMachinesEditor extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	EditorToolBar m_tool_bar;
 	MachineTextEditor m_machine_text_editor;
 	public TuringMachinesEditor() {

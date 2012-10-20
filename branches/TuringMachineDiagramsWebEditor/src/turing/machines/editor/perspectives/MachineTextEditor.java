@@ -14,14 +14,17 @@ import javax.swing.BoxLayout;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.awt.Component;
 import javax.swing.Box;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,66 +32,34 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import javax.swing.JTabbedPane;
 
 public class MachineTextEditor extends EditorPerspective {
-	private JTextField tape_textField;
-	private JTextArea console_textArea;
-	private JTextArea machine_textArea;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private MachineTextDocument m_current_machine_document;
+	private JTabbedPane m_machines_tabbedPane;
 
 	public MachineTextEditor(String name) {
 		super(name);
-		setLayout(new BorderLayout(0, 0));
+		setLayout(new BorderLayout(0, 0));		
 		
-		JPanel tape_panel = new JPanel();
-		tape_panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-		add(tape_panel, BorderLayout.NORTH);
-		tape_panel.setLayout(new BoxLayout(tape_panel, BoxLayout.X_AXIS));
 		
-		JLabel tape_label = new JLabel("Tape:");
-		tape_panel.add(tape_label);
+		m_machines_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		add(m_machines_tabbedPane, BorderLayout.CENTER);	
 		
-		Component horizontalStrut = Box.createHorizontalStrut(20);
-		horizontalStrut.setPreferredSize(new Dimension(5, 0));
-		horizontalStrut.setMinimumSize(new Dimension(5, 0));
-		horizontalStrut.setMaximumSize(new Dimension(5, 32767));
-		tape_panel.add(horizontalStrut);
-		
-		tape_textField = new JTextField();
-		tape_panel.add(tape_textField);
-		tape_textField.setColumns(10);
-		
-		JSplitPane machine_text_editor_splitPane = new JSplitPane();
-		machine_text_editor_splitPane.setOneTouchExpandable(true);
-		add(machine_text_editor_splitPane, BorderLayout.CENTER);
-		machine_text_editor_splitPane.setDividerLocation(500);
-		
-		JPanel console_panel = new JPanel();
-		console_panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-		machine_text_editor_splitPane.setRightComponent(console_panel);
-		console_panel.setLayout(new BorderLayout(0, 0));
-		
-		console_textArea = new JTextArea();
-		console_textArea.setEditable(false);
-		console_textArea.setFont(new Font("Dialog", Font.PLAIN, 18));
-		console_textArea.setForeground(new Color(0, 255, 0));
-		console_textArea.setBackground(Color.BLACK);
-		console_panel.add(console_textArea);
-		
-		JLabel console_label = new JLabel("Console:");
-		console_panel.add(console_label, BorderLayout.NORTH);
-		
-		JPanel machine_panel = new JPanel();
-		machine_panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-		machine_text_editor_splitPane.setLeftComponent(machine_panel);
-		machine_panel.setLayout(new BorderLayout(0, 0));
-		
-		machine_textArea = new JTextArea();
-		machine_textArea.setFont(new Font("Dialog", Font.PLAIN, 16));
-		machine_panel.add(machine_textArea);
-		
-		JLabel machine_label = new JLabel("Machine:");
-		machine_panel.add(machine_label, BorderLayout.NORTH);
-		// TODO Auto-generated constructor stub
+		NewMachineDocument();
+		m_machines_tabbedPane.addChangeListener(new TabChangedListener());
+	}
+	
+	public void NewMachineDocument() 
+	{
+		MachineTextDocument machine_text_document = new MachineTextDocument();
+		m_current_machine_document = machine_text_document;
+		m_machines_tabbedPane.addTab("New Machine", null, machine_text_document, null);		
 	}
 
 	@Override
@@ -102,15 +73,21 @@ public class MachineTextEditor extends EditorPerspective {
 		String file_path;
 		if(returnVal == JFileChooser.APPROVE_OPTION){
 			file_path = fc.getSelectedFile().getAbsolutePath().toString();
+			
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(file_path));
 				String line;
 				try {
+					String machine_text = new String("");
 					while( (line = reader.readLine()) != null ){
-						machine_textArea.append(line);		
-						machine_textArea.append("\n");
+						machine_text += line;		
+						machine_text += "\n";						
 					}
-					console_textArea.setText("Machine file loaded successfully.\n");
+					MachineTextDocument new_machine_document = new MachineTextDocument();
+					new_machine_document.SetMachineText(machine_text);
+					m_machines_tabbedPane.addTab(fc.getSelectedFile().getName().toString()  + ".mt", null, new_machine_document, null);	
+					m_machines_tabbedPane.setSelectedComponent(new_machine_document);
+					m_current_machine_document.SetConsoleText("Machine file loaded successfully.\n");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -123,8 +100,8 @@ public class MachineTextEditor extends EditorPerspective {
 
 	@Override
 	public void Save() {
-		if(machine_textArea.getText().isEmpty()){
-			console_textArea.setText("Empty machine.");
+		if(m_current_machine_document.GetMachineText().isEmpty()){
+			m_current_machine_document.SetConsoleText("Empty machine.");
 		}else{
 			JFileChooser fc = new JFileChooser(new File("."));
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -140,9 +117,10 @@ public class MachineTextEditor extends EditorPerspective {
 				try {
 					fstream = new FileWriter(file_path);
 					BufferedWriter out = new BufferedWriter(fstream);
-					out.write(machine_textArea.getText());
+					out.write(m_current_machine_document.GetMachineText());
 					out.close();
-					console_textArea.setText("Machine file saved succesfully.\n");
+					m_current_machine_document.SetConsoleText("Machine file saved succesfully.\n");
+					m_machines_tabbedPane.setTitleAt(m_machines_tabbedPane.getSelectedIndex(), fc.getSelectedFile() + ".mt");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}						
@@ -154,32 +132,41 @@ public class MachineTextEditor extends EditorPerspective {
 	public void Execute() {
 		Machine m = new Machine();
 		boolean empty_fields = false;
-		console_textArea.setText("");
-		if(machine_textArea.getText().isEmpty()){
-			console_textArea.setText("Empty machine.\n");
+		m_current_machine_document.ClearConsoleText();
+		if(m_current_machine_document.GetMachineText().isEmpty()){
+			m_current_machine_document.SetConsoleText("Empty machine.\n");
 			empty_fields = true;
 		}
-		if(tape_textField.getText().isEmpty()){
-			console_textArea.append("Empty tape.\n");		
+		if(m_current_machine_document.GetTape().isEmpty()){
+			m_current_machine_document.AppendConsoleText("Empty tape.\n");		
 			empty_fields = true;
 		}
 		if(!empty_fields){
 			try {
-				if( m.loadFromString(machine_textArea.getText())) {
-					Tape tape = new Tape(tape_textField.getText());				
-					console_textArea.setText("Executing machine on tape: '" + tape.toString() + "'\n\n");
-					console_textArea.append(m.getCurrentState() + ": " + tape.toString() + "\n");
+				if( m.loadFromString(m_current_machine_document.GetMachineText())) {
+					Tape tape = new Tape(m_current_machine_document.GetTape());				
+					m_current_machine_document.SetConsoleText("Executing machine on tape: '" + tape.toString() + "'\n\n");
+					m_current_machine_document.AppendConsoleText(m.getCurrentState() + ": " + tape.toString() + "\n");
 					while( m.executeStep(tape) ) {
-						console_textArea.append(m.getCurrentState() + ": " + tape.toString() + "\n");
+						m_current_machine_document.AppendConsoleText(m.getCurrentState() + ": " + tape.toString() + "\n");
 					}
-					console_textArea.append("\nStopped execution on " + Integer.toString(m.getSteps()) + " steps on state " + m.getCurrentState());
+					m_current_machine_document.AppendConsoleText("\nStopped execution on " + Integer.toString(m.getSteps()) + " steps on state " + m.getCurrentState());
 				} else {
-					console_textArea.setText("Failed to process rule - error on line " + Integer.toString(m.getLine()));
+					m_current_machine_document.SetConsoleText("Failed to process rule - error on line " + Integer.toString(m.getLine()));
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+		
+	}
+	
+	class TabChangedListener implements ChangeListener
+	{
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			MachineTextEditor.this.m_current_machine_document = (MachineTextDocument) MachineTextEditor.this.m_machines_tabbedPane.getSelectedComponent();			
+		}		
 		
 	}
 }
