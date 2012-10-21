@@ -38,6 +38,9 @@ public class EditorToolBar extends JToolBar {
 	
 	private void AddToolBarButtons()
 	{
+		JButton new_button = new JButton(new ImageIcon("../resources/icons/toolbar/document-new-7.png"));
+		new_button.addActionListener(new NewActionListener());
+		this.add(new_button);
 		JButton open_button = new JButton(new ImageIcon("../resources/icons/toolbar/document-open-7.png"));		
 		open_button.addActionListener(new OpenActionListener());
 		this.add(open_button);		
@@ -61,6 +64,17 @@ public class EditorToolBar extends JToolBar {
 	{
 		String selected_perspective = (String) m_perspectives_combobox.getSelectedItem();
 		m_current_perspective = m_perspectives.get(selected_perspective);
+	}
+	
+	class NewActionListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			EditorToolBar.this.m_current_perspective.New();
+			
+		}
+		
 	}
 	
 	class OpenActionListener implements ActionListener

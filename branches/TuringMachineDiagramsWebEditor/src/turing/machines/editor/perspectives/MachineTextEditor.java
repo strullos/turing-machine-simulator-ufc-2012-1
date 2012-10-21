@@ -3,28 +3,16 @@ package turing.machines.editor.perspectives;
 import turing.machines.editor.EditorPerspective;
 import turing.simulator.module.Machine;
 import turing.simulator.tape.Tape;
+import ui.utils.ClosableTabComponent;
 
 import java.awt.BorderLayout;
 
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.BoxLayout;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import java.awt.Component;
-import javax.swing.Box;
-import java.awt.Dimension;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -59,7 +47,18 @@ public class MachineTextEditor extends EditorPerspective {
 	{
 		MachineTextDocument machine_text_document = new MachineTextDocument();
 		m_current_machine_document = machine_text_document;
-		m_machines_tabbedPane.addTab("New Machine", null, machine_text_document, null);		
+		if(m_machines_tabbedPane.getComponentCount() > 0){
+			m_machines_tabbedPane.addTab("New Machine" + m_machines_tabbedPane.getComponentCount(), null, machine_text_document, null);		
+		}else{
+			m_machines_tabbedPane.addTab("New Machine", null, machine_text_document, null);		
+		}		
+		m_machines_tabbedPane.setSelectedComponent(machine_text_document);
+		m_machines_tabbedPane.setTabComponentAt(m_machines_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_machines_tabbedPane));
+	}
+	
+	@Override
+	public void New() {
+		NewMachineDocument();		
 	}
 
 	@Override
@@ -85,8 +84,9 @@ public class MachineTextEditor extends EditorPerspective {
 					}
 					MachineTextDocument new_machine_document = new MachineTextDocument();
 					new_machine_document.SetMachineText(machine_text);
-					m_machines_tabbedPane.addTab(fc.getSelectedFile().getName().toString()  + ".mt", null, new_machine_document, null);	
+					m_machines_tabbedPane.addTab(fc.getSelectedFile().getName().toString(), null, new_machine_document, null);	
 					m_machines_tabbedPane.setSelectedComponent(new_machine_document);
+					m_machines_tabbedPane.setTabComponentAt(m_machines_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_machines_tabbedPane));
 					m_current_machine_document.SetConsoleText("Machine file loaded successfully.\n");
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -169,4 +169,5 @@ public class MachineTextEditor extends EditorPerspective {
 		}		
 		
 	}
+	
 }
