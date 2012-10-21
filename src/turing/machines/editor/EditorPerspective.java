@@ -18,6 +18,7 @@ public abstract class EditorPerspective extends JPanel {
 		return m_name;
 	}
 	
+	public abstract void New();
 	public abstract void Open();
 	public abstract void Save();
 	public abstract void Execute();

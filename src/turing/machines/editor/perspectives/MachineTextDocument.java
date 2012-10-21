@@ -107,5 +107,4 @@ public class MachineTextDocument extends JPanel {
 	{
 		return tape_textField.getText();
 	}
-
 }
