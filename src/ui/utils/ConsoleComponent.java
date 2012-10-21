@@ -23,6 +23,7 @@ public class ConsoleComponent extends JPanel {
 		add(console_label, BorderLayout.NORTH);
 		
 		m_console_textArea = new JTextArea();
+		m_console_textArea.setColumns(1);
 		m_console_textArea.setEditable(false);
 		m_console_textArea.setForeground(new Color(0, 255, 0));
 		m_console_textArea.setBackground(Color.BLACK);
