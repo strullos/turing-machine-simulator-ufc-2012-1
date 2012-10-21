@@ -82,7 +82,7 @@ public class MachineTextEditor extends EditorPerspective {
 						machine_text += "\n";						
 					}
 					MachineTextDocument new_machine_document = new MachineTextDocument();
-					new_machine_document.SetMachineText(machine_text);
+					new_machine_document.SetModuleText(machine_text);
 					m_machines_tabbedPane.addTab(fc.getSelectedFile().getName().toString(), null, new_machine_document, null);	
 					m_machines_tabbedPane.setSelectedComponent(new_machine_document);
 					m_machines_tabbedPane.setTabComponentAt(m_machines_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_machines_tabbedPane));
@@ -102,7 +102,7 @@ public class MachineTextEditor extends EditorPerspective {
 		if(m_current_machine_document == null){
 			return;
 		}
-		if(m_current_machine_document.GetMachineText().isEmpty()){
+		if(m_current_machine_document.GetModuleText().isEmpty()){
 			m_current_machine_document.SetConsoleText("Empty machine.");
 		}else{
 			JFileChooser fc = new JFileChooser(new File("."));
@@ -119,7 +119,7 @@ public class MachineTextEditor extends EditorPerspective {
 				try {
 					fstream = new FileWriter(file_path);
 					BufferedWriter out = new BufferedWriter(fstream);
-					out.write(m_current_machine_document.GetMachineText());
+					out.write(m_current_machine_document.GetModuleText());
 					out.close();
 					m_current_machine_document.SetConsoleText("Machine file saved succesfully.\n");
 					m_machines_tabbedPane.setTitleAt(m_machines_tabbedPane.getSelectedIndex(), fc.getSelectedFile() + ".mt");
@@ -138,7 +138,7 @@ public class MachineTextEditor extends EditorPerspective {
 		Machine m = new Machine();
 		boolean empty_fields = false;
 		m_current_machine_document.ClearConsoleText();
-		if(m_current_machine_document.GetMachineText().isEmpty()){
+		if(m_current_machine_document.GetModuleText().isEmpty()){
 			m_current_machine_document.SetConsoleText("Empty machine.\n");
 			empty_fields = true;
 		}
@@ -148,7 +148,7 @@ public class MachineTextEditor extends EditorPerspective {
 		}
 		if(!empty_fields){
 			try {
-				if( m.loadFromString(m_current_machine_document.GetMachineText())) {
+				if( m.loadFromString(m_current_machine_document.GetModuleText())) {
 					Tape tape = new Tape(m_current_machine_document.GetTape());				
 					m_current_machine_document.SetConsoleText("Executing machine on tape: '" + tape.toString() + "'\n\n");
 					m_current_machine_document.AppendConsoleText(m.getCurrentState() + ": " + tape.toString() + "\n");
