@@ -2,7 +2,10 @@ package ui.utils;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JSplitPane;
@@ -12,6 +15,8 @@ import javax.swing.BoxLayout;
 import javax.swing.ListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class ItemListComponent extends JPanel {
 	/**
@@ -22,9 +27,16 @@ public class ItemListComponent extends JPanel {
 	private JTextArea m_viewer_textArea;
 	private JButton m_add_button;
 	private JButton m_remove_button;
+	private ActionListener m_add_listener;
+	private ActionListener m_remove_listener;	
+	private ActionListener m_selection_listener;
 
-	public ItemListComponent(String label)
+	public ItemListComponent(String label, ActionListener add_listener, ActionListener remove_listener, ActionListener selection_listener)
 	{
+		m_add_listener = add_listener;
+		m_remove_listener = remove_listener;
+		m_selection_listener = selection_listener;
+		
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setLayout(new BorderLayout(0, 0));
 		
@@ -36,6 +48,7 @@ public class ItemListComponent extends JPanel {
 		add(items_splitPane, BorderLayout.CENTER);
 		
 		m_items_list = new JList<String>();
+		m_items_list.setModel(new DefaultListModel<String>());
 		m_items_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);		
 		items_splitPane.setLeftComponent(m_items_list);
 		
@@ -53,5 +66,63 @@ public class ItemListComponent extends JPanel {
 		
 		m_remove_button = new JButton(new ImageIcon("../resources/icons/list-remove.png"));
 		buttons_panel.add(m_remove_button);		
+		
+		m_add_button.addActionListener(new AddActionListener());
+		m_remove_button.addActionListener(new RemoveActionListener());
+		m_remove_button.setEnabled(false);
+		
+		m_items_list.addListSelectionListener(new SelectionChangedListener());
+	}
+	
+	public String GetSelectedItem()
+	{
+		return m_items_list.getSelectedValue();
+	}
+	
+	public void SetViewerContent(String text)
+	{
+		m_viewer_textArea.setText(text);
+	}
+	
+	public void AddItem(String item)
+	{
+		DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
+		int pos = list_model.getSize();
+		list_model.add(pos, item);	
+		m_items_list.setSelectedValue(item, true);
+	}	
+	
+	class AddActionListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {			
+			m_add_listener.actionPerformed(e);					
+		}
+		
+	}
+	
+	class RemoveActionListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			m_remove_listener.actionPerformed(e);
+		}
+		
+	}
+	
+	class SelectionChangedListener implements ListSelectionListener
+	{	
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+			m_selection_listener.actionPerformed(null);		
+			if(m_items_list.getSelectedIndex() != -1){
+				ItemListComponent.this.m_remove_button.setEnabled(true);
+			}else{
+				ItemListComponent.this.m_remove_button.setEnabled(false);
+			}
+		}
+		
 	}
 }
