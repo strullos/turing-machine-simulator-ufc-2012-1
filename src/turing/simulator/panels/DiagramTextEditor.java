@@ -2,11 +2,6 @@ package turing.simulator.panels;
 
 import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
-import javax.swing.JTree;
-import javax.swing.text.Position;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -41,7 +36,6 @@ import java.util.StringTokenizer;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.JToolBar;
 import java.awt.Dimension;
 
 public class DiagramTextEditor extends JPanel {
@@ -64,7 +58,6 @@ public class DiagramTextEditor extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	@SuppressWarnings("serial")
 	public DiagramTextEditor() {
 		m_modules_path = new HashMap<String,String>();
 		modulesListModel = new DefaultListModel<String>();

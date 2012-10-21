@@ -7,15 +7,11 @@ import java.awt.event.MouseWheelListener;
 import java.util.HashMap;
 
 import com.mxgraph.util.mxConstants;
-import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxPoint;
-import com.mxgraph.util.mxResources;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.swing.mxGraphOutline;
 import com.mxgraph.swing.handler.mxPanningHandler;
-import com.sun.org.apache.xalan.internal.xsltc.runtime.Hashtable;
 
 public class Graph {
 	protected mxGraph m_graph;
