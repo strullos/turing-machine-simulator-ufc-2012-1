@@ -11,29 +11,37 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
 
-
-
 public class EditorToolBar extends JToolBar {
 	/**
-	 * 
+	 * This class implements the toolbar on top of the application.
+	 * It contains references to all perspectives and allows the user to change the current perspective at any moment.
+	 * Whenever the perspective is changed, the toolbar buttons behaviour may change also (e.g Save a .mt or save .dt)
+	 * So, the toolbar buttons always connects with the methods of the current perspective.
 	 */
 	private static final long serialVersionUID = 1L;
-	private JComboBox<String> m_perspectives_combobox;
-	private EditorPerspective m_current_perspective;
-	private HashMap<String, EditorPerspective> m_perspectives;
+	private JComboBox<String> m_perspectives_combobox;	
+	private HashMap<ToolBarListenerType, ActionListener> m_listeners;
 
 	public EditorToolBar()
-	{		
-		m_perspectives = new HashMap<String, EditorPerspective>();
+	{
+		m_listeners = new HashMap<ToolBarListenerType, ActionListener>();
 		AddToolBarButtons();
 		this.setFloatable(false);
 	}
 	
-	public void AddPerspective(EditorPerspective new_perspective)
+	public void RegisterListener(ToolBarListenerType type, ActionListener listener)
 	{
-		m_perspectives_combobox.addItem(new_perspective.Name());	
-		m_perspectives.put(new_perspective.Name(), new_perspective);
-		SetCurrentPerspective();
+		m_listeners.put(type, listener);
+	}
+	
+	public String GetCurrentPerspective()
+	{
+		return (String) m_perspectives_combobox.getSelectedItem();
+	}
+	
+	public void AddPerspective(String new_perspective)
+	{
+		m_perspectives_combobox.addItem(new_perspective);			
 	}
 	
 	private void AddToolBarButtons()
@@ -58,20 +66,17 @@ public class EditorToolBar extends JToolBar {
 		JButton execute_button = new JButton(new ImageIcon("../resources/icons/toolbar/media-playback-start-3.png"));
 		execute_button.addActionListener(new ExecuteActionListener());
 		this.add(execute_button);		
-	}
+	}	
 	
-	private void SetCurrentPerspective()
-	{
-		String selected_perspective = (String) m_perspectives_combobox.getSelectedItem();
-		m_current_perspective = m_perspectives.get(selected_perspective);
-	}
 	
 	class NewActionListener implements ActionListener
 	{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			EditorToolBar.this.m_current_perspective.New();
+			if(m_listeners.containsKey(ToolBarListenerType.NEW_FILE)){
+				m_listeners.get(ToolBarListenerType.NEW_FILE).actionPerformed(e);
+			}
 			
 		}
 		
@@ -81,7 +86,9 @@ public class EditorToolBar extends JToolBar {
 	{
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			EditorToolBar.this.m_current_perspective.Open();			
+			if(m_listeners.containsKey(ToolBarListenerType.OPEN_FILE)){
+				m_listeners.get(ToolBarListenerType.OPEN_FILE).actionPerformed(e);
+			}	
 		}		
 	};
 	
@@ -90,7 +97,9 @@ public class EditorToolBar extends JToolBar {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			EditorToolBar.this.m_current_perspective.Save();
+			if(m_listeners.containsKey(ToolBarListenerType.SAVE_FILE)){
+				m_listeners.get(ToolBarListenerType.SAVE_FILE).actionPerformed(e);
+			}
 			
 		}
 		
@@ -101,7 +110,9 @@ public class EditorToolBar extends JToolBar {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			EditorToolBar.this.m_current_perspective.Execute();			
+			if(m_listeners.containsKey(ToolBarListenerType.EXECUTE)){
+				m_listeners.get(ToolBarListenerType.EXECUTE).actionPerformed(e);
+			}
 		}
 		
 	}
@@ -110,7 +121,9 @@ public class EditorToolBar extends JToolBar {
 	{
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			EditorToolBar.this.SetCurrentPerspective();			
+			if(m_listeners.containsKey(ToolBarListenerType.PERSPECTIVE_CHANGED)){				
+				m_listeners.get(ToolBarListenerType.PERSPECTIVE_CHANGED).actionPerformed(e);
+			}	
 		}		
 	};
 	

@@ -5,27 +5,14 @@ import graph.GraphNode;
 
 import javax.swing.JPanel;
 import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JComboBox;
-import javax.swing.JCheckBox;
-import javax.swing.JMenuBar;
-import javax.swing.JSplitPane;
-import javax.swing.JList;
-
-import com.mxgraph.view.mxGraph;
-import com.mxgraph.swing.mxGraphComponent;
-import java.awt.Dimension;
-import java.awt.Cursor;
-import java.awt.event.MouseWheelEvent;
-
-import javax.swing.JToolBar;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import java.awt.event.MouseWheelListener;
 import javax.swing.JLayeredPane;
 
 public class DiagramGraphEditor extends JPanel {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected Graph m_graph;
 
 	/**

@@ -7,7 +7,6 @@ import ui.utils.ClosableTabComponent;
 
 import java.awt.BorderLayout;
 
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -100,6 +99,9 @@ public class MachineTextEditor extends EditorPerspective {
 
 	@Override
 	public void Save() {
+		if(m_current_machine_document == null){
+			return;
+		}
 		if(m_current_machine_document.GetMachineText().isEmpty()){
 			m_current_machine_document.SetConsoleText("Empty machine.");
 		}else{
@@ -130,6 +132,9 @@ public class MachineTextEditor extends EditorPerspective {
 
 	@Override
 	public void Execute() {
+		if(m_current_machine_document == null){
+			return;
+		}
 		Machine m = new Machine();
 		boolean empty_fields = false;
 		m_current_machine_document.ClearConsoleText();
@@ -150,7 +155,8 @@ public class MachineTextEditor extends EditorPerspective {
 					while( m.executeStep(tape) ) {
 						m_current_machine_document.AppendConsoleText(m.getCurrentState() + ": " + tape.toString() + "\n");
 					}
-					m_current_machine_document.AppendConsoleText("\nStopped execution on " + Integer.toString(m.getSteps()) + " steps on state " + m.getCurrentState());
+					m_current_machine_document.AppendConsoleText("\nFinished executing after " + Integer.toString(m.getSteps()) + " step(s) on state " + m.getCurrentState());
+					m_current_machine_document.AppendConsoleText("\nTape final configuration is: " + tape.toString());
 				} else {
 					m_current_machine_document.SetConsoleText("Failed to process rule - error on line " + Integer.toString(m.getLine()));
 				}
@@ -165,7 +171,11 @@ public class MachineTextEditor extends EditorPerspective {
 	{
 		@Override
 		public void stateChanged(ChangeEvent e) {
-			MachineTextEditor.this.m_current_machine_document = (MachineTextDocument) MachineTextEditor.this.m_machines_tabbedPane.getSelectedComponent();			
+			if( MachineTextEditor.this.m_machines_tabbedPane.getSelectedIndex() != -1){
+				MachineTextEditor.this.m_current_machine_document = (MachineTextDocument) MachineTextEditor.this.m_machines_tabbedPane.getSelectedComponent();
+			}else{
+				MachineTextEditor.this.m_current_machine_document = null;
+			}						
 		}		
 		
 	}
