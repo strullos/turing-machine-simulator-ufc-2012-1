@@ -20,7 +20,7 @@ public class Tape {
 			if( tape_string.charAt(i) != '#' )
 				j = i;
 		}		
-		return tape_string.substring(0, j+2);
+		return tape_string.toString();//tape_string.substring(0, j+2);
 	};
 	
 	
@@ -32,6 +32,9 @@ public class Tape {
 	public void writeSymbol(char symbol)
 	{
 		m_tape.setCharAt(m_position, symbol);
+		if(!m_tape.toString().endsWith("#")){
+			m_tape.append("#");
+		}
 	}
 	//Unused method, remove later?
 	public char readSymbol()

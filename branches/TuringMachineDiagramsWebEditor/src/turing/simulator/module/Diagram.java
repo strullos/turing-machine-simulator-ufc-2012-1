@@ -97,6 +97,10 @@ public class Diagram extends Module {
 				return false;
 			
 			String module_name = tokens.nextToken();
+			if(module_name.startsWith("%")){
+				module_name = module_name.substring(1);
+				m_initial_module = module_name;
+			}
 			String module_file = tokens.nextToken();
 			String module_path;
 			Module module = null;
@@ -156,11 +160,7 @@ public class Diagram extends Module {
 			if(m_initial_module.isEmpty()){
 				m_initial_module = initial_module;
 			}
-			if(initial_module.startsWith("%")){
-				initial_module = initial_module.substring(1);
-				m_initial_module = initial_module;
-			}
-			
+					
 			String symbols = tokens.nextToken();
 			String next_module = tokens.nextToken();
 			if( !(symbols.startsWith("[") && symbols.endsWith("]")) ){
@@ -421,7 +421,7 @@ public class Diagram extends Module {
 		}
 		
 		public boolean sendsVariable(String symbol){
-			return m_sent_variables.containsKey(symbol);
+			return m_sent_variables.containsKey(symbol) || m_sent_variables.containsKey("*");
 		}
 		
 		public String getSetVariable(String symbol){
@@ -429,7 +429,14 @@ public class Diagram extends Module {
 		}
 		
 		public String getSentVariable(String symbol){
-			return m_sent_variables.get(symbol);
+			if(m_sent_variables.containsKey(symbol)){
+				return m_sent_variables.get(symbol);
+			}else{
+				if(m_sent_variables.containsKey("*")){
+					return m_sent_variables.get("*");
+				}
+			}
+			return "";		
 		}
 		
 		//Checks if the rule already has a transition for the given symbol
