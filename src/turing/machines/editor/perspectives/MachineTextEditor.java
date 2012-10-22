@@ -150,13 +150,8 @@ public class MachineTextEditor extends EditorPerspective {
 			try {
 				if( m.loadFromString(m_current_machine_document.GetModuleText())) {
 					Tape tape = new Tape(m_current_machine_document.GetTape());				
-					m_current_machine_document.SetConsoleText("Executing machine on tape: '" + tape.toString() + "'\n\n");
-					m_current_machine_document.AppendConsoleText(m.getCurrentState() + ": " + tape.toString() + "\n");
-					while( m.executeStep(tape) ) {
-						m_current_machine_document.AppendConsoleText(m.getCurrentState() + ": " + tape.toString() + "\n");
-					}
-					m_current_machine_document.AppendConsoleText("\nFinished executing after " + Integer.toString(m.getSteps()) + " step(s) on state " + m.getCurrentState());
-					m_current_machine_document.AppendConsoleText("\nTape final configuration is: " + tape.toString());
+					m.execute(tape);
+					m_current_machine_document.AppendConsoleText(m.getLog().getText());
 				} else {
 					m_current_machine_document.SetConsoleText("Failed to process rule - error on line " + Integer.toString(m.getLine()));
 				}

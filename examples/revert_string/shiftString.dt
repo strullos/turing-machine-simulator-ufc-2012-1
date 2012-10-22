@@ -1,0 +1,5 @@
+module S shift.mt
+module R r.mt
+
+R [a,b] S
+S [*] R

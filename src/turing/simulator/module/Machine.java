@@ -105,10 +105,12 @@ public class Machine extends Module {
 
 	@Override
 	public boolean execute(Tape t){
+		Module.test_steps = 1;
 		m_log.writeLn("Initial state: " + m_initial_state);
 		m_log.writeLn("Tape initial configuration: " + t.toString());
 		while(executeStep(t)){
-			printStep(t);			
+			printStep(t);	
+			Module.test_steps++;	
 		}
 		printSummary(t);
 		return true;		
@@ -133,9 +135,13 @@ public class Machine extends Module {
 	}	
 	
 	@Override
-	public void printStep(Tape t) {				
-			m_log.writeLn(Integer.toString(Module.test_steps) + ".\t\t" + m_current_state + ":\t\t\t\t" + t.toString());
-			Module.test_steps++;	
+	public void printStep(Tape t) {	
+			String format_string = "%-4s %-3s %s";
+			String step_count = Integer.toString(Module.test_steps) + ".";
+			String step_info = m_current_state;
+			String step_tape = t.toString();
+			String formatted_string = String.format(format_string,step_count,step_info,step_tape);
+			m_log.writeLn(formatted_string);			
 	}	
 	
 	@Override

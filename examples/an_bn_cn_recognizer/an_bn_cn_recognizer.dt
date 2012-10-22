@@ -1,0 +1,19 @@
+module R r.mt
+module Wxa wx.mt
+module Wxb wx.mt
+module Wxc wx.mt
+module Rb rb.mt
+module Rc rc.mt
+module La la.mt
+module Check abc_check.mt
+
+R [a] Wxa
+Wxa [*] Rb
+Rb [c,#] No
+Rb [b] Wxb
+Wxb [*] Rc
+Rc [a,#] No
+Rc [c] Wxc
+Wxc [*] La
+La [a] Wxa
+La [#] Check

@@ -7,6 +7,7 @@ import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import java.awt.Font;
 import java.awt.Color;
+import javax.swing.JScrollPane;
 
 public class ConsoleComponent extends JPanel {
 	/**
@@ -22,13 +23,16 @@ public class ConsoleComponent extends JPanel {
 		JLabel console_label = new JLabel("Console:");
 		add(console_label, BorderLayout.NORTH);
 		
+		JScrollPane console_scrollPane = new JScrollPane();
+		add(console_scrollPane, BorderLayout.CENTER);
+		
 		m_console_textArea = new JTextArea();
+		console_scrollPane.setViewportView(m_console_textArea);
 		m_console_textArea.setColumns(1);
 		m_console_textArea.setEditable(false);
 		m_console_textArea.setForeground(new Color(0, 255, 0));
 		m_console_textArea.setBackground(Color.BLACK);
-		m_console_textArea.setFont(new Font("Dialog", Font.PLAIN, 16));
-		add(m_console_textArea, BorderLayout.CENTER);
+		m_console_textArea.setFont(new Font("DejaVu Sans Mono", Font.PLAIN, 16));
 	}
 	
 	public void SetText(String text)
@@ -39,5 +43,6 @@ public class ConsoleComponent extends JPanel {
 	public void AppendText(String text)
 	{
 		m_console_textArea.append(text);
-	}
+	}	
+
 }

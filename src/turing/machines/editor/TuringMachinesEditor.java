@@ -32,9 +32,10 @@ public class TuringMachinesEditor extends JPanel {
 		m_perspectives.put("Machine Text Editor", m_machine_text_editor);
 		m_perspectives.put("Diagram Text Editor", m_diagram_text_editor);
 		
-		this.add(m_machine_text_editor);
+	
 		m_tool_bar.AddPerspective(m_machine_text_editor.Name());
-		m_tool_bar.AddPerspective(m_diagram_text_editor.Name());	
+		m_tool_bar.AddPerspective(m_diagram_text_editor.Name());
+		this.add(m_perspectives.get(m_tool_bar.GetCurrentPerspective()));
 		
 		m_current_perspective = m_machine_text_editor;
 		
@@ -56,7 +57,6 @@ public class TuringMachinesEditor extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String current_perspective = m_tool_bar.GetCurrentPerspective();
-			System.out.print(current_perspective);
 			TuringMachinesEditor.this.remove(m_current_perspective);
 			TuringMachinesEditor.this.m_current_perspective = TuringMachinesEditor.this.m_perspectives.get(current_perspective);	
 			TuringMachinesEditor.this.add(m_current_perspective);	

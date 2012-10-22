@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 import javax.swing.JTabbedPane;
@@ -45,9 +46,9 @@ public class DiagramTextEditor extends EditorPerspective {
 		DiagramTextDocument diagram_document = new DiagramTextDocument();
 		m_current_diagram_document = diagram_document;
 		if(m_diagrams_tabbedPane.getComponentCount() > 0){
-			m_diagrams_tabbedPane.addTab("New Machine" + m_diagrams_tabbedPane.getComponentCount(), null, m_current_diagram_document, null);		
+			m_diagrams_tabbedPane.addTab("New Diagram" + m_diagrams_tabbedPane.getComponentCount(), null, m_current_diagram_document, null);		
 		}else{
-			m_diagrams_tabbedPane.addTab("New Machine", null, m_current_diagram_document, null);		
+			m_diagrams_tabbedPane.addTab("New Diagram", null, m_current_diagram_document, null);		
 		}
 		m_diagrams_tabbedPane.setSelectedComponent(diagram_document);
 		m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
@@ -78,17 +79,32 @@ public class DiagramTextEditor extends EditorPerspective {
 				try {
 					String diagram_text = new String("");
 					while( (line = reader.readLine()) != null ){
-						if(!m_current_diagram_document.CheckRequiredModules(line)){
-							required_modules = false;
-						}
+//						if(!m_current_diagram_document.CheckRequiredModules(line)){
+//							required_modules = false;
+//						}
 						diagram_text += (line + "\n");		
 					}
+					DiagramTextDocument new_diagram_document = new DiagramTextDocument();
+					m_current_diagram_document = new_diagram_document;
+					new_diagram_document.SetModuleText(diagram_text);
+					m_diagrams_tabbedPane.addTab(fc.getSelectedFile().getName().toString(), null, new_diagram_document, null);	
+					m_diagrams_tabbedPane.setSelectedComponent(new_diagram_document);
+					m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
 					m_current_diagram_document.SetModuleText(diagram_text);
 					m_current_diagram_document.AppendConsoleText("Diagram file loaded successfully.\n");
 					if(!required_modules){
-						m_current_diagram_document.AppendConsoleText("Some of the required modules are not available," +
-								" diagram won't be able to execute. Consider adding the required modules.\n");
+						m_current_diagram_document.AppendConsoleText("Some of the required modules are not available, diagram won't be able to execute. " +
+								"\nConsider adding the required modules.\n");
 					}
+					Diagram d = new Diagram();
+					d.setLoadPath(fc.getSelectedFile().getParent());
+					d.loadFromString(diagram_text);
+					ArrayList<String> dependencies = d.getDependencies();
+					for(int i = 0; i < dependencies.size(); i++)
+					{
+						File module_file = new File(dependencies.get(i));
+						m_current_diagram_document.AddRequiredModule(module_file.getName(), module_file.getPath());
+					}					
 
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -147,14 +163,18 @@ public class DiagramTextEditor extends EditorPerspective {
 		if(!empty_fields){
 			try {
 				if( d.loadFromString(m_current_diagram_document.GetModuleText()) ) {
-					Tape tape = new Tape(m_current_diagram_document.GetTape());				
-					m_current_diagram_document.SetConsoleText("Executing diagram with tape: " + tape.toString() + "'\n\n");
-					m_current_diagram_document.AppendConsoleText(d.getCurrentState() + ": " + tape.toString() + "\n");
-					d.execute(tape);					
+					//This clear here is to erase the "loading messages" that may be on the log.
+					//This way, only the execution messages are displayed when the diagram executes
+					d.clearLog(); 					
+					Tape tape = new Tape(m_current_diagram_document.GetTape());		
+					m_current_diagram_document.AppendConsoleText("Initial module: "+ d.getCurrentState() + "\n");
+					m_current_diagram_document.AppendConsoleText("Initial tape: " + tape.toString() + "\n\n");					
+					d.execute(tape);	
 					m_current_diagram_document.AppendConsoleText(d.getLog().getText());					
 				} else {
 					m_current_diagram_document.AppendConsoleText(d.getLog().getText());	
 				}
+				m_current_diagram_document.DisplayConsole();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

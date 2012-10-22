@@ -8,6 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
+import javax.swing.JScrollPane;
 
 public class TextEditComponent extends JPanel {
 	/**
@@ -22,11 +23,14 @@ public class TextEditComponent extends JPanel {
 		JLabel text_label = new JLabel(label);
 		add(text_label, BorderLayout.NORTH);
 		
+		JScrollPane text_input_scrollPane = new JScrollPane();
+		add(text_input_scrollPane, BorderLayout.CENTER);
+		
 		m_text_input = new JTextArea();
+		text_input_scrollPane.setViewportView(m_text_input);
 		m_text_input.setForeground(Color.BLACK);
 		m_text_input.setBackground(Color.WHITE);
 		m_text_input.setFont(new Font("Dialog", Font.PLAIN, 16));
-		add(m_text_input, BorderLayout.CENTER);
 	}
 	
 	public String GetText()

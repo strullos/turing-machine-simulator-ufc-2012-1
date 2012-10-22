@@ -88,9 +88,20 @@ public class ItemListComponent extends JPanel {
 	{
 		DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
 		int pos = list_model.getSize();
-		list_model.add(pos, item);	
+		list_model.add(pos, item);			
 		m_items_list.setSelectedValue(item, true);
 	}	
+	
+	private void RemoveSelectedItem()
+	{
+		int index;
+		if((index = m_items_list.getSelectedIndex()) != -1){
+			m_items_list.clearSelection();
+			DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
+			list_model.remove(index);
+			m_viewer_textArea.setText("");
+		}		
+	}
 	
 	class AddActionListener implements ActionListener
 	{
@@ -108,6 +119,7 @@ public class ItemListComponent extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			m_remove_listener.actionPerformed(e);
+			RemoveSelectedItem();
 		}
 		
 	}
