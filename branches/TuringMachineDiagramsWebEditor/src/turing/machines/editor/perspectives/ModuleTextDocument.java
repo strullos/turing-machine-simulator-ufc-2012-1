@@ -47,5 +47,6 @@ public class ModuleTextDocument extends JPanel {
 	public String GetTape()
 	{
 		return m_tape_input.GetText();
-	}
+	}	
+	
 }

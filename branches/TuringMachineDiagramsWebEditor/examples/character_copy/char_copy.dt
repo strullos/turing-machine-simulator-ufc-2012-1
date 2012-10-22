@@ -1,0 +1,7 @@
+module %R r.mt
+module R# r#.mt
+module W wx.mt
+
+R [x=a,b] R#
+R# [*] W(x)
+W [*] END

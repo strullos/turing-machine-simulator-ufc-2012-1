@@ -1,6 +1,7 @@
 package turing.simulator.module;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -21,11 +22,22 @@ public abstract class Module {
 	protected String m_module_path;
 	protected static String m_error = new String();
 	protected boolean m_loaded;
+	protected String m_load_path;
 	
 	public static int test_steps = 0;
 	
 	public Log getLog(){
 		return m_log;
+	}
+	
+	public void clearLog()
+	{
+		m_log.clear();
+	}
+	
+	public  void setLoadPath(String load_path)
+	{
+		m_load_path = load_path;
 	}
 	
 	public boolean loadFromFile(String filename) throws FileNotFoundException
@@ -69,6 +81,11 @@ public abstract class Module {
 	
 	protected String getModulePath(){
 		return m_module_path;
+	}
+	
+	protected String getModuleFileName(){
+		File module_file = new File(m_module_path);
+		return module_file.getName();
 	}
 	
 	protected void setInitialStep(int initial_step){

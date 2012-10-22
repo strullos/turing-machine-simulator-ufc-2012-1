@@ -1,6 +1,7 @@
 package turing.simulator.module;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class Diagram extends Module {
 	private HashMap<String, DiagramRule> m_modules_rules; //Maps from module to rule;
 	private HashMap<String, String> m_variables_table; //Stores the name and value of all variables
 	private String m_initial_module;
-	private String m_current_module;
+	private String m_current_module;	
 	
 	public Diagram(){
 		m_loaded_modules = new HashMap<String, Module>();
@@ -56,7 +57,6 @@ public class Diagram extends Module {
 		}	
 		m_current_module = m_initial_module;
 		m_loaded = true;
-		getDependencies();
 		return true;
 	}
 	
@@ -103,7 +103,7 @@ public class Diagram extends Module {
 			if(m_modules_full_path.containsKey(module_file)){
 				module_path = m_modules_full_path.get(module_file);
 			}else{
-				module_path = module_file;
+				module_path = m_load_path + "/" + module_file;
 			}			
 			if(m_loaded_modules.containsKey(module_name)){
 				m_log.writeLn("Duplicated module name detected on line: " + m_current_line);
@@ -136,7 +136,9 @@ public class Diagram extends Module {
 			m_loaded_modules.put(module_name, module);
 			m_loaded_files.put(module_file, module);
 			m_modules_file.put(module_name, module_file);
-			m_log.writeLn("Module " + module.getModuleName() + "(" + module.getModulePath() + ")" + " loaded succesfully.");
+			m_modules_full_path.put(module_name, module_path);
+			m_log.writeLn("Module " + module.getModuleName() + "(" + module.getModuleFileName() + ")" + " loaded succesfully.");
+			//m_log.writeLn("Module " + module.getModuleName() + " loaded succesfully.");
 			return true;
 		}		
 		return false;
@@ -225,7 +227,7 @@ public class Diagram extends Module {
 
 	@Override
 	public boolean execute(Tape t) {
-		test_steps = 0;
+		test_steps = 1;
 		boolean executing = true;
 		if(m_loaded){
 			//printStep(t);
@@ -327,10 +329,19 @@ public class Diagram extends Module {
 	@Override
 	public void printStep(Tape t) {
 		Module current_module = m_loaded_modules.get(m_current_module);
+		String format_string = "%-5s %-12s %s";
 		if(m_loaded_modules.containsKey(m_current_module)){
-			m_log.writeLn(Integer.toString(Module.test_steps) + ".\t\t<"+ m_current_module + "," +  current_module.getCurrentState() + ">:\t\t\t\t" + t.toString());			
+			String step_count = Integer.toString(Module.test_steps) + ".";
+			String step_info = "<"+ m_current_module + "," +  current_module.getCurrentState() + ">:";
+			String tape_info = t.toString();
+			String formatted_output = String.format(format_string, step_count,step_info, tape_info);
+			m_log.writeLn(formatted_output);			
 		}else{
-			m_log.writeLn(Integer.toString(Module.test_steps) + ".\t\t<"+ m_current_module + ">:\t\t\t\t" + t.toString());
+			String step_count = Integer.toString(Module.test_steps)+ ".";
+			String step_info = "<"+ m_current_module + ">:";
+			String tape_info = t.toString();
+			String formatted_output = String.format(format_string, step_count,step_info, tape_info);
+			m_log.writeLn(formatted_output);
 		}		
 		Module.test_steps++;		
 	}
@@ -371,12 +382,12 @@ public class Diagram extends Module {
 			} catch(IOException e) {
 				m_log.writeLn("File not found: " + dep_path);
 				e.printStackTrace();
-			}
-			
+			}			
 		}
 		
 		for( String p : dependencies )  {
-			m_log.writeLn("Dep: " + p);
+			File module_file = new File(p);
+			m_log.writeLn("Dependency: " + module_file.getName());
 		}
 		return dependencies;
 	}

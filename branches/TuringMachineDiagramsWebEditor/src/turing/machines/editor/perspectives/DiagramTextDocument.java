@@ -28,7 +28,8 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	private static final long serialVersionUID = 1L;
 	private ItemListComponent m_modules_list;
 	
-	private HashMap<String, String> m_modules_path;	
+	private HashMap<String, String> m_modules_path;
+	private JTabbedPane m_console_and_modules_tabbedPane;	
 	public DiagramTextDocument() {
 		setLayout(new BorderLayout(0, 0));
 		
@@ -48,12 +49,17 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		
 		diagram_editor_splitPane.setLeftComponent(m_module_input);
 		
-		JTabbedPane console_and_modules_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		diagram_editor_splitPane.setRightComponent(console_and_modules_tabbedPane);		
+		m_console_and_modules_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		diagram_editor_splitPane.setRightComponent(m_console_and_modules_tabbedPane);		
 
-		console_and_modules_tabbedPane.addTab("Console", null, m_console, null);		
-		console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
+		m_console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
+		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);		
 	}	
+	
+	public void DisplayConsole()
+	{
+		m_console_and_modules_tabbedPane.setSelectedComponent(m_console);
+	}
 	
 	public HashMap<String,String> GetModulesPath()
 	{
@@ -64,10 +70,10 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	{
 		StringTokenizer tokens = new StringTokenizer(line);
 		if(tokens.countTokens() == 3){
-			String module_type = tokens.nextToken();
+			tokens.nextToken();
 			tokens.nextToken();
 			String module_file = tokens.nextToken();
-			if(module_type.equals("diagram") || module_type.equals("machine")){
+			if(module_file.endsWith(".dt") || module_file.endsWith(".mt")){
 				if(!m_modules_path.containsKey(module_file)){
 					m_console.AppendText("Warning: module file " + module_file + " is not on the available modules list.\n");
 					return false;
@@ -77,7 +83,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		return true;
 	}
 	
-	private void AddRequiredModule(String file_name, String file_path)
+	public void AddRequiredModule(String file_name, String file_path)
 	{
 		if(m_modules_path.containsKey(file_name)){
 			m_console.AppendText("Already contains a " + file_name + " module. Duplicates are not allowed.");
@@ -139,8 +145,8 @@ public class DiagramTextDocument extends ModuleTextDocument {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			
+			String selected_module = m_modules_list.GetSelectedItem();
+			m_modules_path.remove(selected_module);			
 		}
 		
 	}
