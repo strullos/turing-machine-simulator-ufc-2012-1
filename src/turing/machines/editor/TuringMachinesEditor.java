@@ -2,6 +2,7 @@ package turing.machines.editor;
 
 import javax.swing.JPanel;
 
+import turing.machines.editor.perspectives.DiagramGraphEditor;
 import turing.machines.editor.perspectives.DiagramTextEditor;
 import turing.machines.editor.perspectives.MachineTextEditor;
 
@@ -18,6 +19,7 @@ public class TuringMachinesEditor extends JPanel {
 	private EditorToolBar m_tool_bar;
 	private MachineTextEditor m_machine_text_editor;
 	private DiagramTextEditor m_diagram_text_editor;
+	private DiagramGraphEditor m_diagram_graph_editor;
 	private HashMap<String, EditorPerspective> m_perspectives;
 	private EditorPerspective m_current_perspective;
 	
@@ -28,14 +30,18 @@ public class TuringMachinesEditor extends JPanel {
 		
 		m_machine_text_editor = new MachineTextEditor("Machine Text Editor");
 		m_diagram_text_editor = new DiagramTextEditor("Diagram Text Editor");
+		m_diagram_graph_editor = new DiagramGraphEditor("Diagram Graph Editor");
 		
 		m_perspectives.put("Machine Text Editor", m_machine_text_editor);
 		m_perspectives.put("Diagram Text Editor", m_diagram_text_editor);
+		m_perspectives.put("Diagram Graph Editor", m_diagram_graph_editor);
 		
 	
 		m_tool_bar.AddPerspective(m_machine_text_editor.Name());
 		m_tool_bar.AddPerspective(m_diagram_text_editor.Name());
-		this.add(m_perspectives.get(m_tool_bar.GetCurrentPerspective()));
+		m_tool_bar.AddPerspective(m_diagram_graph_editor.Name());
+		//this.add(m_perspectives.get(m_tool_bar.GetCurrentPerspective()));
+		this.add(m_diagram_graph_editor);
 		
 		m_current_perspective = m_machine_text_editor;
 		
