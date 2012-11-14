@@ -1,6 +1,7 @@
 package turing.machines.editor.perspectives;
 
 import graph.Graph;
+import graph.GraphNode;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -53,7 +54,9 @@ public class DiagramGraphDocument extends JPanel {
 		m_graph_controls = new GraphControlComponent(m_graph);
 		m_console_and_modules_tabbedPane.addTab("Outline",null, m_graph_controls, null);
 		m_console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
-		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);		
+		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);	
+		
+		m_graph.AddNode(new GraphNode("EM BREVE!", "empty", 100, 100));		
 	}
 	
 	public void AddRequiredModule(String file_name, String file_path)

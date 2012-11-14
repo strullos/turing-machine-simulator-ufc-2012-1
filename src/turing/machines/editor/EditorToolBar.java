@@ -3,6 +3,7 @@ package turing.machines.editor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.HashMap;
 
 import javax.swing.ImageIcon;
@@ -46,13 +47,13 @@ public class EditorToolBar extends JToolBar {
 	
 	private void AddToolBarButtons()
 	{
-		JButton new_button = new JButton(new ImageIcon("../resources/icons/toolbar/document-new-7.png"));
+		JButton new_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/document-new-7.png")));
 		new_button.addActionListener(new NewActionListener());
 		this.add(new_button);
-		JButton open_button = new JButton(new ImageIcon("../resources/icons/toolbar/document-open-7.png"));		
+		JButton open_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/document-open-7.png")));		
 		open_button.addActionListener(new OpenActionListener());
 		this.add(open_button);		
-		JButton save_button = new JButton(new ImageIcon("../resources/icons/toolbar/document-save-5.png"));
+		JButton save_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/document-save-5.png")));
 		save_button.addActionListener(new SaveActionListener());
 		this.add(save_button);
 		this.addSeparator();
@@ -63,7 +64,7 @@ public class EditorToolBar extends JToolBar {
 		m_perspectives_combobox.addActionListener(new ComboboxSelectionChangedListener());
 		this.add(m_perspectives_combobox);
 		this.addSeparator();
-		JButton execute_button = new JButton(new ImageIcon("../resources/icons/toolbar/media-playback-start-3.png"));
+		JButton execute_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/media-playback-start-3.png")));
 		execute_button.addActionListener(new ExecuteActionListener());
 		this.add(execute_button);		
 	}	

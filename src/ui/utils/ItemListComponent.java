@@ -61,10 +61,10 @@ public class ItemListComponent extends JPanel {
 		add(buttons_panel, BorderLayout.SOUTH);
 		buttons_panel.setLayout(new BoxLayout(buttons_panel, BoxLayout.X_AXIS));
 		
-		m_add_button = new JButton(new ImageIcon("../resources/icons/list-add.png"));
+		m_add_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-add.png")));
 		buttons_panel.add(m_add_button);
 		
-		m_remove_button = new JButton(new ImageIcon("../resources/icons/list-remove.png"));
+		m_remove_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-remove.png")));
 		buttons_panel.add(m_remove_button);		
 		
 		m_add_button.addActionListener(new AddActionListener());

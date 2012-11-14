@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-6-openjdk-amd64"/>
-	<classpathentry kind="lib" path="/media/Vitor/Dev/Projetos/TuringMachineDiagramsWebEditor/jgraphx/lib/jgraphx.jar"/>
+	<classpathentry exported="true" kind="lib" path="/media/vitor/Vitor/Dev/Projetos/JGraphExample/lib/jgraphx.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
