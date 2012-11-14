@@ -34,14 +34,12 @@ public class TuringMachinesEditor extends JPanel {
 		
 		m_perspectives.put("Machine Text Editor", m_machine_text_editor);
 		m_perspectives.put("Diagram Text Editor", m_diagram_text_editor);
-		m_perspectives.put("Diagram Graph Editor", m_diagram_graph_editor);
-		
+		m_perspectives.put("Diagram Graph Editor", m_diagram_graph_editor);		
 	
 		m_tool_bar.AddPerspective(m_machine_text_editor.Name());
 		m_tool_bar.AddPerspective(m_diagram_text_editor.Name());
 		m_tool_bar.AddPerspective(m_diagram_graph_editor.Name());
-		//this.add(m_perspectives.get(m_tool_bar.GetCurrentPerspective()));
-		this.add(m_diagram_graph_editor);
+		this.add(m_perspectives.get(m_tool_bar.GetCurrentPerspective()));
 		
 		m_current_perspective = m_machine_text_editor;
 		

@@ -39,7 +39,8 @@ public class Graph {
      style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
      style.put(mxConstants.STYLE_OPACITY, 100);
      style.put(mxConstants.STYLE_FONTCOLOR, "#000000");
-     style.put(mxConstants.STYLE_FONTSIZE, "12");
+     style.put(mxConstants.STYLE_FONTSIZE, "200"); //!< Remove this later...
+     //style.put(mxConstants.STYLE_FONTSIZE, "12");
  
          
 //         HashMap<String, Object> edge = new HashMap<String, Object>();       
@@ -78,9 +79,12 @@ public class Graph {
 		m_nodes.put(node.GetLabel(), node);
 		Object parent = m_graph.getDefaultParent();
         m_graph.getModel().beginUpdate();
-        mxCell new_vertex = (mxCell) m_graph.insertVertex(parent, null, node.GetLabel() ,node.GetXPos(), node.GetYPos(), m_node_width, m_node_height, m_node_style);
+        //mxCell new_vertex = (mxCell) m_graph.insertVertex(parent, null, node.GetLabel() ,node.GetXPos(), node.GetYPos(), m_node_width, m_node_height, m_node_style);
+        mxCell new_vertex = (mxCell) m_graph.insertVertex(parent, null, node.GetLabel() ,node.GetXPos(), node.GetYPos(), 500, 500, m_node_style);//!< Remove this later...
         m_cell_node_map.put(new_vertex, node);
         m_graph.getModel().endUpdate();		
+        
+        
 	}	
 	
 	public void RemoveSelectedNode()
