@@ -15,11 +15,11 @@ public class Tape {
 	{
 		StringBuffer tape_string = new StringBuffer(m_tape.toString());
 		tape_string.insert(m_position, '_');
-		int j = 0;		
-		for( int i = m_position; i<tape_string.length() ; i++ ) {
-			if( tape_string.charAt(i) != '#' )
-				j = i;
-		}		
+//		int j = 0;		
+//		for( int i = m_position; i<tape_string.length() ; i++ ) {
+//			if( tape_string.charAt(i) != '#' )
+//				j = i;
+//		}		
 		return tape_string.toString();//tape_string.substring(0, j+2);
 	};
 	

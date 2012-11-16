@@ -8,15 +8,20 @@ import java.awt.event.ActionListener;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JSplitPane;
 import javax.swing.JList;
-import javax.swing.JTextArea;
 import javax.swing.BoxLayout;
+import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.awt.Dimension;
+import javax.swing.border.BevelBorder;
+import javax.swing.JSeparator;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
+import java.awt.Component;
 
 public class ItemListComponent extends JPanel {
 	/**
@@ -24,12 +29,12 @@ public class ItemListComponent extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private JList<String> m_items_list;
-	private JTextArea m_viewer_textArea;
 	private JButton m_add_button;
 	private JButton m_remove_button;
 	private ActionListener m_add_listener;
 	private ActionListener m_remove_listener;	
 	private ActionListener m_selection_listener;
+	private JButton m_new_button;
 
 	public ItemListComponent(String label, ActionListener add_listener, ActionListener remove_listener, ActionListener selection_listener)
 	{
@@ -43,45 +48,43 @@ public class ItemListComponent extends JPanel {
 		JLabel lblLabel = new JLabel(label);
 		add(lblLabel, BorderLayout.NORTH);
 		
-		JSplitPane items_splitPane = new JSplitPane();
-		items_splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-		add(items_splitPane, BorderLayout.CENTER);
-		
 		m_items_list = new JList<String>();
+		m_items_list.setBorder(new LineBorder(new Color(0, 0, 0)));
+		add(m_items_list, BorderLayout.CENTER);
 		m_items_list.setModel(new DefaultListModel<String>());
-		m_items_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);		
-		items_splitPane.setLeftComponent(m_items_list);
-		
-		m_viewer_textArea = new JTextArea();
-		m_viewer_textArea.setEditable(false);
-		items_splitPane.setRightComponent(m_viewer_textArea);
-		items_splitPane.setDividerLocation(300);
-		
-		JPanel buttons_panel = new JPanel();
-		add(buttons_panel, BorderLayout.SOUTH);
-		buttons_panel.setLayout(new BoxLayout(buttons_panel, BoxLayout.X_AXIS));
-		
-		m_add_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-add.png")));
-		buttons_panel.add(m_add_button);
-		
-		m_remove_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-remove.png")));
-		buttons_panel.add(m_remove_button);		
-		
-		m_add_button.addActionListener(new AddActionListener());
-		m_remove_button.addActionListener(new RemoveActionListener());
-		m_remove_button.setEnabled(false);
+		m_items_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		m_items_list.addListSelectionListener(new SelectionChangedListener());
+		
+		JPanel buttons_panel = new JPanel();
+		buttons_panel.setPreferredSize(new Dimension(30, 10));
+		buttons_panel.setMaximumSize(new Dimension(30, 32767));
+		buttons_panel.setMinimumSize(new Dimension(30, 10));
+		add(buttons_panel, BorderLayout.EAST);
+		buttons_panel.setLayout(new BoxLayout(buttons_panel, BoxLayout.Y_AXIS));
+		
+		m_new_button = new JButton("N");
+		m_new_button.addActionListener(new NewItemActionListener());
+		buttons_panel.add(m_new_button);
+		
+		m_add_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-add.png")));
+		m_add_button.setMinimumSize(new Dimension(30, 30));
+		m_add_button.setMaximumSize(new Dimension(30, 30));
+		buttons_panel.add(m_add_button);
+		
+		m_add_button.addActionListener(new AddActionListener());
+		
+		m_remove_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-remove.png")));
+		m_remove_button.setMinimumSize(new Dimension(30, 30));
+		m_remove_button.setMaximumSize(new Dimension(30, 30));
+		buttons_panel.add(m_remove_button);		
+		m_remove_button.addActionListener(new RemoveActionListener());
+		m_remove_button.setEnabled(false);
 	}
 	
 	public String GetSelectedItem()
 	{
 		return m_items_list.getSelectedValue();
-	}
-	
-	public void SetViewerContent(String text)
-	{
-		m_viewer_textArea.setText(text);
 	}
 	
 	public void AddItem(String item)
@@ -99,8 +102,26 @@ public class ItemListComponent extends JPanel {
 			m_items_list.clearSelection();
 			DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
 			list_model.remove(index);
-			m_viewer_textArea.setText("");
 		}		
+	}
+	
+	class NewItemActionListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String input = (String)JOptionPane.showInputDialog(
+                    ItemListComponent.this,
+                    "Module name:\n",                  
+                    "New Module",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    "new_module.dt");		
+			if(input != null){
+				ItemListComponent.this.AddItem(input);
+			}
+		}	
 	}
 	
 	class AddActionListener implements ActionListener

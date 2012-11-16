@@ -14,7 +14,6 @@ import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
 
 import ui.utils.ConsoleComponent;
 import ui.utils.ItemListComponent;
@@ -29,38 +28,36 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	private ItemListComponent m_modules_list;
 	
 	private HashMap<String, String> m_modules_path;
-	private JTabbedPane m_console_and_modules_tabbedPane;	
+	private HashMap<String, String> m_modules_content;
 	public DiagramTextDocument() {
 		setLayout(new BorderLayout(0, 0));
 		
 		m_modules_path = new HashMap<String, String>();
 		m_tape_input = new LineEditComponent("Tape:");
-		m_module_input = new TextEditComponent("Diagram:");
+		m_module_input = new TextEditComponent("Editor:");
 		m_console = new ConsoleComponent();
 		m_modules_list = new ItemListComponent("Modules:", new AddModuleListener(), new RemoveModuleListener(), new ModuleSelectionChangedListener());
 		
 	
 		add(m_tape_input, BorderLayout.NORTH);		
 		
-		JSplitPane diagram_editor_splitPane = new JSplitPane();
-		diagram_editor_splitPane.setOneTouchExpandable(true);
-		add(diagram_editor_splitPane, BorderLayout.CENTER);
-		diagram_editor_splitPane.setDividerLocation(500);
+		JSplitPane diagram_and_modules_splitPane = new JSplitPane();
+		diagram_and_modules_splitPane.setOneTouchExpandable(true);	
+		diagram_and_modules_splitPane.setDividerLocation(150);		
 		
+		diagram_and_modules_splitPane.setLeftComponent(m_modules_list);		
+		diagram_and_modules_splitPane.setRightComponent(m_module_input);	
 		
-		diagram_editor_splitPane.setLeftComponent(m_module_input);
+		JSplitPane diagram_editor_and_console_splitPane = new JSplitPane();
+		diagram_editor_and_console_splitPane.setOneTouchExpandable(true);	
+		diagram_editor_and_console_splitPane.setDividerLocation(500);
+		diagram_editor_and_console_splitPane.setLeftComponent(diagram_and_modules_splitPane);
+		diagram_editor_and_console_splitPane.setRightComponent(m_console);
+		add(diagram_editor_and_console_splitPane, BorderLayout.CENTER);
 		
-		m_console_and_modules_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		diagram_editor_splitPane.setRightComponent(m_console_and_modules_tabbedPane);		
-
-		m_console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
-		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);		
+		m_module_input.SetInputEnabled(false);
 	}	
 	
-	public void DisplayConsole()
-	{
-		m_console_and_modules_tabbedPane.setSelectedComponent(m_console);
-	}
 	
 	public HashMap<String,String> GetModulesPath()
 	{
@@ -108,7 +105,6 @@ public class DiagramTextDocument extends ModuleTextDocument {
 				while((line = reader.readLine()) != null){
 					module_text += (line + "\n");						
 				}
-				m_modules_list.SetViewerContent(module_text);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -157,7 +153,13 @@ public class DiagramTextDocument extends ModuleTextDocument {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			DiagramTextDocument.this.ReadSelectedModule(m_modules_list.GetSelectedItem());			
+			DiagramTextDocument.this.ReadSelectedModule(m_modules_list.GetSelectedItem());		
+			if(m_modules_list.GetSelectedItem() != null){
+				DiagramTextDocument.this.m_module_input.SetInputEnabled(true);
+			}else{
+				DiagramTextDocument.this.m_module_input.SetInputEnabled(false);
+				DiagramTextDocument.this.m_module_input.ClearText();
+			}
 		}
 		
 	}

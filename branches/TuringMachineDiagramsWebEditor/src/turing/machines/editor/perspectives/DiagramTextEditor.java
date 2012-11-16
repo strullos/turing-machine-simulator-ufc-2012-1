@@ -174,7 +174,6 @@ public class DiagramTextEditor extends EditorPerspective {
 				} else {
 					m_current_diagram_document.AppendConsoleText(d.getLog().getText());	
 				}
-				m_current_diagram_document.DisplayConsole();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
