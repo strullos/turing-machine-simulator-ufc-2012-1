@@ -47,4 +47,14 @@ public class TextEditComponent extends JPanel {
 	{
 		return m_text_input.getText().isEmpty();
 	}
+	
+	public void SetInputEnabled(boolean enabled)
+	{
+		m_text_input.setEnabled(enabled);
+	}
+	
+	public void ClearText()
+	{
+		m_text_input.setText("");
+	}
 }

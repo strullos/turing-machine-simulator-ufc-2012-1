@@ -1,21 +1,16 @@
 package graph;
 
 import java.awt.Color;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.print.PageFormat;
 import java.util.HashMap;
 
 import com.mxgraph.util.mxConstants;
-import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.swing.mxGraphOutline;
-import com.mxgraph.swing.handler.mxPanningHandler;
-import com.sun.org.apache.bcel.internal.generic.LAND;
 
 public class Graph {
 	protected mxGraph m_graph;
@@ -79,8 +74,8 @@ public class Graph {
 		m_nodes.put(node.GetLabel(), node);
 		Object parent = m_graph.getDefaultParent();
         m_graph.getModel().beginUpdate();
-        //mxCell new_vertex = (mxCell) m_graph.insertVertex(parent, null, node.GetLabel() ,node.GetXPos(), node.GetYPos(), m_node_width, m_node_height, m_node_style);
-        mxCell new_vertex = (mxCell) m_graph.insertVertex(parent, null, node.GetLabel() ,node.GetXPos(), node.GetYPos(), 500, 500, m_node_style);//!< Remove this later...
+        mxCell new_vertex = (mxCell) m_graph.insertVertex(parent, null, node.GetLabel() ,node.GetXPos(), node.GetYPos(), m_node_width, m_node_height, m_node_style);
+        //mxCell new_vertex = (mxCell) m_graph.insertVertex(parent, null, node.GetLabel() ,node.GetXPos(), node.GetYPos(), 500, 500, m_node_style);//!< Remove this later...
         m_cell_node_map.put(new_vertex, node);
         m_graph.getModel().endUpdate();		
         

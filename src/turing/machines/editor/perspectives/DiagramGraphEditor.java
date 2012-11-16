@@ -1,7 +1,5 @@
 package turing.machines.editor.perspectives;
 
-import graph.Graph;
-
 import java.awt.BorderLayout;
 
 import javax.swing.JTabbedPane;

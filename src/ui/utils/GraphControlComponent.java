@@ -15,11 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
 import javax.swing.JButton;
 
-import com.mxgraph.swing.mxGraphOutline;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
 
 public class GraphControlComponent extends JPanel {
 	/**
