@@ -32,16 +32,16 @@ public class TuringMachinesEditor extends JPanel {
 		m_diagram_text_editor = new DiagramTextEditor("Diagram Text Editor");
 		m_diagram_graph_editor = new DiagramGraphEditor("Diagram Graph Editor");
 		
-		m_perspectives.put("Machine Text Editor", m_machine_text_editor);
+		//m_perspectives.put("Machine Text Editor", m_machine_text_editor);
 		m_perspectives.put("Diagram Text Editor", m_diagram_text_editor);
-		m_perspectives.put("Diagram Graph Editor", m_diagram_graph_editor);		
+		//m_perspectives.put("Diagram Graph Editor", m_diagram_graph_editor);		
 	
-		m_tool_bar.AddPerspective(m_machine_text_editor.Name());
+		//m_tool_bar.AddPerspective(m_machine_text_editor.Name());
 		m_tool_bar.AddPerspective(m_diagram_text_editor.Name());
-		m_tool_bar.AddPerspective(m_diagram_graph_editor.Name());
+		//m_tool_bar.AddPerspective(m_diagram_graph_editor.Name());
 		this.add(m_perspectives.get(m_tool_bar.GetCurrentPerspective()));
 		
-		m_current_perspective = m_machine_text_editor;
+		m_current_perspective = m_diagram_text_editor;
 		
 		m_tool_bar.RegisterListener(ToolBarListenerType.NEW_FILE, new NewActionListener());
 		m_tool_bar.RegisterListener(ToolBarListenerType.OPEN_FILE, new OpenActionListener());
@@ -93,8 +93,7 @@ public class TuringMachinesEditor extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			m_current_perspective.Save();
-			
+			m_current_perspective.Save();			
 		}
 		
 	}

@@ -37,7 +37,7 @@ public class DiagramGraphDocument extends JPanel {
 		m_modules_path = new HashMap<String, String>();
 		m_tape_input = new LineEditComponent("Tape:");
 		m_console = new ConsoleComponent();
-		m_modules_list = new ItemListComponent("Modules:", new AddModuleListener(), new RemoveModuleListener(), new ModuleSelectionChangedListener());
+		m_modules_list = new ItemListComponent("Modules:", new NewModuleListener() , new AddModuleListener(), new RemoveModuleListener(), new ModuleSelectionChangedListener());
 		
 	
 		add(m_tape_input, BorderLayout.NORTH);		
@@ -70,6 +70,17 @@ public class DiagramGraphDocument extends JPanel {
 		m_console.AppendText("Module " + file_name + " added successfully.\n");		
 		m_graph_controls.AddModuleToList(file_name);
 	}	
+	
+	class NewModuleListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
 	
 	class AddModuleListener implements ActionListener
 	{	

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JSplitPane;
 
@@ -32,11 +33,12 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	public DiagramTextDocument() {
 		setLayout(new BorderLayout(0, 0));
 		
+		m_modules_content = new HashMap<String, String>();
 		m_modules_path = new HashMap<String, String>();
 		m_tape_input = new LineEditComponent("Tape:");
 		m_module_input = new TextEditComponent("Editor:");
 		m_console = new ConsoleComponent();
-		m_modules_list = new ItemListComponent("Modules:", new AddModuleListener(), new RemoveModuleListener(), new ModuleSelectionChangedListener());
+		m_modules_list = new ItemListComponent("Modules:", new NewModuleListener(),new AddModuleListener(), new RemoveModuleListener(), new ModuleSelectionChangedListener());
 		
 	
 		add(m_tape_input, BorderLayout.NORTH);		
@@ -58,6 +60,44 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		m_module_input.SetInputEnabled(false);
 	}	
 	
+	public void CreateNewModule()
+	{
+		String module_name = (String)JOptionPane.showInputDialog(
+				this,
+                "Module name:\n",                  
+                "New Module",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                "new_module.mt");		
+		if(module_name != null){
+			if(!module_name.endsWith(".dt") && !module_name.endsWith(".mt")){						
+				m_console.AppendText("Invalid module extension. Please specify .dt or .mt");
+			}else{
+				AddRequiredModule(module_name, "");
+			}				
+		}			
+	}
+	
+	public String GetSelectedModule()
+	{
+		return m_modules_list.GetSelectedItem();
+	}
+	
+	public String GetModulePath(String module_name)
+	{
+		if(m_modules_path.containsKey(module_name))
+		{
+			return m_modules_path.get(module_name);
+		}else{
+			return "";
+		}
+	}
+	
+	public void SetModulePath(String module_name, String module_path)
+	{
+		m_modules_path.put(module_name, module_path);
+	}
 	
 	public HashMap<String,String> GetModulesPath()
 	{
@@ -83,6 +123,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	
 	public void AddRequiredModule(String file_name, String file_path)
 	{
+		//m_console.ClearText();
 		if(m_modules_path.containsKey(file_name)){
 			m_console.AppendText("Already contains a " + file_name + " module. Duplicates are not allowed.");
 			return;
@@ -94,26 +135,66 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	
 	private void ReadSelectedModule(String selected_module)
 	{		
-		String module_text = "";		
-		if(!m_modules_path.containsKey(selected_module)){
-			return;
-		}
-		try {			
-			BufferedReader reader = new BufferedReader(new FileReader(m_modules_path.get(selected_module)));
-			String line;
-			try {
-				while((line = reader.readLine()) != null){
-					module_text += (line + "\n");						
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		String module_text = "";	
+		m_module_input.ClearText();
+		if(m_modules_content.containsKey(selected_module)){
+			this.m_module_input.SetText(m_modules_content.get(selected_module));
+		}else{			
+			//If the module was loaded from a file, it should contain a filepath. Then we try to read the file
+			//and set the module's content to the content of the file
+			//If the filepath is empty, it means that the module was not saved yet
+			if( m_modules_path.containsKey(selected_module) && m_modules_path.get(selected_module) != ""){			
+				try {							
+					BufferedReader reader = new BufferedReader(new FileReader(m_modules_path.get(selected_module)));
+					String line;
+					try {
+						while((line = reader.readLine()) != null){
+							module_text += (line + "\n");						
+						}
+						this.m_module_input.SetText(module_text);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}	
 			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+			m_modules_content.put(selected_module,module_text);
+		}
 	}		
+	
+	private void UpdateModuleContent(String module_name)
+	{
+		if(m_modules_content.containsKey(module_name)){
+			m_modules_content.put(module_name, m_module_input.GetText());
+		}
+	}
+	
+	class NewModuleListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			String input = (String)JOptionPane.showInputDialog(
+					DiagramTextDocument.this,
+                    "Module name:\n",                  
+                    "New Module",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null,
+                    "new_module.mt");		
+			if(input != null){
+				if(!input.endsWith(".dt") && !input.endsWith(".mt")){
+					m_console.AppendText("Invalid module extension. Please specify .dt or .mt");
+				}else{
+					DiagramTextDocument.this.AddRequiredModule(input, "");
+				}				
+			}			
+		}
+		
+	}
 	
 	class AddModuleListener implements ActionListener
 	{
@@ -139,13 +220,22 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	
 	class RemoveModuleListener implements ActionListener
 	{
-
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String selected_module = m_modules_list.GetSelectedItem();
-			m_modules_path.remove(selected_module);			
-		}
-		
+			int ret = (int)JOptionPane.showConfirmDialog(
+					DiagramTextDocument.this,
+	                "Are you sure you want to remove module: " + selected_module + "?",                  
+	                "Alert",
+	                JOptionPane.OK_CANCEL_OPTION
+	                );
+			if(ret == JOptionPane.OK_OPTION){			
+				m_modules_list.RemoveSelectedItem();
+				m_modules_path.remove(selected_module);	
+				m_modules_content.remove(selected_module);
+				m_console.AppendText("Module: " + selected_module + " removed successfully.\n");
+			}		
+		}		
 	}
 	
 	class ModuleSelectionChangedListener implements ActionListener
@@ -153,6 +243,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			DiagramTextDocument.this.UpdateModuleContent(m_modules_list.GetPreviousSelectedItem());
 			DiagramTextDocument.this.ReadSelectedModule(m_modules_list.GetSelectedItem());		
 			if(m_modules_list.GetSelectedItem() != null){
 				DiagramTextDocument.this.m_module_input.SetInputEnabled(true);
