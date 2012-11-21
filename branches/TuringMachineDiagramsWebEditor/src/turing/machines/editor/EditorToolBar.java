@@ -56,6 +56,9 @@ public class EditorToolBar extends JToolBar {
 		save_button.addActionListener(new SaveActionListener());
 		this.add(save_button);
 		this.addSeparator();
+		JButton execute_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/media-playback-start-3.png")));
+		execute_button.addActionListener(new ExecuteActionListener());
+		this.add(execute_button);		
 		JLabel perspective_label = new JLabel("Perspective: ");
 		this.add(perspective_label);
 		m_perspectives_combobox = new JComboBox<String>();	
@@ -63,9 +66,6 @@ public class EditorToolBar extends JToolBar {
 		m_perspectives_combobox.addActionListener(new ComboboxSelectionChangedListener());
 		this.add(m_perspectives_combobox);
 		this.addSeparator();
-		JButton execute_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/media-playback-start-3.png")));
-		execute_button.addActionListener(new ExecuteActionListener());
-		this.add(execute_button);		
 	}	
 	
 	

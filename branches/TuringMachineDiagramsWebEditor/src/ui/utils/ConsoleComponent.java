@@ -44,5 +44,10 @@ public class ConsoleComponent extends JPanel {
 	{
 		m_console_textArea.append(text);
 	}	
+	
+	public void ClearText()
+	{
+		m_console_textArea.setText("");
+	}
 
 }

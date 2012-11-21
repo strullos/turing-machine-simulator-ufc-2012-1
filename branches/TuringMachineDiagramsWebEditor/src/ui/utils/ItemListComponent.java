@@ -10,18 +10,14 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.BoxLayout;
-import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.Dimension;
-import javax.swing.border.BevelBorder;
-import javax.swing.JSeparator;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
-import java.awt.Component;
 
 public class ItemListComponent extends JPanel {
 	/**
@@ -31,13 +27,16 @@ public class ItemListComponent extends JPanel {
 	private JList<String> m_items_list;
 	private JButton m_add_button;
 	private JButton m_remove_button;
+	private ActionListener m_new_item_listener;
 	private ActionListener m_add_listener;
 	private ActionListener m_remove_listener;	
 	private ActionListener m_selection_listener;
-	private JButton m_new_button;
+	private String m_previous_selection;
 
-	public ItemListComponent(String label, ActionListener add_listener, ActionListener remove_listener, ActionListener selection_listener)
+	public ItemListComponent(String label, ActionListener new_item_listener, ActionListener add_listener, ActionListener remove_listener, ActionListener selection_listener)
 	{
+		m_previous_selection = new String("");
+		m_new_item_listener = new_item_listener;
 		m_add_listener = add_listener;
 		m_remove_listener = remove_listener;
 		m_selection_listener = selection_listener;
@@ -61,11 +60,8 @@ public class ItemListComponent extends JPanel {
 		buttons_panel.setMaximumSize(new Dimension(30, 32767));
 		buttons_panel.setMinimumSize(new Dimension(30, 10));
 		add(buttons_panel, BorderLayout.EAST);
-		buttons_panel.setLayout(new BoxLayout(buttons_panel, BoxLayout.Y_AXIS));
+		buttons_panel.setLayout(new BoxLayout(buttons_panel, BoxLayout.Y_AXIS));		
 		
-		m_new_button = new JButton("N");
-		m_new_button.addActionListener(new NewItemActionListener());
-		buttons_panel.add(m_new_button);
 		
 		m_add_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-add.png")));
 		m_add_button.setMinimumSize(new Dimension(30, 30));
@@ -87,15 +83,27 @@ public class ItemListComponent extends JPanel {
 		return m_items_list.getSelectedValue();
 	}
 	
+	//This method can be called in the SelectionChanged listener method
+	//to get the item that was previously selected
+	//The previous value is updated to the current selection in the end of the listener method
+	public String GetPreviousSelectedItem()
+	{
+		return m_previous_selection;
+	}
+	
 	public void AddItem(String item)
 	{
+		
 		DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
 		int pos = list_model.getSize();
-		list_model.add(pos, item);			
+		list_model.add(pos, item);					
 		m_items_list.setSelectedValue(item, true);
+		if(m_previous_selection == ""){
+			m_previous_selection = item;
+		}
 	}	
 	
-	private void RemoveSelectedItem()
+	public void RemoveSelectedItem()
 	{
 		int index;
 		if((index = m_items_list.getSelectedIndex()) != -1){
@@ -107,20 +115,9 @@ public class ItemListComponent extends JPanel {
 	
 	class NewItemActionListener implements ActionListener
 	{
-
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			String input = (String)JOptionPane.showInputDialog(
-                    ItemListComponent.this,
-                    "Module name:\n",                  
-                    "New Module",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    null,
-                    "new_module.dt");		
-			if(input != null){
-				ItemListComponent.this.AddItem(input);
-			}
+			m_new_item_listener.actionPerformed(e);			
 		}	
 	}
 	
@@ -136,13 +133,10 @@ public class ItemListComponent extends JPanel {
 	
 	class RemoveActionListener implements ActionListener
 	{
-
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			m_remove_listener.actionPerformed(e);
-			RemoveSelectedItem();
-		}
-		
+		}		
 	}
 	
 	class SelectionChangedListener implements ListSelectionListener
@@ -154,7 +148,8 @@ public class ItemListComponent extends JPanel {
 				ItemListComponent.this.m_remove_button.setEnabled(true);
 			}else{
 				ItemListComponent.this.m_remove_button.setEnabled(false);
-			}
+			}			
+			m_previous_selection = m_items_list.getSelectedValue();
 		}
 		
 	}

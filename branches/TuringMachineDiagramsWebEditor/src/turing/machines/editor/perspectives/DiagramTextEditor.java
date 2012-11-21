@@ -2,6 +2,7 @@ package turing.machines.editor.perspectives;
 
 import turing.machines.editor.EditorPerspective;
 import turing.simulator.module.Diagram;
+import turing.simulator.module.Machine;
 import turing.simulator.tape.Tape;
 import ui.utils.ClosableTabComponent;
 
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -45,10 +47,11 @@ public class DiagramTextEditor extends EditorPerspective {
 	{
 		DiagramTextDocument diagram_document = new DiagramTextDocument();
 		m_current_diagram_document = diagram_document;
+		m_current_diagram_document.AddRequiredModule("diagram.dt", "");
 		if(m_diagrams_tabbedPane.getComponentCount() > 0){
-			m_diagrams_tabbedPane.addTab("New Diagram" + m_diagrams_tabbedPane.getComponentCount(), null, m_current_diagram_document, null);		
+			m_diagrams_tabbedPane.addTab("New Diagram Project" + m_diagrams_tabbedPane.getComponentCount(), null, m_current_diagram_document, null);		
 		}else{
-			m_diagrams_tabbedPane.addTab("New Diagram", null, m_current_diagram_document, null);		
+			m_diagrams_tabbedPane.addTab("New Diagram Project", null, m_current_diagram_document, null);		
 		}
 		m_diagrams_tabbedPane.setSelectedComponent(diagram_document);
 		m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
@@ -57,7 +60,23 @@ public class DiagramTextEditor extends EditorPerspective {
 	@Override
 	public void New() 
 	{
-		NewDiagramDocument();
+		String[] options = { "Module", "Diagram Project" };
+		String input = (String)JOptionPane.showInputDialog(
+				this,
+                "Create new:\n",   
+                "New Item",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                "Module");
+		if(input != null){
+			if(input == "Module"){
+				m_current_diagram_document.CreateNewModule();
+			}
+			if(input == "Diagram Project"){
+				NewDiagramDocument();
+			}
+		}
 	}
 
 	@Override
@@ -121,39 +140,124 @@ public class DiagramTextEditor extends EditorPerspective {
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
 			m_current_diagram_document.SetConsoleText("Error saving diagram file: empty diagram.\n");
 		}else{
-			JFileChooser fc = new JFileChooser(new File("."));
-			FileNameExtensionFilter filter = new FileNameExtensionFilter(
-			        "Diagram files (.dt)", "dt");
-			fc.setFileFilter(filter);
-			fc.setAcceptAllFileFilterUsed(false);
-			//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			int returnVal = fc.showSaveDialog(null);
-			String file_path;
-			if(returnVal == JFileChooser.APPROVE_OPTION){						
-				file_path = fc.getSelectedFile().getAbsolutePath().toString() + ".dt";
-				FileWriter fstream; 
-				try {
-					fstream = new FileWriter(file_path);
-					BufferedWriter out = new BufferedWriter(fstream);
-					out.write(m_current_diagram_document.GetModuleText());
-					out.close();
-					m_current_diagram_document.SetConsoleText("Diagram file saved succesfully.\n");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}						
-			}		
+			String module_name = m_current_diagram_document.GetSelectedModule();
+			String module_path = m_current_diagram_document.GetModulePath(module_name);		
+			String file_type = "";
+			if(module_path == ""){
+				
+				if(module_name.endsWith(".mt")){
+					module_path = SelectMachineFilePath();
+					file_type = "Machine file: ";
+				}else if(module_name.endsWith(".dt")){
+					module_path = SelectDiagramFilePath();
+					file_type = "Diagram file: ";
+				}else{
+					return;
+				}
+			}
+			FileWriter fstream; 
+			try {
+				fstream = new FileWriter(module_path);
+				BufferedWriter out = new BufferedWriter(fstream);
+				out.write(m_current_diagram_document.GetModuleText());
+				out.close();
+				m_current_diagram_document.SetConsoleText(file_type +  module_path + " saved succesfully.\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}	
+			m_current_diagram_document.SetModulePath(module_name, module_path);
 		}
+	}
+	
+	private String SelectMachineFilePath()
+	{	
+		String machine_path = "";
+		JFileChooser fc = new JFileChooser(new File("."));			
+		fc.setSelectedFile(new File(m_current_diagram_document.GetSelectedModule()));
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+		        "Machine files (.mt)", "mt");
+		fc.setFileFilter(filter);
+		fc.setAcceptAllFileFilterUsed(false);
+		//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		int returnVal = fc.showSaveDialog(null);
+		if(returnVal == JFileChooser.APPROVE_OPTION){	
+			machine_path = fc.getSelectedFile().getAbsolutePath().toString();
+			if(!machine_path.endsWith(".mt")){
+				machine_path += ".mt";
+			}	
+		}
+		return machine_path;
+	}
+	
+	private String SelectDiagramFilePath()
+	{
+		String diagram_path = "";
+		JFileChooser fc = new JFileChooser(new File("."));			
+		fc.setSelectedFile(new File(m_current_diagram_document.GetSelectedModule()));
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+		        "Diagram files (.dt)", "dt");
+		fc.setFileFilter(filter);
+		fc.setAcceptAllFileFilterUsed(false);
+		//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		int returnVal = fc.showSaveDialog(null);
+		if(returnVal == JFileChooser.APPROVE_OPTION){	
+			diagram_path = fc.getSelectedFile().getAbsolutePath().toString();
+			if(!diagram_path.endsWith(".dt")){
+				diagram_path += ".dt";
+			}	
+		}
+		return diagram_path;
 	}
 
 	@Override
 	public void Execute() {
+		if(m_current_diagram_document.GetSelectedModule().endsWith(".mt")){
+			ExecuteMachine();
+		}else if (m_current_diagram_document.GetSelectedModule().endsWith(".dt")){
+			ExecuteDiagram();
+		}
+	}
+	
+	private void ExecuteMachine()
+	{
+		if(m_current_diagram_document == null){
+			return;
+		}
+		Machine m = new Machine();
+		boolean empty_fields = false;
+		m_current_diagram_document.ClearConsoleText();
+		if(m_current_diagram_document.GetModuleText().isEmpty()){
+			m_current_diagram_document.SetConsoleText("Empty machine.\n");
+			empty_fields = true;
+		}
+		if(m_current_diagram_document.GetTape().isEmpty()){
+			m_current_diagram_document.AppendConsoleText("Empty tape.\n");		
+			empty_fields = true;
+		}
+		if(!empty_fields){
+			try {
+				if( m.loadFromString(m_current_diagram_document.GetModuleText())) {
+					Tape tape = new Tape(m_current_diagram_document.GetTape());				
+					m.execute(tape);
+					m_current_diagram_document.AppendConsoleText(m.getLog().getText());
+				} else {
+					m_current_diagram_document.SetConsoleText("Failed to process rule - error on line " + Integer.toString(m.getLine()));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void ExecuteDiagram()
+	{
 		Diagram d = new Diagram();
 		m_current_diagram_document.SetConsoleText("");
 		d.setModuleFilesFullPath(m_current_diagram_document.GetModulesPath());
 		boolean empty_fields = false;
 		
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
-			m_current_diagram_document.SetConsoleText("Error executing: empty diagram.\n");
+			m_current_diagram_document.SetConsoleText("Error executing: empty module.\n");
 			empty_fields = true;
 		}
 		if(m_current_diagram_document.GetTape().isEmpty()){
