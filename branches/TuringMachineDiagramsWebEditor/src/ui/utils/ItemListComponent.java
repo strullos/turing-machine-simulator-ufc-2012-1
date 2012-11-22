@@ -31,15 +31,22 @@ public class ItemListComponent extends JPanel {
 	private ActionListener m_add_listener;
 	private ActionListener m_remove_listener;	
 	private ActionListener m_selection_listener;
+	private ActionListener m_save_all_listener;
 	private String m_previous_selection;
+	private JButton m_save_all_button;
 
-	public ItemListComponent(String label, ActionListener new_item_listener, ActionListener add_listener, ActionListener remove_listener, ActionListener selection_listener)
+	public ItemListComponent(String label, ActionListener new_item_listener, 
+			ActionListener add_listener, 
+			ActionListener remove_listener, 
+			ActionListener selection_listener,
+			ActionListener save_all_listener)
 	{
 		m_previous_selection = new String("");
 		m_new_item_listener = new_item_listener;
 		m_add_listener = add_listener;
 		m_remove_listener = remove_listener;
 		m_selection_listener = selection_listener;
+		m_save_all_listener = save_all_listener;
 		
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setLayout(new BorderLayout(0, 0));
@@ -76,6 +83,13 @@ public class ItemListComponent extends JPanel {
 		buttons_panel.add(m_remove_button);		
 		m_remove_button.addActionListener(new RemoveActionListener());
 		m_remove_button.setEnabled(false);
+		
+		m_save_all_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/document-save-all.png")));
+		m_save_all_button.setMinimumSize(new Dimension(30, 30));
+		m_save_all_button.setMaximumSize(new Dimension(30, 30));
+		m_save_all_button.addActionListener(new SaveAllListener());
+		m_save_all_button.setEnabled(true);
+		buttons_panel.add(m_save_all_button);
 		
 //		m_items_list.setCellRenderer(new ColoredListCellRenderer());
 	}
@@ -125,15 +139,17 @@ public class ItemListComponent extends JPanel {
 	public void MarkSelectedItem()
 	{
 		String item = m_items_list.getSelectedValue();
-		if(item.startsWith("*")){ //Item already marked
-			return;
+		if(item != null){
+			if(item.startsWith("*")){ //Item already marked
+				return;
+			}
+			String marked_item = "*" + item;
+			int index;
+			if((index = m_items_list.getSelectedIndex()) != -1){
+				DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
+				list_model.set(index, marked_item);	
+			}		
 		}
-		String marked_item = "*" + item;
-		int index;
-		if((index = m_items_list.getSelectedIndex()) != -1){
-			DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
-			list_model.set(index, marked_item);	
-		}		
 	}
 	
 	public void UnmarkSelectedItem()
@@ -175,20 +191,35 @@ public class ItemListComponent extends JPanel {
 		}		
 	}
 	
+	class SaveAllListener implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			m_save_all_listener.actionPerformed(e);
+		}		
+	}
+	
 	class SelectionChangedListener implements ListSelectionListener
 	{	
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
 			m_selection_listener.actionPerformed(null);		
 			if(m_items_list.getSelectedIndex() != -1){
-				ItemListComponent.this.m_remove_button.setEnabled(true);
+				ItemListComponent.this.m_remove_button.setEnabled(true);				
 			}else{
-				ItemListComponent.this.m_remove_button.setEnabled(false);
+				ItemListComponent.this.m_remove_button.setEnabled(false);			
 			}			
+			if(m_items_list.getModel().getSize() == 0){
+				m_save_all_button.setEnabled(false);
+			}else{
+				m_save_all_button.setEnabled(true);
+			}
 			m_previous_selection = m_items_list.getSelectedValue();
 		}
 		
 	}
+	
+
 	
 //	class ColoredListCellRenderer extends DefaultListCellRenderer {
 //	     /**

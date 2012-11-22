@@ -48,7 +48,7 @@ public class MachineTextEditor extends EditorPerspective {
 	{
 		MachineTextDocument machine_text_document = new MachineTextDocument();
 		m_current_machine_document = machine_text_document;
-		if(m_machines_tabbedPane.getComponentCount() > 0){
+		if(m_machines_tabbedPane.getComponentCount() > 1){
 			m_machines_tabbedPane.addTab("New Machine" + m_machines_tabbedPane.getComponentCount(), null, machine_text_document, null);		
 		}else{
 			m_machines_tabbedPane.addTab("New Machine", null, machine_text_document, null);		
@@ -107,28 +107,43 @@ public class MachineTextEditor extends EditorPerspective {
 		if(m_current_machine_document.GetModuleText().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty machine.");
 		}else{
-			ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
-			FileNameExtensionFilter filter = new FileNameExtensionFilter(
-			        "Machine files (.mt)", "mt");
-			fc.setFileFilter(filter);
-			fc.setAcceptAllFileFilterUsed(false);
-			//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			int returnVal = fc.showSaveDialog(null);
-			String file_path;
-			if(returnVal == JFileChooser.APPROVE_OPTION){						
-				file_path = fc.getSelectedFile().getAbsolutePath().toString() + ".mt";
-				FileWriter fstream; 
-				try {
-					fstream = new FileWriter(file_path);
-					BufferedWriter out = new BufferedWriter(fstream);
-					out.write(m_current_machine_document.GetModuleText());
-					out.close();
-					TuringMachinesEditor.SetStatusMessage("Machine file saved succesfully.\n");
-					m_machines_tabbedPane.setTitleAt(m_machines_tabbedPane.getSelectedIndex(), fc.getSelectedFile() + ".mt");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}						
-			}		
+			String machine_path = m_current_machine_document.GetMachineDocumentPath();
+			String machine_name = "";
+			if(machine_path.isEmpty()){
+				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
+				FileNameExtensionFilter filter = new FileNameExtensionFilter(
+				        "Machine files (.mt)", "mt");
+				fc.setFileFilter(filter);
+				fc.setAcceptAllFileFilterUsed(false);
+				//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				int returnVal = fc.showSaveDialog(null);
+				if(returnVal == JFileChooser.APPROVE_OPTION){	
+					machine_path = fc.getSelectedFile().getAbsolutePath().toString();
+					if(!machine_path.endsWith(".mt")){
+						machine_path = machine_path + ".mt";
+					}
+					machine_name = fc.getSelectedFile().getName();
+					if(!machine_name.endsWith(".mt")){
+						machine_name = machine_name + ".mt";
+					}
+					m_current_machine_document.SetMachineDocumentPath(machine_path);
+				}else{
+					return;
+				}
+			}			
+			FileWriter fstream; 
+			try {
+				fstream = new FileWriter(machine_path);
+				BufferedWriter out = new BufferedWriter(fstream);
+				out.write(m_current_machine_document.GetModuleText());
+				out.close();
+				TuringMachinesEditor.SetStatusMessage("Machine file " + machine_path + " saved succesfully.\n");
+				if(!machine_name.isEmpty()){ //If machine name is empty the file was already saved so we do not need to save it again
+					m_machines_tabbedPane.setTitleAt(m_machines_tabbedPane.getSelectedIndex(), machine_name);
+				}				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}						
 		}
 	}
 
@@ -174,6 +189,12 @@ public class MachineTextEditor extends EditorPerspective {
 				MachineTextEditor.this.m_current_machine_document = null;
 			}						
 		}		
+		
+	}
+
+	@Override
+	public void SaveAs() {
+		// TODO Auto-generated method stub
 		
 	}
 	
