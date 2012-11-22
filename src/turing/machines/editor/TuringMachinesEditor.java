@@ -53,6 +53,7 @@ public class TuringMachinesEditor extends JPanel {
 		m_tool_bar.RegisterListener(ToolBarListenerType.NEW_FILE, new NewActionListener());
 		m_tool_bar.RegisterListener(ToolBarListenerType.OPEN_FILE, new OpenActionListener());
 		m_tool_bar.RegisterListener(ToolBarListenerType.SAVE_FILE, new SaveActionListener());
+		m_tool_bar.RegisterListener(ToolBarListenerType.SAVE_AS_FILE, new SaveAsActionListener());
 		m_tool_bar.RegisterListener(ToolBarListenerType.EXECUTE, new ExecuteActionListener());
 		m_tool_bar.RegisterListener(ToolBarListenerType.PERSPECTIVE_CHANGED, new PerspectiveChangedListener());
 	}
@@ -108,6 +109,14 @@ public class TuringMachinesEditor extends JPanel {
 			m_current_perspective.Save();			
 		}
 		
+	}
+	
+	class SaveAsActionListener implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			m_current_perspective.SaveAs();			
+		}		
 	}
 	
 	class ExecuteActionListener implements ActionListener

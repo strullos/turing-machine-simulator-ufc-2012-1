@@ -4,11 +4,16 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import javax.swing.JFileChooser;
@@ -34,15 +39,21 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	
 	private HashMap<String, String> m_modules_path;
 	private HashMap<String, String> m_modules_content;
+	private boolean m_mark_unsaved_content;
 	public DiagramTextDocument() {
 		setLayout(new BorderLayout(0, 0));
 		
+		m_mark_unsaved_content = true;
 		m_modules_content = new HashMap<String, String>();
 		m_modules_path = new HashMap<String, String>();
 		m_tape_input = new LineEditComponent("Tape:");
 		m_module_input = new TextEditComponent("Editor:");
 		m_console = new ConsoleComponent();
-		m_modules_list = new ItemListComponent("Modules:", new NewModuleListener(),new AddModuleListener(), new RemoveModuleListener(), new ModuleSelectionChangedListener());
+		m_modules_list = new ItemListComponent("Modules:", new NewModuleListener(),
+				new AddModuleListener(), 
+				new RemoveModuleListener(), 
+				new ModuleSelectionChangedListener(),
+				new SaveAllListener());
 		
 	
 		add(m_tape_input, BorderLayout.NORTH);		
@@ -117,10 +128,12 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	
 	public void MarkSelectedItemAsUnsaved()
 	{
-		m_modules_list.MarkSelectedItem();
+		if(m_mark_unsaved_content){
+			m_modules_list.MarkSelectedItem();
+		}		
 	}
 	
-	public void UnmarkSelctedItem()
+	public void UnmarkSelectedItem()
 	{
 		m_modules_list.UnmarkSelectedItem();
 	}
@@ -263,12 +276,68 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		}		
 	}
 	
+	class SaveAllListener implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JFileChooser fc = new JFileChooser();			
+			fc.setAcceptAllFileFilterUsed(false);
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			int returnVal = fc.showSaveDialog(null);		
+			boolean overwrite_all = false;
+			if(returnVal == JFileChooser.APPROVE_OPTION){	
+				  String path = fc.getSelectedFile().getAbsolutePath();				   
+				  Iterator<Entry<String, String>> it = m_modules_content.entrySet().iterator();
+				    while (it.hasNext()) {
+				        Map.Entry<String, String> pairs = (Entry<String, String>)it.next();
+				        String file_path = path + "/" + pairs.getKey();
+				        File f = new File(file_path);
+				        //This code sections asks the user if he wants to overwrite all the files in the directory
+				        if(f.exists() && !overwrite_all){				        	
+				        	Object[] options = {"Yes",
+				                    "No",
+				                    "Overwrite All"};
+							int result = JOptionPane.showOptionDialog(null,
+							    "File " + pairs.getKey() + " already exists. Overwrite file?",
+							    "Overwrite Confirmation Dialog",
+							    JOptionPane.YES_NO_CANCEL_OPTION,
+							    JOptionPane.QUESTION_MESSAGE,
+							    null,
+							    options,
+							    options[2]);
+							if(result == JOptionPane.YES_OPTION){
+								//Do nothing and overwrite the file in the code below
+							}
+							if(result == JOptionPane.NO_OPTION){
+								continue;
+							}
+							if(result == JOptionPane.CANCEL_OPTION){ //Overwrite option
+								overwrite_all = true;
+							}
+				        }
+			        	FileWriter fstream; 
+						try {
+							fstream = new FileWriter(file_path);
+							BufferedWriter out = new BufferedWriter(fstream);
+							out.write(pairs.getValue());
+							out.close();							
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}				       
+				    }
+				    TuringMachinesEditor.SetStatusMessage("All modules exported to " + path);
+			}
+		}		
+	}
+	
 	class ModuleSelectionChangedListener implements ActionListener
 	{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			DiagramTextDocument.this.UpdateModuleContent(m_modules_list.GetPreviousSelectedItem());
+			//This is to prevent the module from being marked as unsaved just because the user changed selection (the document listener will be called)
+			m_mark_unsaved_content = false;
 			DiagramTextDocument.this.ReadSelectedModule(m_modules_list.GetSelectedItem());		
 			if(m_modules_list.GetSelectedItem() != null){
 				DiagramTextDocument.this.m_module_input.SetInputEnabled(true);
@@ -276,6 +345,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 				DiagramTextDocument.this.m_module_input.SetInputEnabled(false);
 				DiagramTextDocument.this.m_module_input.ClearText();
 			}
+			m_mark_unsaved_content = true;
 		}
 		
 	}
@@ -283,7 +353,6 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	//This listener monitors for any change in the content of the module
 	class ContentChangedListener implements DocumentListener
 	{
-
 		@Override
 		public void changedUpdate(DocumentEvent arg0) {
 			DiagramTextDocument.this.MarkSelectedItemAsUnsaved();			

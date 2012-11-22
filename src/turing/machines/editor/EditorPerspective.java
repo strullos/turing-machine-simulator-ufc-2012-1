@@ -25,5 +25,6 @@ public abstract class EditorPerspective extends JPanel {
 	public abstract void New(); //!< This method is called when the new button is pressed, on the current perspective
 	public abstract void Open();  //!<  * open button is pressed *
 	public abstract void Save();  //!<  * save button is pressed *
+	public abstract void SaveAs(); //!< * save as button is pressed *
 	public abstract void Execute();  //!<  * execute button is pressed *
 }

@@ -37,26 +37,26 @@ public class DiagramGraphDocument extends JPanel {
 		m_modules_path = new HashMap<String, String>();
 		m_tape_input = new LineEditComponent("Tape:");
 		m_console = new ConsoleComponent();
-		m_modules_list = new ItemListComponent("Modules:", new NewModuleListener() , new AddModuleListener(), new RemoveModuleListener(), new ModuleSelectionChangedListener());
-		
-	
-		add(m_tape_input, BorderLayout.NORTH);		
-		
-		JSplitPane diagram_editor_splitPane = new JSplitPane();
-		diagram_editor_splitPane.setOneTouchExpandable(true);
-		add(diagram_editor_splitPane, BorderLayout.CENTER);
-		diagram_editor_splitPane.setDividerLocation(750);		
-		
-		m_console_and_modules_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		diagram_editor_splitPane.setRightComponent(m_console_and_modules_tabbedPane);		
-		diagram_editor_splitPane.setLeftComponent(m_graph.GetGraphComponent());
-
-		m_graph_controls = new GraphControlComponent(m_graph);
-		m_console_and_modules_tabbedPane.addTab("Outline",null, m_graph_controls, null);
-		m_console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
-		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);	
-		
-		m_graph.AddNode(new GraphNode("EM BREVE!", "empty", 100, 100));		
+//		m_modules_list = new ItemListComponent("Modules:", new NewModuleListener() , new AddModuleListener(), new RemoveModuleListener(), new ModuleSelectionChangedListener());
+//		
+//	
+//		add(m_tape_input, BorderLayout.NORTH);		
+//		
+//		JSplitPane diagram_editor_splitPane = new JSplitPane();
+//		diagram_editor_splitPane.setOneTouchExpandable(true);
+//		add(diagram_editor_splitPane, BorderLayout.CENTER);
+//		diagram_editor_splitPane.setDividerLocation(750);		
+//		
+//		m_console_and_modules_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+//		diagram_editor_splitPane.setRightComponent(m_console_and_modules_tabbedPane);		
+//		diagram_editor_splitPane.setLeftComponent(m_graph.GetGraphComponent());
+//
+//		m_graph_controls = new GraphControlComponent(m_graph);
+//		m_console_and_modules_tabbedPane.addTab("Outline",null, m_graph_controls, null);
+//		m_console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
+//		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);	
+//		
+//		m_graph.AddNode(new GraphNode("EM BREVE!", "empty", 100, 100));		
 	}
 	
 	public void AddRequiredModule(String file_name, String file_path)
