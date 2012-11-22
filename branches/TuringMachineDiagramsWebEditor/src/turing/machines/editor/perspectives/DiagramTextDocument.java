@@ -13,9 +13,13 @@ import java.util.StringTokenizer;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JSplitPane;
 
+import turing.machines.editor.TuringMachinesEditor;
+import ui.utils.ConfirmationFileChooser;
 import ui.utils.ConsoleComponent;
 import ui.utils.ItemListComponent;
 import ui.utils.LineEditComponent;
@@ -58,6 +62,8 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		add(diagram_editor_and_console_splitPane, BorderLayout.CENTER);
 		
 		m_module_input.SetInputEnabled(false);
+		
+		m_module_input.SetDocumentListener(new ContentChangedListener());
 	}	
 	
 	public void CreateNewModule()
@@ -72,7 +78,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
                 "new_module.mt");		
 		if(module_name != null){
 			if(!module_name.endsWith(".dt") && !module_name.endsWith(".mt")){						
-				m_console.AppendText("Invalid module extension. Please specify .dt or .mt");
+				TuringMachinesEditor.SetStatusMessage("Invalid module extension. Please specify .dt or .mt");
 			}else{
 				AddRequiredModule(module_name, "");
 			}				
@@ -82,7 +88,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	public String GetSelectedModule()
 	{
 		return m_modules_list.GetSelectedItem();
-	}
+	}	
 	
 	public String GetModulePath(String module_name)
 	{
@@ -103,6 +109,22 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	{
 		return m_modules_path;
 	}
+	
+	public HashMap<String, String> GetModulesContent()
+	{
+		return m_modules_content;
+	}	
+	
+	public void MarkSelectedItemAsUnsaved()
+	{
+		m_modules_list.MarkSelectedItem();
+	}
+	
+	public void UnmarkSelctedItem()
+	{
+		m_modules_list.UnmarkSelectedItem();
+	}
+	
 	
 	public boolean CheckRequiredModules(String line)
 	{
@@ -125,12 +147,15 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	{
 		//m_console.ClearText();
 		if(m_modules_path.containsKey(file_name)){
-			m_console.AppendText("Already contains a " + file_name + " module. Duplicates are not allowed.");
+			TuringMachinesEditor.SetStatusMessage("Already contains a " + file_name + " module. Duplicates are not allowed.");
 			return;
-		}
+		}		
 		m_modules_path.put(file_name, file_path);
 		m_modules_list.AddItem(file_name);		
-		m_console.AppendText("Module " + file_name + " added successfully.\n");		
+		if(file_path == ""){
+			MarkSelectedItemAsUnsaved();
+		}
+		TuringMachinesEditor.SetStatusMessage("Module " + file_name + " added successfully.\n");		
 	}	
 	
 	private void ReadSelectedModule(String selected_module)
@@ -187,7 +212,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
                     "new_module.mt");		
 			if(input != null){
 				if(!input.endsWith(".dt") && !input.endsWith(".mt")){
-					m_console.AppendText("Invalid module extension. Please specify .dt or .mt");
+					TuringMachinesEditor.SetStatusMessage("Invalid module extension. Please specify .dt or .mt");
 				}else{
 					DiagramTextDocument.this.AddRequiredModule(input, "");
 				}				
@@ -201,7 +226,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JFileChooser fc = new JFileChooser(new File("."));		
+			ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));		
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
 			        "Modules files(.mt or .dt)", "mt", "dt");		
 			fc.setFileFilter(filter);
@@ -233,7 +258,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 				m_modules_list.RemoveSelectedItem();
 				m_modules_path.remove(selected_module);	
 				m_modules_content.remove(selected_module);
-				m_console.AppendText("Module: " + selected_module + " removed successfully.\n");
+				TuringMachinesEditor.SetStatusMessage("Module: " + selected_module + " removed successfully.\n");
 			}		
 		}		
 	}
@@ -251,6 +276,27 @@ public class DiagramTextDocument extends ModuleTextDocument {
 				DiagramTextDocument.this.m_module_input.SetInputEnabled(false);
 				DiagramTextDocument.this.m_module_input.ClearText();
 			}
+		}
+		
+	}
+	
+	//This listener monitors for any change in the content of the module
+	class ContentChangedListener implements DocumentListener
+	{
+
+		@Override
+		public void changedUpdate(DocumentEvent arg0) {
+			DiagramTextDocument.this.MarkSelectedItemAsUnsaved();			
+		}
+
+		@Override
+		public void insertUpdate(DocumentEvent arg0) {
+			DiagramTextDocument.this.MarkSelectedItemAsUnsaved();						
+		}
+
+		@Override
+		public void removeUpdate(DocumentEvent arg0) {
+			DiagramTextDocument.this.MarkSelectedItemAsUnsaved();					
 		}
 		
 	}

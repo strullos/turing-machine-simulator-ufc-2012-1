@@ -1,10 +1,12 @@
 package turing.machines.editor.perspectives;
 
 import turing.machines.editor.EditorPerspective;
+import turing.machines.editor.TuringMachinesEditor;
 import turing.simulator.module.Diagram;
 import turing.simulator.module.Machine;
 import turing.simulator.tape.Tape;
 import ui.utils.ClosableTabComponent;
+import ui.utils.ConfirmationFileChooser;
 
 import java.awt.BorderLayout;
 import java.io.BufferedReader;
@@ -138,7 +140,7 @@ public class DiagramTextEditor extends EditorPerspective {
 	public void Save() 
 	{
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
-			m_current_diagram_document.SetConsoleText("Error saving diagram file: empty diagram.\n");
+			TuringMachinesEditor.SetStatusMessage("Error saving diagram file: empty diagram.\n");
 		}else{
 			String module_name = m_current_diagram_document.GetSelectedModule();
 			String module_path = m_current_diagram_document.GetModulePath(module_name);		
@@ -155,13 +157,18 @@ public class DiagramTextEditor extends EditorPerspective {
 					return;
 				}
 			}
+			if(module_path.isEmpty()) //If the path is empty the user cancelled the save operation
+			{
+				return;
+			}
 			FileWriter fstream; 
 			try {
 				fstream = new FileWriter(module_path);
 				BufferedWriter out = new BufferedWriter(fstream);
 				out.write(m_current_diagram_document.GetModuleText());
 				out.close();
-				m_current_diagram_document.SetConsoleText(file_type +  module_path + " saved succesfully.\n");
+				TuringMachinesEditor.SetStatusMessage(file_type +  module_path + " saved succesfully.\n");
+				m_current_diagram_document.UnmarkSelctedItem();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}	
@@ -172,7 +179,8 @@ public class DiagramTextEditor extends EditorPerspective {
 	private String SelectMachineFilePath()
 	{	
 		String machine_path = "";
-		JFileChooser fc = new JFileChooser(new File("."));			
+		//This modified JFileChooser asks for confirmation if the user wants to overwrite the file
+		ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
 		fc.setSelectedFile(new File(m_current_diagram_document.GetSelectedModule()));
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(
 		        "Machine files (.mt)", "mt");
@@ -192,7 +200,8 @@ public class DiagramTextEditor extends EditorPerspective {
 	private String SelectDiagramFilePath()
 	{
 		String diagram_path = "";
-		JFileChooser fc = new JFileChooser(new File("."));			
+		//This modified JFileChooser asks for confirmation if the user wants to overwrite the file
+		ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));		
 		fc.setSelectedFile(new File(m_current_diagram_document.GetSelectedModule()));
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(
 		        "Diagram files (.dt)", "dt");
@@ -227,11 +236,11 @@ public class DiagramTextEditor extends EditorPerspective {
 		boolean empty_fields = false;
 		m_current_diagram_document.ClearConsoleText();
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
-			m_current_diagram_document.SetConsoleText("Empty machine.\n");
+			TuringMachinesEditor.SetStatusMessage("Empty machine.\n");
 			empty_fields = true;
 		}
 		if(m_current_diagram_document.GetTape().isEmpty()){
-			m_current_diagram_document.AppendConsoleText("Empty tape.\n");		
+			TuringMachinesEditor.SetStatusMessage("Empty tape.\n");		
 			empty_fields = true;
 		}
 		if(!empty_fields){
@@ -254,14 +263,15 @@ public class DiagramTextEditor extends EditorPerspective {
 		Diagram d = new Diagram();
 		m_current_diagram_document.SetConsoleText("");
 		d.setModuleFilesFullPath(m_current_diagram_document.GetModulesPath());
+		d.setModulesContent(m_current_diagram_document.GetModulesContent());
 		boolean empty_fields = false;
 		
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
-			m_current_diagram_document.SetConsoleText("Error executing: empty module.\n");
+			TuringMachinesEditor.SetStatusMessage("Error executing: empty module.\n");
 			empty_fields = true;
 		}
 		if(m_current_diagram_document.GetTape().isEmpty()){
-			m_current_diagram_document.AppendConsoleText("Error executing: empty tape.\n");		
+			TuringMachinesEditor.SetStatusMessage("Error executing: empty tape.\n");		
 			empty_fields = true;
 		}
 		if(!empty_fields){

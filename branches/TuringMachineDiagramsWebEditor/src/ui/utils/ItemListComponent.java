@@ -76,10 +76,19 @@ public class ItemListComponent extends JPanel {
 		buttons_panel.add(m_remove_button);		
 		m_remove_button.addActionListener(new RemoveActionListener());
 		m_remove_button.setEnabled(false);
+		
+//		m_items_list.setCellRenderer(new ColoredListCellRenderer());
 	}
 	
 	public String GetSelectedItem()
 	{
+		String item =  m_items_list.getSelectedValue();
+		if(item != null){
+			if(item.startsWith("*"))
+			{
+				return item.substring(1);
+			}
+		}		
 		return m_items_list.getSelectedValue();
 	}
 	
@@ -92,15 +101,15 @@ public class ItemListComponent extends JPanel {
 	}
 	
 	public void AddItem(String item)
-	{
-		
+	{	
 		DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
 		int pos = list_model.getSize();
 		list_model.add(pos, item);					
 		m_items_list.setSelectedValue(item, true);
 		if(m_previous_selection == ""){
 			m_previous_selection = item;
-		}
+		}		
+		
 	}	
 	
 	public void RemoveSelectedItem()
@@ -109,8 +118,35 @@ public class ItemListComponent extends JPanel {
 		if((index = m_items_list.getSelectedIndex()) != -1){
 			m_items_list.clearSelection();
 			DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
-			list_model.remove(index);
+			list_model.remove(index);			
 		}		
+	}
+	
+	public void MarkSelectedItem()
+	{
+		String item = m_items_list.getSelectedValue();
+		if(item.startsWith("*")){ //Item already marked
+			return;
+		}
+		String marked_item = "*" + item;
+		int index;
+		if((index = m_items_list.getSelectedIndex()) != -1){
+			DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
+			list_model.set(index, marked_item);	
+		}		
+	}
+	
+	public void UnmarkSelectedItem()
+	{
+		String item = m_items_list.getSelectedValue();	
+		if(!item.startsWith("*")){ //Item is not marked
+			return;
+		}
+		int index;
+		if((index = m_items_list.getSelectedIndex()) != -1){
+			DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
+			list_model.set(index, item.substring(1));	
+		}	
 	}
 	
 	class NewItemActionListener implements ActionListener
@@ -153,4 +189,21 @@ public class ItemListComponent extends JPanel {
 		}
 		
 	}
+	
+//	class ColoredListCellRenderer extends DefaultListCellRenderer {
+//	     /**
+//		 * 
+//		 */
+//		private static final long serialVersionUID = 1L;
+//
+//		@SuppressWarnings("rawtypes")
+//		@Override
+//	     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+//	         Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+//	         if (value.equals("diagram.dt")) {
+//	             c.setForeground(Color.RED);
+//	         }
+//	         return c;
+//	     }
+//	}
 }

@@ -20,21 +20,28 @@ public class Diagram extends Module {
 	private HashMap<String, String> m_modules_file; //Maps from module name to module path;
 	private HashMap<String, DiagramRule> m_modules_rules; //Maps from module to rule;
 	private HashMap<String, String> m_variables_table; //Stores the name and value of all variables
+	private HashMap<String, String> m_modules_content; //Stores the content of the modules. This is used for modules that are not saved on a file.
 	private String m_initial_module;
 	private String m_current_module;	
 	
-	public Diagram(){
+	public Diagram(){			
 		m_loaded_modules = new HashMap<String, Module>();
 		m_loaded_files = new HashMap<String, Module>();
 		m_modules_file = new HashMap<String, String>();
 		m_modules_full_path = new HashMap<String,String>();
 		m_modules_rules = new HashMap<String, DiagramRule>();
 		m_variables_table = new HashMap<String,String>();
+		m_modules_content = new HashMap<String, String>();
 		m_initial_module = "";
 		m_current_module = "";
 		m_module_name = "";
 		m_module_path = "this";
 		m_loaded = false;		
+	}
+	
+	public void setModulesContent(HashMap<String, String> modules_content)
+	{
+		m_modules_content = modules_content;
 	}
 	
 	@Override
@@ -108,7 +115,8 @@ public class Diagram extends Module {
 				module_path = m_modules_full_path.get(module_file);
 			}else{
 				module_path = m_load_path + "/" + module_file;
-			}			
+			}		
+			
 			if(m_loaded_modules.containsKey(module_name)){
 				m_log.writeLn("Duplicated module name detected on line: " + m_current_line);
 				m_log.writeLn("Aborting load.");
@@ -119,17 +127,35 @@ public class Diagram extends Module {
 				Module m = m_loaded_files.get(module_file);
 				m_loaded_modules.put(module_name, m);
 				return true;
-			}
-			try {
-				module = ModuleFactory.loadModule(module_path);
-				if( module == null )
+			}			
+
+			if(module_path.isEmpty()){ //The module was not saved from a file and should be loaded from a string
+				if(m_modules_content.containsKey(module_file)){
+					try {
+						module = ModuleFactory.loadModuleFromString(module_file, m_modules_content.get(module_file));
+						module.setModulePath(module_file);
+					} catch (IOException e) {
+						m_error = "Could not load module file " + module_file;
+						e.printStackTrace();
+					}					
+				}else{
+					m_error = "Could not load module file " + module_file;
 					return false;
-				
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-				m_error = "Could not load module file " + module_file;
-				return false;
+				}
+			}else{ //This is the basic loading path. The module is loaded from a file
+				try {
+					module = ModuleFactory.loadModule(module_path);
+					if( module == null ){
+						m_error = "Could not load module file " + module_file;
+						return false;
+					}				
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					m_error = "Could not load module file " + module_file;
+					return false;
+				}
 			}
+			
 			
 			if(m_module_name.isEmpty()){
 				module.setModuleName(module_name);
@@ -232,6 +258,10 @@ public class Diagram extends Module {
 		if(m_loaded){
 			//printStep(t);
 			//m_steps++;
+			if(m_modules_rules.isEmpty()){
+				m_log.writeLn("No rules to execute.");
+				executing = false;
+			}
 			while(executing){
 				if(!m_loaded_modules.containsKey(m_current_module)){
 					break;
