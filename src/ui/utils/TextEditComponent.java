@@ -8,6 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentListener;
 import javax.swing.JScrollPane;
 
 public class TextEditComponent extends JPanel {
@@ -56,5 +57,10 @@ public class TextEditComponent extends JPanel {
 	public void ClearText()
 	{
 		m_text_input.setText("");
+	}
+	
+	public void SetDocumentListener(DocumentListener listener)
+	{
+		m_text_input.getDocument().addDocumentListener(listener);
 	}
 }

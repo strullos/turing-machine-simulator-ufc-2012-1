@@ -1,9 +1,11 @@
 package turing.machines.editor.perspectives;
 
 import turing.machines.editor.EditorPerspective;
+import turing.machines.editor.TuringMachinesEditor;
 import turing.simulator.module.Machine;
 import turing.simulator.tape.Tape;
 import ui.utils.ClosableTabComponent;
+import ui.utils.ConfirmationFileChooser;
 
 import java.awt.BorderLayout;
 
@@ -86,7 +88,7 @@ public class MachineTextEditor extends EditorPerspective {
 					m_machines_tabbedPane.addTab(fc.getSelectedFile().getName().toString(), null, new_machine_document, null);	
 					m_machines_tabbedPane.setSelectedComponent(new_machine_document);
 					m_machines_tabbedPane.setTabComponentAt(m_machines_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_machines_tabbedPane));
-					m_current_machine_document.SetConsoleText("Machine file loaded successfully.\n");
+					TuringMachinesEditor.SetStatusMessage("Machine file loaded successfully.\n");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -103,9 +105,9 @@ public class MachineTextEditor extends EditorPerspective {
 			return;
 		}
 		if(m_current_machine_document.GetModuleText().isEmpty()){
-			m_current_machine_document.SetConsoleText("Empty machine.");
+			TuringMachinesEditor.SetStatusMessage("Empty machine.");
 		}else{
-			JFileChooser fc = new JFileChooser(new File("."));
+			ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
 			        "Machine files (.mt)", "mt");
 			fc.setFileFilter(filter);
@@ -121,7 +123,7 @@ public class MachineTextEditor extends EditorPerspective {
 					BufferedWriter out = new BufferedWriter(fstream);
 					out.write(m_current_machine_document.GetModuleText());
 					out.close();
-					m_current_machine_document.SetConsoleText("Machine file saved succesfully.\n");
+					TuringMachinesEditor.SetStatusMessage("Machine file saved succesfully.\n");
 					m_machines_tabbedPane.setTitleAt(m_machines_tabbedPane.getSelectedIndex(), fc.getSelectedFile() + ".mt");
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -139,11 +141,11 @@ public class MachineTextEditor extends EditorPerspective {
 		boolean empty_fields = false;
 		m_current_machine_document.ClearConsoleText();
 		if(m_current_machine_document.GetModuleText().isEmpty()){
-			m_current_machine_document.SetConsoleText("Empty machine.\n");
+			TuringMachinesEditor.SetStatusMessage("Empty machine.\n");
 			empty_fields = true;
 		}
 		if(m_current_machine_document.GetTape().isEmpty()){
-			m_current_machine_document.AppendConsoleText("Empty tape.\n");		
+			TuringMachinesEditor.SetStatusMessage("Empty tape.\n");		
 			empty_fields = true;
 		}
 		if(!empty_fields){
