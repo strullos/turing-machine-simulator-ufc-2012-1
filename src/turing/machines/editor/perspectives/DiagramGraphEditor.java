@@ -61,4 +61,10 @@ public class DiagramGraphEditor extends EditorPerspective {
 		
 	}
 
+	@Override
+	public void Help() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

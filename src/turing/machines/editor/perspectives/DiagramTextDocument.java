@@ -28,6 +28,7 @@ import ui.utils.ConfirmationFileChooser;
 import ui.utils.ConsoleComponent;
 import ui.utils.ItemListComponent;
 import ui.utils.LineEditComponent;
+import ui.utils.PreDefinedModulesDialog;
 import ui.utils.TextEditComponent;
 
 public class DiagramTextDocument extends ModuleTextDocument {
@@ -53,7 +54,8 @@ public class DiagramTextDocument extends ModuleTextDocument {
 				new AddModuleListener(), 
 				new RemoveModuleListener(), 
 				new ModuleSelectionChangedListener(),
-				new SaveAllListener());
+				new SaveAllListener(),
+				new PreDefinedModulesListener());
 		
 	
 		add(m_tape_input, BorderLayout.NORTH);		
@@ -91,7 +93,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 			if(!module_name.endsWith(".dt") && !module_name.endsWith(".mt")){						
 				TuringMachinesEditor.SetStatusMessage("Invalid module extension. Please specify .dt or .mt");
 			}else{
-				AddRequiredModule(module_name, "");
+				AddModule(module_name, "");
 			}				
 		}			
 	}
@@ -114,6 +116,31 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	public void SetModulePath(String module_name, String module_path)
 	{
 		m_modules_path.put(module_name, module_path);
+	}
+	
+	public void RenameModule(String original_module_name, String new_module_name)
+	{
+	  Iterator<Entry<String, String>> it = m_modules_path.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry<String,String> pairs = (Map.Entry<String,String>)it.next();
+	        if(pairs.getKey().equals(original_module_name)){
+	        	pairs.getKey().replaceAll(original_module_name, new_module_name);
+	        }
+	    }
+	    
+	    it = m_modules_content.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry<String,String> pairs = (Map.Entry<String,String>)it.next();
+	        if(pairs.getKey().equals(original_module_name)){
+	        	pairs.getKey().replaceAll(original_module_name, new_module_name);
+	        }
+	    }
+	    m_modules_list.RenameSelectedItem(new_module_name);
+	}
+	
+	public boolean CheckDuplicatedModule(String module_name)
+	{
+		return m_modules_content.containsKey(module_name);
 	}
 	
 	public HashMap<String,String> GetModulesPath()
@@ -156,7 +183,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		return true;
 	}
 	
-	public void AddRequiredModule(String file_name, String file_path)
+	public void AddModule(String file_name, String file_path)
 	{
 		//m_console.ClearText();
 		if(m_modules_path.containsKey(file_name)){
@@ -227,7 +254,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 				if(!input.endsWith(".dt") && !input.endsWith(".mt")){
 					TuringMachinesEditor.SetStatusMessage("Invalid module extension. Please specify .dt or .mt");
 				}else{
-					DiagramTextDocument.this.AddRequiredModule(input, "");
+					DiagramTextDocument.this.AddModule(input, "");
 				}				
 			}			
 		}
@@ -250,7 +277,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 			if(returnVal == JFileChooser.APPROVE_OPTION){			
 				file_name = fc.getSelectedFile().getName();
 				file_path = fc.getSelectedFile().getAbsolutePath().toString();
-				DiagramTextDocument.this.AddRequiredModule(file_name, file_path);
+				DiagramTextDocument.this.AddModule(file_name, file_path);
 			}			
 		}
 		
@@ -326,6 +353,27 @@ public class DiagramTextDocument extends ModuleTextDocument {
 						}				       
 				    }
 				    TuringMachinesEditor.SetStatusMessage("All modules exported to " + path);
+			}
+		}		
+	}
+	
+	class PreDefinedModulesListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			PreDefinedModulesDialog pre_defined_modules = new PreDefinedModulesDialog();
+			pre_defined_modules.setModal(true);
+			int result = pre_defined_modules.showDialog(); //If result equals to 1, the user confirmed the dialog			
+			if(result > 0){
+				String module_name = pre_defined_modules.GetSelectModule();
+				if(CheckDuplicatedModule(module_name)){
+					TuringMachinesEditor.SetStatusMessage("There is already a module " + module_name + " in the project. Duplicated modules are not allowed.");
+					return;
+				}				
+				String content = pre_defined_modules.GetSelectedModuleContent();
+				DiagramTextDocument.this.m_modules_content.put(module_name, content);	
+				DiagramTextDocument.this.AddModule(module_name, "");			
 			}
 		}		
 	}
