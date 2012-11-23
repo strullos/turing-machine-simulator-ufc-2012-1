@@ -7,6 +7,7 @@ import turing.simulator.module.Machine;
 import turing.simulator.tape.Tape;
 import ui.utils.ClosableTabComponent;
 import ui.utils.ConfirmationFileChooser;
+import ui.utils.HelpDialog;
 
 import java.awt.BorderLayout;
 import java.io.BufferedReader;
@@ -49,8 +50,8 @@ public class DiagramTextEditor extends EditorPerspective {
 	{
 		DiagramTextDocument diagram_document = new DiagramTextDocument();
 		m_current_diagram_document = diagram_document;
-		m_current_diagram_document.AddRequiredModule("diagram.dt", "");
-		if(m_diagrams_tabbedPane.getComponentCount() > 0){
+		m_current_diagram_document.AddModule("diagram.dt", "");
+		if(m_diagrams_tabbedPane.getComponentCount() > 1){
 			m_diagrams_tabbedPane.addTab("New Diagram Project" + m_diagrams_tabbedPane.getComponentCount(), null, m_current_diagram_document, null);		
 		}else{
 			m_diagrams_tabbedPane.addTab("New Diagram Project", null, m_current_diagram_document, null);		
@@ -113,7 +114,7 @@ public class DiagramTextEditor extends EditorPerspective {
 					m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
 					m_current_diagram_document.SetModuleText(diagram_text);
 					TuringMachinesEditor.SetStatusMessage("Diagram file loaded successfully.\n");
-					m_current_diagram_document.AddRequiredModule(fc.getSelectedFile().getName(), file_path);
+					m_current_diagram_document.AddModule(fc.getSelectedFile().getName(), file_path);
 					if(!required_modules){
 						m_current_diagram_document.AppendConsoleText("Some of the required modules are not available, diagram won't be able to execute. " +
 								"\nConsider adding the required modules.\n");
@@ -125,10 +126,8 @@ public class DiagramTextEditor extends EditorPerspective {
 					for(int i = 0; i < dependencies.size(); i++)
 					{
 						File module_file = new File(dependencies.get(i));
-						m_current_diagram_document.AddRequiredModule(module_file.getName(), module_file.getPath());
-					}	
-					
-
+						m_current_diagram_document.AddModule(module_file.getName(), module_file.getPath());
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -146,21 +145,48 @@ public class DiagramTextEditor extends EditorPerspective {
 		}else{
 			String module_name = m_current_diagram_document.GetSelectedModule();
 			String module_path = m_current_diagram_document.GetModulePath(module_name);		
+			String module_filename = "";
+			String file_extension = "";
 			String file_type = "";
 			if(module_path == ""){
-				
+				File target_file;
 				if(module_name.endsWith(".mt")){
-					module_path = SelectMachineFilePath(false);
+					target_file = SelectMachineFilePath(true);
+					if(target_file == null){
+						return;
+					}
+					module_path = target_file.getAbsolutePath().toString();
+					if(!module_path.endsWith(".mt")){
+						module_path += ".mt";						
+					}
 					file_type = "Machine file: ";
+					file_extension = ".mt";
 				}else if(module_name.endsWith(".dt")){
-					module_path = SelectDiagramFilePath(false);
+					target_file = SelectDiagramFilePath(true);
+					if(target_file == null){
+						return;
+					}
+					module_path = target_file.getAbsolutePath().toString();
+					
+					if(!module_path.endsWith(".dt")){
+						module_path += ".dt";
+					}	
 					file_type = "Diagram file: ";
+					file_extension = ".dt";
 				}else{
 					return;
+				}
+				module_filename = target_file.getName();
+				if(!module_filename.contains(file_extension)){
+					module_filename += file_extension;
 				}
 			}
 			if(module_path.isEmpty()) //If the path is empty the user cancelled the save operation
 			{
+				return;
+			}
+			if(m_current_diagram_document.CheckDuplicatedModule(module_filename)){
+				TuringMachinesEditor.SetStatusMessage("This diagram project already contains a module called " + module_filename + ". Please save it with a different name.");
 				return;
 			}
 			FileWriter fstream; 
@@ -171,10 +197,11 @@ public class DiagramTextEditor extends EditorPerspective {
 				out.close();
 				TuringMachinesEditor.SetStatusMessage(file_type +  module_path + " saved succesfully.\n");
 				m_current_diagram_document.UnmarkSelectedItem();
+				m_current_diagram_document.SetModulePath(module_name, module_path);	
+				m_current_diagram_document.RenameModule(module_name, module_filename);
 			} catch (IOException e) {
 				e.printStackTrace();
-			}	
-			m_current_diagram_document.SetModulePath(module_name, module_path);
+			}								
 		}
 	}
 	
@@ -185,19 +212,47 @@ public class DiagramTextEditor extends EditorPerspective {
 		}else{
 			String module_name = m_current_diagram_document.GetSelectedModule();
 			String module_path = "";
+			String module_filename = "";
+			String file_extension = "";
 			String file_type = "";
+			File target_file;
 			if(module_name.endsWith(".mt")){
-				module_path = SelectMachineFilePath(true);
+				target_file = SelectMachineFilePath(true);
+				if(target_file == null){
+					return;
+				}
+				module_path = target_file.getAbsolutePath().toString();
+				if(!module_path.endsWith(".mt")){
+					module_path += ".mt";
+				}
 				file_type = "Machine file: ";
+				file_extension = ".mt";
 			}else if(module_name.endsWith(".dt")){
-				module_path = SelectDiagramFilePath(true);
+				target_file = SelectDiagramFilePath(true);
+				if(target_file == null){
+					return;
+				}
+				module_path = target_file.getAbsolutePath().toString();
+				if(!module_path.endsWith(".dt")){
+					module_path += ".dt";
+				}	
 				file_type = "Diagram file: ";
+				file_extension = ".dt";
 			}else{
 				return;
+			}
+			module_filename = target_file.getName();
+			if(!module_filename.contains(file_extension)){
+				module_filename += file_extension;
 			}
 			if(module_path.isEmpty()) //If the path is empty the user cancelled the save operation
 			{
 				return;
+			}
+			boolean duplicated_module = false;
+			if(m_current_diagram_document.CheckDuplicatedModule(module_filename)){
+				m_current_diagram_document.m_console.AppendText("This diagram project already contains a module called " + module_filename + ".File will be saved, but will not be added to the project.");
+				duplicated_module = true;
 			}
 			FileWriter fstream; 
 			try {
@@ -205,18 +260,19 @@ public class DiagramTextEditor extends EditorPerspective {
 				BufferedWriter out = new BufferedWriter(fstream);
 				out.write(m_current_diagram_document.GetModuleText());
 				out.close();
+				if(!duplicated_module){
+					m_current_diagram_document.AddModule(module_filename, module_path);
+				}	
 				TuringMachinesEditor.SetStatusMessage(file_type +  module_path + " saved succesfully.\n");
-				m_current_diagram_document.UnmarkSelectedItem();
 			} catch (IOException e) {
 				e.printStackTrace();
-			}	
-			m_current_diagram_document.SetModulePath(module_name, module_path);
+			}						
 		}
 	}
 	
-	private String SelectMachineFilePath(boolean empty_file_name)
+	private File SelectMachineFilePath(boolean empty_file_name)
 	{	
-		String machine_path = "";
+//		String machine_path = "";
 		//This modified JFileChooser asks for confirmation if the user wants to overwrite the file
 		ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
 		if(!empty_file_name){
@@ -229,17 +285,18 @@ public class DiagramTextEditor extends EditorPerspective {
 		//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = fc.showSaveDialog(null);
 		if(returnVal == JFileChooser.APPROVE_OPTION){	
-			machine_path = fc.getSelectedFile().getAbsolutePath().toString();
-			if(!machine_path.endsWith(".mt")){
-				machine_path += ".mt";
-			}	
+//			machine_path = fc.getSelectedFile().getAbsolutePath().toString();
+//			if(!machine_path.endsWith(".mt")){
+//				machine_path += ".mt";
+//			}	
+			return fc.getSelectedFile();
 		}
-		return machine_path;
+		return null;
 	}
 	
-	private String SelectDiagramFilePath(boolean empty_file_name)
+	private File SelectDiagramFilePath(boolean empty_file_name)
 	{
-		String diagram_path = "";
+//		String diagram_path = "";
 		//This modified JFileChooser asks for confirmation if the user wants to overwrite the file
 		ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));		
 		if(!empty_file_name){
@@ -252,12 +309,13 @@ public class DiagramTextEditor extends EditorPerspective {
 		//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = fc.showSaveDialog(null);
 		if(returnVal == JFileChooser.APPROVE_OPTION){	
-			diagram_path = fc.getSelectedFile().getAbsolutePath().toString();
-			if(!diagram_path.endsWith(".dt")){
-				diagram_path += ".dt";
-			}	
+//			diagram_path = fc.getSelectedFile().getAbsolutePath().toString();
+//			if(!diagram_path.endsWith(".dt")){
+//				diagram_path += ".dt";
+//			}	
+			return fc.getSelectedFile();
 		}
-		return diagram_path;
+		return null;
 	}
 
 	@Override
@@ -347,6 +405,13 @@ public class DiagramTextEditor extends EditorPerspective {
 			}						
 		}		
 		
+	}
+
+	@Override
+	public void Help() {
+		HelpDialog help_dialog = new HelpDialog();
+		help_dialog.SetHelpContent("Diagram Help");
+		help_dialog.setVisible(true);
 	}
 
 	

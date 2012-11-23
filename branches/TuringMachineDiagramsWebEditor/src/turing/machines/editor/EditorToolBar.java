@@ -26,7 +26,7 @@ public class EditorToolBar extends JToolBar {
 	{
 		m_listeners = new HashMap<ToolBarListenerType, ActionListener>();
 		AddToolBarButtons();
-		this.setFloatable(false);
+		this.setFloatable(false);	
 	}
 	
 	public void RegisterListener(ToolBarListenerType type, ActionListener listener)
@@ -76,6 +76,11 @@ public class EditorToolBar extends JToolBar {
 		m_perspectives_combobox.addActionListener(new ComboboxSelectionChangedListener());
 		this.add(m_perspectives_combobox);
 		this.addSeparator();
+		
+		JButton help_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/help.png")));
+		help_button.setToolTipText("Help");
+		help_button.addActionListener(new HelpActionListener());
+		add(help_button);
 	}	
 	
 	
@@ -134,6 +139,18 @@ public class EditorToolBar extends JToolBar {
 		public void actionPerformed(ActionEvent e) {
 			if(m_listeners.containsKey(ToolBarListenerType.EXECUTE)){
 				m_listeners.get(ToolBarListenerType.EXECUTE).actionPerformed(e);
+			}
+		}
+		
+	}
+	
+	class HelpActionListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(m_listeners.containsKey(ToolBarListenerType.HELP)){
+				m_listeners.get(ToolBarListenerType.HELP).actionPerformed(e);
 			}
 		}
 		

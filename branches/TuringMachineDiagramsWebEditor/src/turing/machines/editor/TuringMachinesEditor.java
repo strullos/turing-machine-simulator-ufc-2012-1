@@ -56,6 +56,7 @@ public class TuringMachinesEditor extends JPanel {
 		m_tool_bar.RegisterListener(ToolBarListenerType.SAVE_AS_FILE, new SaveAsActionListener());
 		m_tool_bar.RegisterListener(ToolBarListenerType.EXECUTE, new ExecuteActionListener());
 		m_tool_bar.RegisterListener(ToolBarListenerType.PERSPECTIVE_CHANGED, new PerspectiveChangedListener());
+		m_tool_bar.RegisterListener(ToolBarListenerType.HELP, new HelpActionListener());
 	}
 	
 	public static void SetStatusMessage(String message)
@@ -127,5 +128,13 @@ public class TuringMachinesEditor extends JPanel {
 			m_current_perspective.Execute();			
 		}
 		
+	}
+	
+	class HelpActionListener implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			m_current_perspective.Help();			
+		}		
 	}
 }

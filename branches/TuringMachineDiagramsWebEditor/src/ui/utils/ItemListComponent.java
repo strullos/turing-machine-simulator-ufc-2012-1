@@ -18,6 +18,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.Dimension;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
+import javax.swing.Icon;
 
 public class ItemListComponent extends JPanel {
 	/**
@@ -32,14 +33,17 @@ public class ItemListComponent extends JPanel {
 	private ActionListener m_remove_listener;	
 	private ActionListener m_selection_listener;
 	private ActionListener m_save_all_listener;
+	private ActionListener m_pre_defined_listener;
 	private String m_previous_selection;
 	private JButton m_save_all_button;
+	private JButton m_pre_defined_modules_button;
 
 	public ItemListComponent(String label, ActionListener new_item_listener, 
 			ActionListener add_listener, 
 			ActionListener remove_listener, 
 			ActionListener selection_listener,
-			ActionListener save_all_listener)
+			ActionListener save_all_listener,
+			ActionListener pre_defined_listener)
 	{
 		m_previous_selection = new String("");
 		m_new_item_listener = new_item_listener;
@@ -47,6 +51,7 @@ public class ItemListComponent extends JPanel {
 		m_remove_listener = remove_listener;
 		m_selection_listener = selection_listener;
 		m_save_all_listener = save_all_listener;
+		m_pre_defined_listener = pre_defined_listener;
 		
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setLayout(new BorderLayout(0, 0));
@@ -71,6 +76,7 @@ public class ItemListComponent extends JPanel {
 		
 		
 		m_add_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-add.png")));
+		m_add_button.setToolTipText("Add existing module");
 		m_add_button.setMinimumSize(new Dimension(30, 30));
 		m_add_button.setMaximumSize(new Dimension(30, 30));
 		buttons_panel.add(m_add_button);
@@ -78,6 +84,7 @@ public class ItemListComponent extends JPanel {
 		m_add_button.addActionListener(new AddActionListener());
 		
 		m_remove_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-remove.png")));
+		m_remove_button.setToolTipText("Remove selected module");
 		m_remove_button.setMinimumSize(new Dimension(30, 30));
 		m_remove_button.setMaximumSize(new Dimension(30, 30));
 		buttons_panel.add(m_remove_button);		
@@ -85,11 +92,20 @@ public class ItemListComponent extends JPanel {
 		m_remove_button.setEnabled(false);
 		
 		m_save_all_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/document-save-all.png")));
+		m_save_all_button.setToolTipText("Save all modules to a folder");
 		m_save_all_button.setMinimumSize(new Dimension(30, 30));
 		m_save_all_button.setMaximumSize(new Dimension(30, 30));
 		m_save_all_button.addActionListener(new SaveAllListener());
 		m_save_all_button.setEnabled(true);
 		buttons_panel.add(m_save_all_button);
+		
+		m_pre_defined_modules_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/applications-other.png")));
+		m_pre_defined_modules_button.setToolTipText("Import pre-defined modules");
+		m_pre_defined_modules_button.addActionListener(new PreDefinedItemsListener());
+		m_pre_defined_modules_button.setMinimumSize(new Dimension(30, 30));
+		m_pre_defined_modules_button.setMaximumSize(new Dimension(30, 30));
+		m_pre_defined_modules_button.setEnabled(true);
+		buttons_panel.add(m_pre_defined_modules_button);
 		
 //		m_items_list.setCellRenderer(new ColoredListCellRenderer());
 	}
@@ -103,7 +119,7 @@ public class ItemListComponent extends JPanel {
 				return item.substring(1);
 			}
 		}		
-		return m_items_list.getSelectedValue();
+		return item;
 	}
 	
 	//This method can be called in the SelectionChanged listener method
@@ -150,6 +166,15 @@ public class ItemListComponent extends JPanel {
 				list_model.set(index, marked_item);	
 			}		
 		}
+	}
+	
+	public void RenameSelectedItem(String new_name)
+	{
+		int index;
+		if((index = m_items_list.getSelectedIndex()) != -1){
+			DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
+			list_model.set(index, new_name);	
+		}		
 	}
 	
 	public void UnmarkSelectedItem()
@@ -199,6 +224,16 @@ public class ItemListComponent extends JPanel {
 		}		
 	}
 	
+	class PreDefinedItemsListener implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			m_pre_defined_listener.actionPerformed(e);			
+		}
+		
+	}
+	
 	class SelectionChangedListener implements ListSelectionListener
 	{	
 		@Override
@@ -214,7 +249,10 @@ public class ItemListComponent extends JPanel {
 			}else{
 				m_save_all_button.setEnabled(true);
 			}
-			m_previous_selection = m_items_list.getSelectedValue();
+			m_previous_selection = m_items_list.getSelectedValue();		
+			if(m_previous_selection.startsWith("*")){
+				m_previous_selection = m_previous_selection.substring(1);
+			}
 		}
 		
 	}

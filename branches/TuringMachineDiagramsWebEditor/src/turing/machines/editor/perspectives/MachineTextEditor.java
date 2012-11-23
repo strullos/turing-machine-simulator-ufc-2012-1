@@ -6,6 +6,7 @@ import turing.simulator.module.Machine;
 import turing.simulator.tape.Tape;
 import ui.utils.ClosableTabComponent;
 import ui.utils.ConfirmationFileChooser;
+import ui.utils.HelpDialog;
 
 import java.awt.BorderLayout;
 
@@ -194,8 +195,59 @@ public class MachineTextEditor extends EditorPerspective {
 
 	@Override
 	public void SaveAs() {
-		// TODO Auto-generated method stub
+		if(m_current_machine_document == null){
+			return;
+		}
+		if(m_current_machine_document.GetModuleText().isEmpty()){
+			TuringMachinesEditor.SetStatusMessage("Empty machine.");
+		}else{
+			String machine_path = "";
+			String machine_name = "";
+			ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(
+			        "Machine files (.mt)", "mt");
+			fc.setFileFilter(filter);
+			fc.setAcceptAllFileFilterUsed(false);
+			//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			int returnVal = fc.showSaveDialog(null);
+			if(returnVal == JFileChooser.APPROVE_OPTION){	
+				machine_path = fc.getSelectedFile().getAbsolutePath().toString();
+				if(!machine_path.endsWith(".mt")){
+					machine_path = machine_path + ".mt";
+				}
+				machine_name = fc.getSelectedFile().getName();
+				if(!machine_name.endsWith(".mt")){
+					machine_name = machine_name + ".mt";
+				}					
+			}else{
+				return;
+			}
+			FileWriter fstream; 
+			try {
+				String machine_content = m_current_machine_document.GetModuleText();
+				fstream = new FileWriter(machine_path);
+				BufferedWriter out = new BufferedWriter(fstream);
+				out.write(machine_content);
+				out.close();
+				TuringMachinesEditor.SetStatusMessage("Machine file " + machine_path + " saved succesfully.\n");
+				NewMachineDocument();
+				if(!machine_name.isEmpty()){ //If machine name is empty the file was already saved so we do not need to save it again
+					m_machines_tabbedPane.setTitleAt(m_machines_tabbedPane.getSelectedIndex(), machine_name);
+				}		
+				m_current_machine_document.SetMachineDocumentPath(machine_path);
+				m_current_machine_document.SetModuleText(machine_content);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}						
+		}
 		
+	}
+
+	@Override
+	public void Help() {
+		HelpDialog help_dialog = new HelpDialog();
+		help_dialog.SetHelpContent("Machine Help");
+		help_dialog.setVisible(true);		
 	}
 	
 }
