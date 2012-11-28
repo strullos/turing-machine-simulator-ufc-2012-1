@@ -64,7 +64,7 @@ public class MachineTextEditor extends EditorPerspective {
 	}
 
 	@Override
-	public void Open() {
+	public void Open(String path) {
 		JFileChooser fc = new JFileChooser(new File("."));		
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(
 		        "Machine files (.mt)", "mt");
@@ -243,11 +243,36 @@ public class MachineTextEditor extends EditorPerspective {
 		
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public void Help() {
 		HelpDialog help_dialog = new HelpDialog();
-		help_dialog.SetHelpContent("Machine Help");
-		help_dialog.setVisible(true);		
+		BufferedReader reader;
+		try {
+			reader = new BufferedReader(new FileReader("../help/machine_help.txt"));
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+			return;
+		}
+		String line;
+		String content = "";
+		try {
+			while( (line = reader.readLine()) != null ){
+				content += line + "\n";
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}		
+		help_dialog.SetHelpContent(content);
+		help_dialog.setVisible(true);	
+	}
+
+	@Override
+	public void Examples() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

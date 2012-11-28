@@ -22,27 +22,29 @@ import javax.swing.BoxLayout;
 import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.JScrollPane;
 
-public class PreDefinedModulesDialog extends JDialog {
+public class ExamplesDialog extends JDialog {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private final JPanel contentPanel = new JPanel();
-	private JList<String> m_modules_list;
-	private JTextArea m_modules_textArea;
-	private HashMap<String,String> m_modules_content;
-	private HashMap<String, String> m_modules_path;
+	private JList<String> m_examples_list;
+	private HashMap<String, String> m_examples_path;
+	private HashMap<String, String> m_examples_content;
+	private JTextArea m_example_textArea;
 	private int m_result;
 	/**
 	 * Create the dialog.
 	 */
-	public PreDefinedModulesDialog() {
-		m_modules_content = new HashMap<String, String>();
-		m_modules_path = new HashMap<String, String>();
+	public ExamplesDialog() {
+		m_examples_path = new HashMap<String, String>();
+		m_examples_content = new HashMap<String, String>();
+		
 		m_result = 0;
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 450, 500);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -51,13 +53,16 @@ public class PreDefinedModulesDialog extends JDialog {
 			JSplitPane splitPane = new JSplitPane();
 			contentPanel.add(splitPane);
 			{
-				m_modules_list = new JList<String>();
-				splitPane.setLeftComponent(m_modules_list);
+				m_examples_list = new JList<String>();
+				splitPane.setLeftComponent(m_examples_list);
 			}
 			{
-				m_modules_textArea = new JTextArea();
-				m_modules_textArea.setEditable(false);
-				splitPane.setRightComponent(m_modules_textArea);
+				JScrollPane content_scrollPane = new JScrollPane();
+				splitPane.setRightComponent(content_scrollPane);
+				{
+					m_example_textArea = new JTextArea();
+					content_scrollPane.setViewportView(m_example_textArea);
+				}
 			}
 		}
 		{
@@ -92,11 +97,11 @@ public class PreDefinedModulesDialog extends JDialog {
 				});
 			}
 		}
-		m_modules_list.setModel(new DefaultListModel<String>());
-		m_modules_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		m_modules_list.addListSelectionListener(new SelectionChangedActionListener());
-		BuildModulesList("../pre_defined_modules");
-		this.setTitle("Pre-defined Modules");
+		m_examples_list.setModel(new DefaultListModel<String>());
+		m_examples_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		m_examples_list.addListSelectionListener(new SelectionChangedActionListener());
+		BuildExamplesList("../examples");
+		this.setTitle("Examples");
 	}
 	
 	public int showDialog()
@@ -105,44 +110,52 @@ public class PreDefinedModulesDialog extends JDialog {
 		return m_result;
 	}
 	
-	public void BuildModulesList(String path)
+	public void BuildExamplesList(String path)
 	{
 		File directory = new File(path);
 		File[] file_list = directory.listFiles();
 		for(int i = 0; i < file_list.length; i++){
-			File current_file = file_list[i];
-			if(current_file.getName().endsWith(".mt")  || current_file.getName().endsWith(".dt")){
-				AddModule(current_file.getName(), current_file.getAbsolutePath());
-				ReadModuleContent(current_file, current_file.getName());
+			File current_dir = file_list[i];
+			if(current_dir.isDirectory()){
+				String example_file_path = current_dir + "/" + current_dir.getName() + ".dt"; //Example files should have the same name as the folder
+				if(new File(example_file_path).exists()){
+					AddExample(current_dir.getName(), current_dir.getAbsolutePath());
+					ReadExampleContent(current_dir, current_dir.getName());
+				}				
 			}
 		}
-		m_modules_list.setSelectedIndex(0);
+		m_examples_list.setSelectedIndex(0);
 	}
 	
-	public String GetSelectModule()
+	public String GetSelectedExample()
 	{
-		return m_modules_list.getSelectedValue();
+		return m_examples_list.getSelectedValue();
 	}
 	
-	public String GetSelectedModuleContent()
+	public String GetSelectedExamplePath()
 	{
-		return m_modules_content.get(m_modules_list.getSelectedValue());
+		return m_examples_path.get(m_examples_list.getSelectedValue());
 	}
 	
-	public void AddModule(String module_name, String module_path)
+	public String GetSelectedExampleContent()
 	{
-		m_modules_content.put(module_name,  "");
-		m_modules_path.put(module_name, module_path);
-		DefaultListModel<String> list_model = (DefaultListModel<String>) m_modules_list.getModel();
+		return m_examples_content.get(m_examples_list.getSelectedValue());
+	}
+	
+	public void AddExample(String module_name, String module_path)
+	{
+		m_examples_path.put(module_name, module_path + "/" + module_name + ".dt");
+		DefaultListModel<String> list_model = (DefaultListModel<String>) m_examples_list.getModel();
 		list_model.addElement(module_name);		
 	}
 	
 	@SuppressWarnings("resource")
-	public void ReadModuleContent(File module_file, String module_name)
-	{
+	public void ReadExampleContent(File example_path, String example_name)
+	{		
 		BufferedReader reader;
 		try {
-			reader = new BufferedReader(new FileReader(module_file.getAbsolutePath()));
+			String example_file_path = example_path + "/" + example_name + ".dt";
+			reader = new BufferedReader(new FileReader(example_file_path));
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 			return;
@@ -153,7 +166,7 @@ public class PreDefinedModulesDialog extends JDialog {
 			while( (line = reader.readLine()) != null ){
 				content += line + "\n";
 			}
-			m_modules_content.put(module_name,content);
+			m_examples_content.put(example_name,content);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -165,7 +178,7 @@ public class PreDefinedModulesDialog extends JDialog {
 	{
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			PreDefinedModulesDialog.this.m_modules_textArea.setText(m_modules_content.get(m_modules_list.getSelectedValue()));			
+			ExamplesDialog.this.m_example_textArea.setText(m_examples_content.get(m_examples_list.getSelectedValue()));			
 		}		
 	}
 }

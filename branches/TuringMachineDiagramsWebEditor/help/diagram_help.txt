@@ -1,0 +1,50 @@
+A diagram allows us to build more complex turing machines in easier ways.
+This representation is built from machines and even other diagrams. The machines(and diagrams)
+are called modules.
+
+A diagram has the following structure:
+
+module X x.mt
+module X2 x.mt
+module Y y.mt
+module Z z.dt
+...
+
+
+X [a,b,...] Y
+Y [*]	    Z
+...
+Z [a]       END
+
+
+The first section is called the header section and contains
+a declaration of all modules that will be used in the diagram.
+This declaration is simple the module name and the respective module file.
+Notice you can have multiple modules linking to a single file.
+
+The second section is called the rules section and contains
+all the rules of the diagram. A rule has the following structure:
+
+"initial module" "[symbols]" "final module"
+
+The rule is very similar to the machine's rule, it simple states that
+if the diagram's state is "initial module", it will execute this module and 
+after executing it, the diagram machine will read a symbol from the tape. If it reads
+a symbol contained in the "[symbols]" list, it will set the current state to be
+the "final state" module. If the diagram machine is on a given state and the current symbol
+on the tape is not contained on that state's symbol list, the diagram machine will end.
+
+On diagram machines, you can also use declare and use variables.
+To save a variable, use the following structure:
+
+Module1 [x=a,b,...] Module2
+
+This will save any of the values in the symbol list to the variable 'x'.
+
+To use the value of this variable, use the following syntax:
+
+Module [a,b,...] Module2(x)
+
+This means that the value store on 'x' will be sent to Module2. Refer
+to the machine's manual to check how to declare a variable on a turing machine module.
+Notice that you can save the variable value and use it on another rule.

@@ -11,6 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextArea;
 import javax.swing.BoxLayout;
+import javax.swing.JScrollPane;
+import java.awt.Insets;
 
 public class HelpDialog extends JDialog {
 
@@ -31,9 +33,14 @@ public class HelpDialog extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.X_AXIS));
 		{
-			m_help_content_textArea = new JTextArea();
-			m_help_content_textArea.setEditable(false);
-			contentPanel.add(m_help_content_textArea);
+			JScrollPane help_scrollPane = new JScrollPane();
+			contentPanel.add(help_scrollPane);
+			{
+				m_help_content_textArea = new JTextArea();
+				m_help_content_textArea.setMargin(new Insets(2, 5, 2, 2));
+				m_help_content_textArea.setEditable(false);
+				help_scrollPane.setViewportView(m_help_content_textArea);
+			}
 		}
 		{
 			JPanel buttonPane = new JPanel();
