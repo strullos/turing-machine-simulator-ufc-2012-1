@@ -2,7 +2,6 @@ package ui.utils;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.DefaultListModel;
@@ -18,7 +17,6 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.Dimension;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
-import javax.swing.Icon;
 
 public class ItemListComponent extends JPanel {
 	/**
@@ -28,12 +26,7 @@ public class ItemListComponent extends JPanel {
 	private JList<String> m_items_list;
 	private JButton m_add_button;
 	private JButton m_remove_button;
-	private ActionListener m_new_item_listener;
-	private ActionListener m_add_listener;
-	private ActionListener m_remove_listener;	
 	private ActionListener m_selection_listener;
-	private ActionListener m_save_all_listener;
-	private ActionListener m_pre_defined_listener;
 	private String m_previous_selection;
 	private JButton m_save_all_button;
 	private JButton m_pre_defined_modules_button;
@@ -46,12 +39,7 @@ public class ItemListComponent extends JPanel {
 			ActionListener pre_defined_listener)
 	{
 		m_previous_selection = new String("");
-		m_new_item_listener = new_item_listener;
-		m_add_listener = add_listener;
-		m_remove_listener = remove_listener;
 		m_selection_listener = selection_listener;
-		m_save_all_listener = save_all_listener;
-		m_pre_defined_listener = pre_defined_listener;
 		
 		setBorder(new EmptyBorder(10, 10, 10, 10));
 		setLayout(new BorderLayout(0, 0));
@@ -81,33 +69,42 @@ public class ItemListComponent extends JPanel {
 		m_add_button.setMaximumSize(new Dimension(30, 30));
 		buttons_panel.add(m_add_button);
 		
-		m_add_button.addActionListener(new AddActionListener());
 		
 		m_remove_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-remove.png")));
 		m_remove_button.setToolTipText("Remove selected module");
 		m_remove_button.setMinimumSize(new Dimension(30, 30));
 		m_remove_button.setMaximumSize(new Dimension(30, 30));
 		buttons_panel.add(m_remove_button);		
-		m_remove_button.addActionListener(new RemoveActionListener());
+	
 		m_remove_button.setEnabled(false);
 		
 		m_save_all_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/document-save-all.png")));
 		m_save_all_button.setToolTipText("Save all modules to a folder");
 		m_save_all_button.setMinimumSize(new Dimension(30, 30));
 		m_save_all_button.setMaximumSize(new Dimension(30, 30));
-		m_save_all_button.addActionListener(new SaveAllListener());
+		
 		m_save_all_button.setEnabled(true);
 		buttons_panel.add(m_save_all_button);
 		
 		m_pre_defined_modules_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/applications-other.png")));
 		m_pre_defined_modules_button.setToolTipText("Import pre-defined modules");
-		m_pre_defined_modules_button.addActionListener(new PreDefinedItemsListener());
+	
 		m_pre_defined_modules_button.setMinimumSize(new Dimension(30, 30));
 		m_pre_defined_modules_button.setMaximumSize(new Dimension(30, 30));
 		m_pre_defined_modules_button.setEnabled(true);
 		buttons_panel.add(m_pre_defined_modules_button);
 		
 //		m_items_list.setCellRenderer(new ColoredListCellRenderer());
+		
+		m_add_button.addActionListener(add_listener);
+		m_remove_button.addActionListener(remove_listener);
+		m_save_all_button.addActionListener(save_all_listener);
+		m_pre_defined_modules_button.addActionListener(pre_defined_listener);
+	}
+	
+	public void SetSelectedItem(int index)
+	{
+		m_items_list.setSelectedIndex(0);
 	}
 	
 	public String GetSelectedItem()
@@ -188,51 +185,7 @@ public class ItemListComponent extends JPanel {
 			DefaultListModel<String> list_model = (DefaultListModel<String>) m_items_list.getModel();
 			list_model.set(index, item.substring(1));	
 		}	
-	}
-	
-	class NewItemActionListener implements ActionListener
-	{
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			m_new_item_listener.actionPerformed(e);			
-		}	
-	}
-	
-	class AddActionListener implements ActionListener
-	{
-
-		@Override
-		public void actionPerformed(ActionEvent e) {			
-			m_add_listener.actionPerformed(e);					
-		}
-		
-	}
-	
-	class RemoveActionListener implements ActionListener
-	{
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			m_remove_listener.actionPerformed(e);
-		}		
-	}
-	
-	class SaveAllListener implements ActionListener
-	{
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			m_save_all_listener.actionPerformed(e);
-		}		
-	}
-	
-	class PreDefinedItemsListener implements ActionListener
-	{
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			m_pre_defined_listener.actionPerformed(e);			
-		}
-		
-	}
+	}	
 	
 	class SelectionChangedListener implements ListSelectionListener
 	{	

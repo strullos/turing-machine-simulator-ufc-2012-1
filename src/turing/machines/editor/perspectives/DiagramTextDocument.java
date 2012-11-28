@@ -98,6 +98,11 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		}			
 	}
 	
+	public void SetMainModuleSelected()
+	{
+		m_modules_list.SetSelectedItem(0);
+	}
+	
 	public String GetSelectedModule()
 	{
 		return m_modules_list.GetSelectedItem();

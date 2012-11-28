@@ -7,8 +7,8 @@ import turing.simulator.module.Machine;
 import turing.simulator.tape.Tape;
 import ui.utils.ClosableTabComponent;
 import ui.utils.ConfirmationFileChooser;
+import ui.utils.ExamplesDialog;
 import ui.utils.HelpDialog;
-
 import java.awt.BorderLayout;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -83,59 +83,69 @@ public class DiagramTextEditor extends EditorPerspective {
 	}
 
 	@Override
-	public void Open() 
+	public void Open(String file_path) 
 	{
+		
+		if(file_path.isEmpty()){
 		JFileChooser fc = new JFileChooser(new File("."));		
-		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-		        "Diagram files (.dt)", "dt");
-		fc.setFileFilter(filter);
-		fc.setAcceptAllFileFilterUsed(false);
-		int returnVal = fc.showOpenDialog(null);
-		String file_path;
-		boolean required_modules = true;
-		if(returnVal == JFileChooser.APPROVE_OPTION){
-			file_path = fc.getSelectedFile().getAbsolutePath().toString();		
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(
+			        "Diagram files (.dt)", "dt");
+			fc.setFileFilter(filter);
+			fc.setAcceptAllFileFilterUsed(false);
+			int returnVal = fc.showOpenDialog(null);		
+			if(returnVal == JFileChooser.APPROVE_OPTION){
+				file_path = fc.getSelectedFile().getAbsolutePath().toString();	
+			}else{
+				return;
+			}
+		}		
+		try {
+			File selected_file = new File(file_path);
+			boolean required_modules = true;
+			BufferedReader reader = new BufferedReader(new FileReader(file_path));
+			String line;
 			try {
-				BufferedReader reader = new BufferedReader(new FileReader(file_path));
-				String line;
-				try {
-					String diagram_text = new String("");
-					while( (line = reader.readLine()) != null ){
+				String diagram_text = new String("");
+				while( (line = reader.readLine()) != null ){
 //						if(!m_current_diagram_document.CheckRequiredModules(line)){
 //							required_modules = false;
 //						}
-						diagram_text += (line + "\n");		
-					}
-					DiagramTextDocument new_diagram_document = new DiagramTextDocument();
-					m_current_diagram_document = new_diagram_document;
-					new_diagram_document.SetModuleText(diagram_text);
-					m_diagrams_tabbedPane.addTab(fc.getSelectedFile().getName().toString() + " Project", null, new_diagram_document, null);	
-					m_diagrams_tabbedPane.setSelectedComponent(new_diagram_document);
-					m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
-					m_current_diagram_document.SetModuleText(diagram_text);
-					TuringMachinesEditor.SetStatusMessage("Diagram file loaded successfully.\n");
-					m_current_diagram_document.AddModule(fc.getSelectedFile().getName(), file_path);
-					if(!required_modules){
-						m_current_diagram_document.AppendConsoleText("Some of the required modules are not available, diagram won't be able to execute. " +
-								"\nConsider adding the required modules.\n");
-					}
-					Diagram d = new Diagram();
-					d.setLoadPath(fc.getSelectedFile().getParent());
-					d.loadFromString(diagram_text);
-					ArrayList<String> dependencies = d.getDependencies();
-					for(int i = 0; i < dependencies.size(); i++)
-					{
-						File module_file = new File(dependencies.get(i));
-						m_current_diagram_document.AddModule(module_file.getName(), module_file.getPath());
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
+					diagram_text += (line + "\n");		
 				}
-			} catch (FileNotFoundException e) {
+				DiagramTextDocument new_diagram_document = new DiagramTextDocument();
+				m_current_diagram_document = new_diagram_document;
+				new_diagram_document.SetModuleText(diagram_text);
+				m_diagrams_tabbedPane.addTab(selected_file.getName().toString() + " Project", null, new_diagram_document, null);	
+				m_diagrams_tabbedPane.setSelectedComponent(new_diagram_document);
+				m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
+				m_current_diagram_document.SetModuleText(diagram_text);
+				TuringMachinesEditor.SetStatusMessage("Diagram file loaded successfully.\n");
+				m_current_diagram_document.AddModule(selected_file.getName(), file_path);
+				if(!required_modules){
+					m_current_diagram_document.AppendConsoleText("Some of the required modules are not available, diagram won't be able to execute. " +
+							"\nConsider adding the required modules.\n");
+				}
+				Diagram d = new Diagram();
+				d.setLoadPath(selected_file.getParent());
+				d.loadFromString(diagram_text);
+				ArrayList<String> dependencies = d.getDependencies();
+				for(int i = 0; i < dependencies.size(); i++)
+				{
+					File module_file = new File(dependencies.get(i));
+					m_current_diagram_document.AddModule(module_file.getName(), module_file.getPath());
+				}
+				m_current_diagram_document.SetMainModuleSelected();
+				
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
+		
 	}
+	
+	
 
 	@Override
 	public void Save() 
@@ -407,11 +417,40 @@ public class DiagramTextEditor extends EditorPerspective {
 		
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public void Help() {
 		HelpDialog help_dialog = new HelpDialog();
-		help_dialog.SetHelpContent("Diagram Help");
+		BufferedReader reader;
+		try {
+			reader = new BufferedReader(new FileReader("../help/diagram_help.txt"));
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+			return;
+		}
+		String line;
+		String content = "";
+		try {
+			while( (line = reader.readLine()) != null ){
+				content += line + "\n";
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}		
+		help_dialog.SetHelpContent(content);
 		help_dialog.setVisible(true);
+	}
+
+	@Override
+	public void Examples() {
+		ExamplesDialog examples_dialog = new ExamplesDialog();
+		examples_dialog.setModal(true);
+		int result = examples_dialog.showDialog(); //If result equals to 1, the user confirmed the dialog			
+		if(result > 0){
+			Open(examples_dialog.GetSelectedExamplePath());		
+		}
 	}
 
 	
