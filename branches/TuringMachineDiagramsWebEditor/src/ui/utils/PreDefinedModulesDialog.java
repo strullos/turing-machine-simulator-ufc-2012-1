@@ -9,7 +9,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -22,6 +25,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+
+import utils.StringFileReader;
 
 public class PreDefinedModulesDialog extends JDialog {
 
@@ -95,7 +100,7 @@ public class PreDefinedModulesDialog extends JDialog {
 		m_modules_list.setModel(new DefaultListModel<String>());
 		m_modules_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		m_modules_list.addListSelectionListener(new SelectionChangedActionListener());
-		BuildModulesList("../pre_defined_modules");
+		BuildModulesList();
 		this.setTitle("Pre-defined Modules");
 	}
 	
@@ -105,16 +110,16 @@ public class PreDefinedModulesDialog extends JDialog {
 		return m_result;
 	}
 	
-	public void BuildModulesList(String path)
+	public void BuildModulesList()
 	{
-		File directory = new File(path);
-		File[] file_list = directory.listFiles();
-		for(int i = 0; i < file_list.length; i++){
-			File current_file = file_list[i];
-			if(current_file.getName().endsWith(".mt")  || current_file.getName().endsWith(".dt")){
-				AddModule(current_file.getName(), current_file.getAbsolutePath());
-				ReadModuleContent(current_file, current_file.getName());
-			}
+		String pre_defined_modules_path = "/pre_defined_modules/";
+		ArrayList<String> files_list = StringFileReader.GetLineArrayFromStream(getClass().getResourceAsStream(pre_defined_modules_path + "index.txt"));
+		Iterator<String> files_it = files_list.iterator();
+		while(files_it.hasNext()){
+			String module_name = files_it.next();
+			String module_path = pre_defined_modules_path + module_name;
+			String module_content = StringFileReader.ReadFile(getClass().getResourceAsStream(module_path));
+			AddModule(module_name, module_content, module_path);
 		}
 		m_modules_list.setSelectedIndex(0);
 	}
@@ -129,36 +134,12 @@ public class PreDefinedModulesDialog extends JDialog {
 		return m_modules_content.get(m_modules_list.getSelectedValue());
 	}
 	
-	public void AddModule(String module_name, String module_path)
+	public void AddModule(String module_name, String module_content, String module_path)
 	{
-		m_modules_content.put(module_name,  "");
+		m_modules_content.put(module_name,  module_content);
 		m_modules_path.put(module_name, module_path);
 		DefaultListModel<String> list_model = (DefaultListModel<String>) m_modules_list.getModel();
 		list_model.addElement(module_name);		
-	}
-	
-	@SuppressWarnings("resource")
-	public void ReadModuleContent(File module_file, String module_name)
-	{
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader(module_file.getAbsolutePath()));
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-			return;
-		}
-		String line;
-		String content = "";
-		try {
-			while( (line = reader.readLine()) != null ){
-				content += line + "\n";
-			}
-			m_modules_content.put(module_name,content);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		}		
 	}
 	
 	class SelectionChangedActionListener implements ListSelectionListener

@@ -16,7 +16,8 @@ public class EditorToolBar extends JToolBar {
 	 * So, the toolbar buttons always connects with the methods of the current perspective.
 	 */
 	private static final long serialVersionUID = 1L;
-	private JComboBox<String> m_perspectives_combobox;	
+	private JComboBox<String> m_perspectives_combobox;
+	private JButton m_examples_button;	
 
 	public EditorToolBar(ActionListener new_action_listener,
 			ActionListener open_action_listener,
@@ -56,13 +57,13 @@ public class EditorToolBar extends JToolBar {
 		m_perspectives_combobox.setMaximumSize(new Dimension(250,100));
 		
 		this.add(m_perspectives_combobox);
+		
+		m_examples_button = new JButton("Examples");
+		add(m_examples_button);
+		m_examples_button.addActionListener(examples_action_listener);
 		this.addSeparator();
 		
 		this.setFloatable(false);			
-		
-		JButton examples_button = new JButton("Examples");
-		add(examples_button);
-		examples_button.addActionListener(examples_action_listener);
 		
 		JButton help_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/help.png")));
 		help_button.setToolTipText("Help");		
@@ -89,4 +90,9 @@ public class EditorToolBar extends JToolBar {
 	{
 		m_perspectives_combobox.addItem(new_perspective);			
 	}	
+	
+	public void SetExampleButtonEnabled(boolean enabled)
+	{
+		m_examples_button.setEnabled(enabled);
+	}
 }

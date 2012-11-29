@@ -49,6 +49,7 @@ public class TuringMachinesEditor extends JPanel {
 		this.add(m_perspectives.get(m_tool_bar.GetCurrentPerspective()));
 		
 		m_current_perspective = m_machine_text_editor;	
+		m_tool_bar.SetExampleButtonEnabled(false);
 	}
 	
 	public static void SetStatusMessage(String message)
@@ -81,6 +82,12 @@ public class TuringMachinesEditor extends JPanel {
 				TuringMachinesEditor.this.add(m_current_perspective);	
 				TuringMachinesEditor.this.revalidate();
 				TuringMachinesEditor.this.repaint();
+			}
+			if(m_current_perspective == m_machine_text_editor){
+				m_tool_bar.SetExampleButtonEnabled(false);
+			}
+			if(m_current_perspective == m_diagram_text_editor){
+				m_tool_bar.SetExampleButtonEnabled(true);
 			}
 		}		
 	}

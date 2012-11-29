@@ -7,6 +7,7 @@ import turing.simulator.tape.Tape;
 import ui.utils.ClosableTabComponent;
 import ui.utils.ConfirmationFileChooser;
 import ui.utils.HelpDialog;
+import utils.StringFileReader;
 
 import java.awt.BorderLayout;
 
@@ -243,29 +244,11 @@ public class MachineTextEditor extends EditorPerspective {
 		
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public void Help() {
 		HelpDialog help_dialog = new HelpDialog();
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader("../help/machine_help.txt"));
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-			return;
-		}
-		String line;
-		String content = "";
-		try {
-			while( (line = reader.readLine()) != null ){
-				content += line + "\n";
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		}		
-		help_dialog.SetHelpContent(content);
+		StringFileReader file_reader = new StringFileReader();
+		help_dialog.SetHelpContent(file_reader.ReadFile(getClass().getResourceAsStream("/help/machine_help.txt")));
 		help_dialog.setVisible(true);	
 	}
 
