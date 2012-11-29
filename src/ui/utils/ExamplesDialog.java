@@ -145,13 +145,14 @@ public class ExamplesDialog extends JDialog {
 	
 	public void AddExample(String example_name, String example_path)
 	{
-		String example_filename =  example_path + "/" + example_name + ".dt";
-		m_examples_path.put(example_name, example_path + "/" + example_name + ".dt");
+		String diagram_name = example_name + ".dt";
+		String example_filename =  example_path + "/" + diagram_name;	
+		m_examples_path.put(diagram_name, example_path + "/" + example_name + ".dt");
 		DefaultListModel<String> list_model = (DefaultListModel<String>) m_examples_list.getModel();
-		list_model.addElement(example_name);	
+		list_model.addElement(diagram_name);	
 		
 		String example_content = StringFileReader.ReadFile(getClass().getResourceAsStream(example_filename));
-		m_examples_content.put(example_name, example_content);
+		m_examples_content.put(diagram_name, example_content);
 	}
 	
 	

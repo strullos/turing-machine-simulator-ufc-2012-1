@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import turing.simulator.log.Log;
 import turing.simulator.tape.Tape;
+import utils.StringFileReader;
 
 
 public abstract class Module {
@@ -42,7 +43,10 @@ public abstract class Module {
 	
 	public boolean loadFromFile(String filename) throws FileNotFoundException
 	{
-		BufferedReader reader = new BufferedReader(new FileReader(filename));
+		StringFileReader file_reader = new StringFileReader();
+		String content = file_reader.ReadFile(filename);
+		System.out.println(filename);
+		BufferedReader reader = new BufferedReader(new StringReader(content));
 		try {
 			setModulePath(filename);
 			return load(reader);
@@ -53,6 +57,7 @@ public abstract class Module {
 		}		
 	}
 	protected abstract boolean load(BufferedReader reader) throws IOException;
+	
 	public boolean loadFromString(String text) throws IOException
 	{
 		BufferedReader reader = new BufferedReader(new StringReader(text));	

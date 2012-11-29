@@ -170,19 +170,21 @@ public class DiagramTextEditor extends EditorPerspective {
 			m_current_diagram_document.AppendConsoleText("Some of the required modules are not available, diagram won't be able to execute. " +
 					"\nConsider adding the required modules.\n");
 		}
-		Diagram d = new Diagram();
+		Diagram d = new Diagram();		
+		String example_dir = example_path.replaceAll("/" + example_name ,"");
+		d.setLoadPath(example_dir);
 		try {
 			d.loadFromString(diagram_text);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//			ArrayList<String> dependencies = d.getDependencies();
-		//			for(int i = 0; i < dependencies.size(); i++)
-		//			{
-		//				File module_file = new File(dependencies.get(i));
-		//				m_current_diagram_document.AddModule(module_file.getName(), module_file.getPath());
-		//			}
+		ArrayList<String> dependencies = d.getDependencies();
+		for(int i = 0; i < dependencies.size(); i++)
+		{
+			File module_file = new File(dependencies.get(i));
+			m_current_diagram_document.AddModule(module_file.getName(), module_file.getPath());
+		}
 		m_current_diagram_document.SetMainModuleSelected();
 	}
 

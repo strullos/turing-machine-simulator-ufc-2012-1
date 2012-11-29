@@ -35,7 +35,8 @@ public class StringFileReader {
 				return "Unable to read file";
 			}
 		} catch (FileNotFoundException e) {
-			return ReadFile(getClass().getResourceAsStream(path));
+			System.out.println("Path is: " + path);
+			return ReadFile(getClass().getResourceAsStream(path.replace("\\","/")));
 		}
 	}
 
