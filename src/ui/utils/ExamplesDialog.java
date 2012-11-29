@@ -9,7 +9,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -23,6 +26,8 @@ import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.JScrollPane;
+
+import utils.StringFileReader;
 
 public class ExamplesDialog extends JDialog {
 
@@ -100,7 +105,7 @@ public class ExamplesDialog extends JDialog {
 		m_examples_list.setModel(new DefaultListModel<String>());
 		m_examples_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		m_examples_list.addListSelectionListener(new SelectionChangedActionListener());
-		BuildExamplesList("../examples");
+		BuildExamplesList();
 		this.setTitle("Examples");
 	}
 	
@@ -110,19 +115,15 @@ public class ExamplesDialog extends JDialog {
 		return m_result;
 	}
 	
-	public void BuildExamplesList(String path)
+	public void BuildExamplesList()
 	{
-		File directory = new File(path);
-		File[] file_list = directory.listFiles();
-		for(int i = 0; i < file_list.length; i++){
-			File current_dir = file_list[i];
-			if(current_dir.isDirectory()){
-				String example_file_path = current_dir + "/" + current_dir.getName() + ".dt"; //Example files should have the same name as the folder
-				if(new File(example_file_path).exists()){
-					AddExample(current_dir.getName(), current_dir.getAbsolutePath());
-					ReadExampleContent(current_dir, current_dir.getName());
-				}				
-			}
+		String examples_path = "/examples/";
+		ArrayList<String> files_list = StringFileReader.GetLineArrayFromStream(getClass().getResourceAsStream(examples_path + "index.txt"));
+		Iterator<String> files_it = files_list.iterator();
+		while(files_it.hasNext()){
+			String example_name = files_it.next();
+			String example_path = examples_path + example_name;			
+			AddExample(example_name, example_path);
 		}
 		m_examples_list.setSelectedIndex(0);
 	}
@@ -142,37 +143,17 @@ public class ExamplesDialog extends JDialog {
 		return m_examples_content.get(m_examples_list.getSelectedValue());
 	}
 	
-	public void AddExample(String module_name, String module_path)
+	public void AddExample(String example_name, String example_path)
 	{
-		m_examples_path.put(module_name, module_path + "/" + module_name + ".dt");
+		String example_filename =  example_path + "/" + example_name + ".dt";
+		m_examples_path.put(example_name, example_path + "/" + example_name + ".dt");
 		DefaultListModel<String> list_model = (DefaultListModel<String>) m_examples_list.getModel();
-		list_model.addElement(module_name);		
+		list_model.addElement(example_name);	
+		
+		String example_content = StringFileReader.ReadFile(getClass().getResourceAsStream(example_filename));
+		m_examples_content.put(example_name, example_content);
 	}
 	
-	@SuppressWarnings("resource")
-	public void ReadExampleContent(File example_path, String example_name)
-	{		
-		BufferedReader reader;
-		try {
-			String example_file_path = example_path + "/" + example_name + ".dt";
-			reader = new BufferedReader(new FileReader(example_file_path));
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-			return;
-		}
-		String line;
-		String content = "";
-		try {
-			while( (line = reader.readLine()) != null ){
-				content += line + "\n";
-			}
-			m_examples_content.put(example_name,content);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		}		
-	}
 	
 	class SelectionChangedActionListener implements ListSelectionListener
 	{

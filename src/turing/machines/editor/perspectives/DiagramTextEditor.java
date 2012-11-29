@@ -9,6 +9,8 @@ import ui.utils.ClosableTabComponent;
 import ui.utils.ConfirmationFileChooser;
 import ui.utils.ExamplesDialog;
 import ui.utils.HelpDialog;
+import utils.StringFileReader;
+
 import java.awt.BorderLayout;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,6 +20,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -39,13 +42,13 @@ public class DiagramTextEditor extends EditorPerspective {
 	public DiagramTextEditor(String name) {
 		super(name);
 		setLayout(new BorderLayout(0, 0));
-		
+
 		m_diagrams_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		add(m_diagrams_tabbedPane, BorderLayout.CENTER);
-		
+
 		NewDiagramDocument();
 	}
-	
+
 	public void NewDiagramDocument()
 	{
 		DiagramTextDocument diagram_document = new DiagramTextDocument();
@@ -66,12 +69,12 @@ public class DiagramTextEditor extends EditorPerspective {
 		String[] options = { "Module", "Diagram Project" };
 		String input = (String)JOptionPane.showInputDialog(
 				this,
-                "Create new:\n",   
-                "New Item",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                "Module");
+				"Create new:\n",   
+				"New Item",
+				JOptionPane.QUESTION_MESSAGE,
+				null,
+				options,
+				"Module");
 		if(input != null){
 			if(input == "Module"){
 				m_current_diagram_document.CreateNewModule();
@@ -84,12 +87,11 @@ public class DiagramTextEditor extends EditorPerspective {
 
 	@Override
 	public void Open(String file_path) 
-	{
-		
+	{		
 		if(file_path.isEmpty()){
-		JFileChooser fc = new JFileChooser(new File("."));		
+			JFileChooser fc = new JFileChooser(new File("."));		
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
-			        "Diagram files (.dt)", "dt");
+					"Diagram files (.dt)", "dt");
 			fc.setFileFilter(filter);
 			fc.setAcceptAllFileFilterUsed(false);
 			int returnVal = fc.showOpenDialog(null);		
@@ -107,9 +109,9 @@ public class DiagramTextEditor extends EditorPerspective {
 			try {
 				String diagram_text = new String("");
 				while( (line = reader.readLine()) != null ){
-//						if(!m_current_diagram_document.CheckRequiredModules(line)){
-//							required_modules = false;
-//						}
+					//						if(!m_current_diagram_document.CheckRequiredModules(line)){
+					//							required_modules = false;
+					//						}
 					diagram_text += (line + "\n");		
 				}
 				DiagramTextDocument new_diagram_document = new DiagramTextDocument();
@@ -135,17 +137,56 @@ public class DiagramTextEditor extends EditorPerspective {
 					m_current_diagram_document.AddModule(module_file.getName(), module_file.getPath());
 				}
 				m_current_diagram_document.SetMainModuleSelected();
-				
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}
-		
+		}		
 	}
-	
-	
+
+	public void OpenExample(String example_name, String example_path)
+	{
+		boolean required_modules = true;
+		String line;
+		String diagram_text = new String("");
+		ArrayList<String> lines = StringFileReader.GetLineArrayFromStream(getClass().getResourceAsStream(example_path));
+		Iterator<String> it = lines.iterator();
+		while(it.hasNext()){
+			line = it.next();
+			diagram_text += (line + "\n");	
+		}
+		DiagramTextDocument new_diagram_document = new DiagramTextDocument();
+		m_current_diagram_document = new_diagram_document;
+		new_diagram_document.SetModuleText(diagram_text);
+		m_diagrams_tabbedPane.addTab(example_name, null, new_diagram_document, null);	
+		m_diagrams_tabbedPane.setSelectedComponent(new_diagram_document);
+		m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
+		m_current_diagram_document.SetModuleText(diagram_text);
+		TuringMachinesEditor.SetStatusMessage("Diagram file loaded successfully.\n");
+		m_current_diagram_document.AddModule(example_name, example_path);
+		if(!required_modules){
+			m_current_diagram_document.AppendConsoleText("Some of the required modules are not available, diagram won't be able to execute. " +
+					"\nConsider adding the required modules.\n");
+		}
+		Diagram d = new Diagram();
+		try {
+			d.loadFromString(diagram_text);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//			ArrayList<String> dependencies = d.getDependencies();
+		//			for(int i = 0; i < dependencies.size(); i++)
+		//			{
+		//				File module_file = new File(dependencies.get(i));
+		//				m_current_diagram_document.AddModule(module_file.getName(), module_file.getPath());
+		//			}
+		m_current_diagram_document.SetMainModuleSelected();
+	}
+
+
 
 	@Override
 	public void Save() 
@@ -177,7 +218,7 @@ public class DiagramTextEditor extends EditorPerspective {
 						return;
 					}
 					module_path = target_file.getAbsolutePath().toString();
-					
+
 					if(!module_path.endsWith(".dt")){
 						module_path += ".dt";
 					}	
@@ -214,7 +255,7 @@ public class DiagramTextEditor extends EditorPerspective {
 			}								
 		}
 	}
-	
+
 	@Override
 	public void SaveAs() {
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
@@ -279,50 +320,50 @@ public class DiagramTextEditor extends EditorPerspective {
 			}						
 		}
 	}
-	
+
 	private File SelectMachineFilePath(boolean empty_file_name)
 	{	
-//		String machine_path = "";
+		//		String machine_path = "";
 		//This modified JFileChooser asks for confirmation if the user wants to overwrite the file
 		ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
 		if(!empty_file_name){
 			fc.setSelectedFile(new File(m_current_diagram_document.GetSelectedModule()));
 		}
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-		        "Machine files (.mt)", "mt");
+				"Machine files (.mt)", "mt");
 		fc.setFileFilter(filter);
 		fc.setAcceptAllFileFilterUsed(false);
 		//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = fc.showSaveDialog(null);
 		if(returnVal == JFileChooser.APPROVE_OPTION){	
-//			machine_path = fc.getSelectedFile().getAbsolutePath().toString();
-//			if(!machine_path.endsWith(".mt")){
-//				machine_path += ".mt";
-//			}	
+			//			machine_path = fc.getSelectedFile().getAbsolutePath().toString();
+			//			if(!machine_path.endsWith(".mt")){
+			//				machine_path += ".mt";
+			//			}	
 			return fc.getSelectedFile();
 		}
 		return null;
 	}
-	
+
 	private File SelectDiagramFilePath(boolean empty_file_name)
 	{
-//		String diagram_path = "";
+		//		String diagram_path = "";
 		//This modified JFileChooser asks for confirmation if the user wants to overwrite the file
 		ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));		
 		if(!empty_file_name){
 			fc.setSelectedFile(new File(m_current_diagram_document.GetSelectedModule()));
 		}	
 		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-		        "Diagram files (.dt)", "dt");
+				"Diagram files (.dt)", "dt");
 		fc.setFileFilter(filter);
 		fc.setAcceptAllFileFilterUsed(false);
 		//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = fc.showSaveDialog(null);
 		if(returnVal == JFileChooser.APPROVE_OPTION){	
-//			diagram_path = fc.getSelectedFile().getAbsolutePath().toString();
-//			if(!diagram_path.endsWith(".dt")){
-//				diagram_path += ".dt";
-//			}	
+			//			diagram_path = fc.getSelectedFile().getAbsolutePath().toString();
+			//			if(!diagram_path.endsWith(".dt")){
+			//				diagram_path += ".dt";
+			//			}	
 			return fc.getSelectedFile();
 		}
 		return null;
@@ -336,7 +377,7 @@ public class DiagramTextEditor extends EditorPerspective {
 			ExecuteDiagram();
 		}
 	}
-	
+
 	private void ExecuteMachine()
 	{
 		if(m_current_diagram_document == null){
@@ -367,7 +408,7 @@ public class DiagramTextEditor extends EditorPerspective {
 			}
 		}
 	}
-	
+
 	private void ExecuteDiagram()
 	{
 		Diagram d = new Diagram();
@@ -375,7 +416,7 @@ public class DiagramTextEditor extends EditorPerspective {
 		d.setModuleFilesFullPath(m_current_diagram_document.GetModulesPath());
 		d.setModulesContent(m_current_diagram_document.GetModulesContent());
 		boolean empty_fields = false;
-		
+
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Error executing: empty module.\n");
 			empty_fields = true;
@@ -403,7 +444,7 @@ public class DiagramTextEditor extends EditorPerspective {
 			}
 		}
 	}
-	
+
 	class TabChangedListener implements ChangeListener
 	{
 		@Override
@@ -414,32 +455,15 @@ public class DiagramTextEditor extends EditorPerspective {
 				DiagramTextEditor.this.m_current_diagram_document = null;
 			}						
 		}		
-		
+
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public void Help() {
 		HelpDialog help_dialog = new HelpDialog();
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader("../help/diagram_help.txt"));
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-			return;
-		}
-		String line;
-		String content = "";
-		try {
-			while( (line = reader.readLine()) != null ){
-				content += line + "\n";
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		}		
-		help_dialog.SetHelpContent(content);
+		StringFileReader file_reader = new StringFileReader();
+		help_dialog.SetHelpContent(file_reader.ReadFile(getClass().getResourceAsStream("/help/diagram_help.txt")));
+		//		help_dialog.SetHelpContent("");
 		help_dialog.setVisible(true);
 	}
 
@@ -449,10 +473,10 @@ public class DiagramTextEditor extends EditorPerspective {
 		examples_dialog.setModal(true);
 		int result = examples_dialog.showDialog(); //If result equals to 1, the user confirmed the dialog			
 		if(result > 0){
-			Open(examples_dialog.GetSelectedExamplePath());		
+			OpenExample(examples_dialog.GetSelectedExample(), examples_dialog.GetSelectedExamplePath());		
 		}
 	}
 
-	
+
 
 }
