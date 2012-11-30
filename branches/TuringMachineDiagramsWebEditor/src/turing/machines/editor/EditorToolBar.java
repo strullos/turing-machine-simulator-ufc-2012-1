@@ -57,7 +57,7 @@ public class EditorToolBar extends JToolBar {
 		m_perspectives_combobox.setMaximumSize(new Dimension(250,100));
 		
 		this.add(m_perspectives_combobox);
-		
+		this.addSeparator();
 		m_examples_button = new JButton("Examples");
 		add(m_examples_button);
 		m_examples_button.addActionListener(examples_action_listener);

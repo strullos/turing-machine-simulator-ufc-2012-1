@@ -44,6 +44,7 @@ public class DiagramTextEditor extends EditorPerspective {
 		setLayout(new BorderLayout(0, 0));
 
 		m_diagrams_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		m_diagrams_tabbedPane.addChangeListener(new TabChangedListener());
 		add(m_diagrams_tabbedPane, BorderLayout.CENTER);
 
 		NewDiagramDocument();
@@ -447,24 +448,10 @@ public class DiagramTextEditor extends EditorPerspective {
 		}
 	}
 
-	class TabChangedListener implements ChangeListener
-	{
-		@Override
-		public void stateChanged(ChangeEvent e) {
-			if( DiagramTextEditor.this.m_diagrams_tabbedPane.getSelectedIndex() != -1){
-				DiagramTextEditor.this.m_current_diagram_document = (DiagramTextDocument) DiagramTextEditor.this.m_diagrams_tabbedPane.getSelectedComponent();
-			}else{
-				DiagramTextEditor.this.m_current_diagram_document = null;
-			}						
-		}		
-
-	}
-
 	@Override
 	public void Help() {
 		HelpDialog help_dialog = new HelpDialog();
-		StringFileReader file_reader = new StringFileReader();
-		help_dialog.SetHelpContent(file_reader.ReadFile(getClass().getResourceAsStream("/help/diagram_help.txt")));
+		help_dialog.SetHelpContent(StringFileReader.ReadFile(getClass().getResourceAsStream("/help/diagram_help.txt")));
 		//		help_dialog.SetHelpContent("");
 		help_dialog.setVisible(true);
 	}
@@ -477,8 +464,20 @@ public class DiagramTextEditor extends EditorPerspective {
 		if(result > 0){
 			OpenExample(examples_dialog.GetSelectedExample(), examples_dialog.GetSelectedExamplePath());		
 		}
-	}
+	}	
+	
+	class TabChangedListener implements ChangeListener
+	{
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			if( DiagramTextEditor.this.m_diagrams_tabbedPane.getSelectedIndex() != -1){
+				DiagramTextEditor.this.m_current_diagram_document = (DiagramTextDocument) DiagramTextEditor.this.m_diagrams_tabbedPane.getSelectedComponent();
+			}else{
+				DiagramTextEditor.this.m_current_diagram_document = null;
+			}						
+		}		
 
+	}
 
 
 }
