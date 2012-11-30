@@ -247,8 +247,7 @@ public class MachineTextEditor extends EditorPerspective {
 	@Override
 	public void Help() {
 		HelpDialog help_dialog = new HelpDialog();
-		StringFileReader file_reader = new StringFileReader();
-		help_dialog.SetHelpContent(file_reader.ReadFile(getClass().getResourceAsStream("/help/machine_help.txt")));
+		help_dialog.SetHelpContent(StringFileReader.ReadFile(getClass().getResourceAsStream("/help/machine_help.txt")));
 		help_dialog.setVisible(true);	
 	}
 
