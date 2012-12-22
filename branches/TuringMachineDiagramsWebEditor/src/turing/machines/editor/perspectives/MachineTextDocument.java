@@ -17,7 +17,7 @@ public class MachineTextDocument extends ModuleTextDocument {
 	public MachineTextDocument()
 	{
 		m_machine_document_path = "";
-		m_console = new ConsoleComponent();
+		console_ = new ConsoleComponent();
 		m_module_input = new TextEditComponent("Machine:");
 		m_tape_input = new LineEditComponent("Tape:");
 		
@@ -27,7 +27,7 @@ public class MachineTextDocument extends ModuleTextDocument {
 		add(machine_text_editor_splitPane);
 		machine_text_editor_splitPane.setDividerLocation(500);
 		
-		machine_text_editor_splitPane.setRightComponent(m_console);
+		machine_text_editor_splitPane.setRightComponent(console_);
 		machine_text_editor_splitPane.setDividerLocation(500);		
 		machine_text_editor_splitPane.setLeftComponent(m_module_input);			
 		

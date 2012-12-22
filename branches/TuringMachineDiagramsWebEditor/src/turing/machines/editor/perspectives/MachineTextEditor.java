@@ -2,6 +2,7 @@ package turing.machines.editor.perspectives;
 
 import turing.machines.editor.EditorPerspective;
 import turing.machines.editor.TuringMachinesEditor;
+import turing.simulator.log.ConsoleLog;
 import turing.simulator.module.Machine;
 import turing.simulator.tape.Tape;
 import ui.utils.ClosableTabComponent;
@@ -155,6 +156,7 @@ public class MachineTextEditor extends EditorPerspective {
 			return;
 		}
 		Machine m = new Machine();
+		m.logs_.AddLog(new ConsoleLog(m_current_machine_document.console()));
 		boolean empty_fields = false;
 		m_current_machine_document.ClearConsoleText();
 		if(m_current_machine_document.GetModuleText().isEmpty()){
@@ -170,10 +172,7 @@ public class MachineTextEditor extends EditorPerspective {
 				if( m.loadFromString(m_current_machine_document.GetModuleText())) {
 					Tape tape = new Tape(m_current_machine_document.GetTape());				
 					m.execute(tape);
-					m_current_machine_document.AppendConsoleText(m.getLog().getText());
-				} else {
-					m_current_machine_document.SetConsoleText("Failed to process rule - error on line " + Integer.toString(m.getLine()));
-				}
+				} 
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

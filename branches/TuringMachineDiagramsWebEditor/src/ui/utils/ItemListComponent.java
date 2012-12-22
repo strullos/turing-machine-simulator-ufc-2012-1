@@ -203,29 +203,9 @@ public class ItemListComponent extends JPanel {
 				m_save_all_button.setEnabled(true);
 			}
 			m_previous_selection = m_items_list.getSelectedValue();		
-			if(m_previous_selection.startsWith("*")){
+			if(m_previous_selection != null && m_previous_selection.startsWith("*")){
 				m_previous_selection = m_previous_selection.substring(1);
 			}
-		}
-		
+		}		
 	}
-	
-
-	
-//	class ColoredListCellRenderer extends DefaultListCellRenderer {
-//	     /**
-//		 * 
-//		 */
-//		private static final long serialVersionUID = 1L;
-//
-//		@SuppressWarnings("rawtypes")
-//		@Override
-//	     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-//	         Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-//	         if (value.equals("diagram.dt")) {
-//	             c.setForeground(Color.RED);
-//	         }
-//	         return c;
-//	     }
-//	}
 }
