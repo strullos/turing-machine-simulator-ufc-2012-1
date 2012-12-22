@@ -7,13 +7,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 
-import turing.simulator.log.Log;
+import turing.simulator.log.LogsList;
 import turing.simulator.tape.Tape;
 import utils.StringFileReader;
 
 
 public abstract class Module {
-	protected final Log m_log = new Log();
+	public final LogsList logs_ = new LogsList();
 	protected int m_current_line = 0;
 	protected int m_steps = 0;
 	protected int m_max_steps;
@@ -26,31 +26,26 @@ public abstract class Module {
 	
 	public static int test_steps = 0;
 	
-	public Log getLog(){
-		return m_log;
-	}
-	
-	public void clearLog()
+	public void ClearLogsList()
 	{
-		m_log.clear();
+		logs_.Clear();
 	}
 	
 	public  void setLoadPath(String load_path)
 	{
 		m_load_path = load_path;
-	}
+	}	
 	
 	public boolean loadFromFile(String filename) throws FileNotFoundException
 	{
 		StringFileReader file_reader = new StringFileReader();
 		String content = file_reader.ReadFile(filename);
-		System.out.println(filename);
+		logs_.WriteLn("Loading file: " + filename);
 		BufferedReader reader = new BufferedReader(new StringReader(content));
 		try {
 			setModulePath(filename);
 			return load(reader);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}		

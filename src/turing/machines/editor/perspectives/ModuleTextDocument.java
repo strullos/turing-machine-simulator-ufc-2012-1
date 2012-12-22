@@ -11,7 +11,7 @@ public class ModuleTextDocument extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	protected ConsoleComponent m_console;	
+	protected ConsoleComponent console_;	
 	protected TextEditComponent m_module_input;	
 	protected LineEditComponent m_tape_input;
 	
@@ -31,22 +31,27 @@ public class ModuleTextDocument extends JPanel {
 	
 	public void SetConsoleText(String console_text)
 	{
-		m_console.SetText(console_text);
+		console_.SetText(console_text);
 	}
 	
 	public void AppendConsoleText(String text)
 	{
-		m_console.AppendText(text);
+		console_.AppendText(text);
 	}
 	
 	public void ClearConsoleText()
 	{
-		m_console.SetText("");
+		console_.SetText("");
 	}
 	
 	public String GetTape()
 	{
 		return m_tape_input.GetText();
 	}	
+	
+	public ConsoleComponent console()
+	{
+		return console_;
+	}
 	
 }

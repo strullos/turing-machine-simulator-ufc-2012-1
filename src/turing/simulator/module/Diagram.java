@@ -23,7 +23,7 @@ public class Diagram extends Module {
 	private HashMap<String, String> m_modules_content; //Stores the content of the modules. This is used for modules that are not saved on a file.
 	private String m_initial_module;
 	private String m_current_module;	
-	
+
 	public Diagram(){			
 		m_loaded_modules = new HashMap<String, Module>();
 		m_loaded_files = new HashMap<String, Module>();
@@ -38,12 +38,12 @@ public class Diagram extends Module {
 		m_module_path = "this";
 		m_loaded = false;		
 	}
-	
+
 	public void setModulesContent(HashMap<String, String> modules_content)
 	{
 		m_modules_content = modules_content;
 	}
-	
+
 	@Override
 	protected boolean load(BufferedReader reader) throws IOException {
 		m_steps = 0;
@@ -53,12 +53,12 @@ public class Diagram extends Module {
 			if(processHeader(line)) continue;
 			if(processRule(line)) continue;			
 			if( isEmptyLine(line) ) continue;
-			
+
 			if(m_module_name.isEmpty()){
-				m_log.writeLn("An error occurred loading diagram file " + m_module_name + "(" + m_module_path + ")" + ", while processing an instruction on line " + m_current_line + ": " + line);
-				m_log.writeLn("Error: " + m_error);
+				logs_.WriteLn("An error occurred loading diagram file " + m_module_name + "(" + m_module_path + ")" + ", while processing an instruction on line " + m_current_line + ": " + line);
+				logs_.WriteLn("Error: " + m_error);
 			}else{
-				m_log.writeLn(m_module_name + ": " + "An error occurred loading diagram file " + m_module_name + "(" + m_module_path + ")" + ", while processing an instruction on line " + m_current_line + ": " + line);
+				logs_.WriteLn(m_module_name + ": " + "An error occurred loading diagram file " + m_module_name + "(" + m_module_path + ")" + ", while processing an instruction on line " + m_current_line + ": " + line);
 			}
 			return false;
 		}	
@@ -66,18 +66,18 @@ public class Diagram extends Module {
 		m_loaded = true;
 		return true;
 	}
-	
+
 	@Override
 	public void reset(){
 		m_current_module = m_initial_module;
 		m_steps = 0;
 	}
-	
+
 	@Override
 	public String getCurrentState() {
 		return m_current_module;
 	}
-	
+
 	@Override
 	protected String getFinalState() {		
 		String final_state = "";
@@ -94,7 +94,7 @@ public class Diagram extends Module {
 		}
 		return final_state;
 	}
-	
+
 	@Override
 	public boolean processHeader(String line) {
 		StringTokenizer tokens = new StringTokenizer(line);
@@ -102,7 +102,7 @@ public class Diagram extends Module {
 			String module_token = tokens.nextToken();
 			if( !module_token.equals("module") )
 				return false;
-			
+
 			String module_name = tokens.nextToken();
 			if(module_name.startsWith("%")){
 				module_name = module_name.substring(1);
@@ -116,59 +116,61 @@ public class Diagram extends Module {
 			}else{
 				module_path = m_load_path + "/" + module_file;
 			}		
-			
+
 			if(m_loaded_modules.containsKey(module_name)){
-				m_log.writeLn("Duplicated module name detected on line: " + m_current_line);
-				m_log.writeLn("Aborting load.");
+				logs_.WriteLn("Duplicated module name detected on line: " + m_current_line);
+				logs_.WriteLn("Aborting load.");
 				return false;				
 			}
 			if(m_loaded_files.containsKey(module_file)){				
-				m_log.writeLn("Module file already loaded, new reference added.");
+				logs_.WriteLn("Module file already loaded, new reference added.");
 				Module m = m_loaded_files.get(module_file);
 				m_loaded_modules.put(module_name, m);
 				return true;
 			}			
 
-			if(module_path.isEmpty()){ //The module was not saved from a file and should be loaded from a string
-				if(m_modules_content.containsKey(module_file)){
-					try {
-						module = ModuleFactory.loadModuleFromString(module_file, m_modules_content.get(module_file));
+			if(m_modules_content.containsKey(module_file)){ //The modules should always be loaded from the contents (if possible)
+				try {
+					module = ModuleFactory.loadModuleFromString(module_file, m_modules_content.get(module_file));
+					if(module != null){
 						module.setModulePath(module_file);
-					} catch (IOException e) {
-						m_error = "Could not load module file " + module_file;
-						e.printStackTrace();
-					}					
-				}else{
-					m_error = "Could not load module file " + module_file;
+					}else{							
+						m_error = "Could not load module file " + module_file + ". ";
+						m_error += ModuleFactory.error_;
+						return false;
+					}
+				} catch (IOException e) {								
+					m_error = "Could not load module file " + module_file + ". ";	
+					m_error += ModuleFactory.error_;
 					return false;
-				}
+				}			
 			}else{ //This is the basic loading path. The module is loaded from a file
 				try {
 					module = ModuleFactory.loadModule(module_path);
 					if( module == null ){
-						m_error = "Could not load module file " + module_file;
+						m_error = "Could not load module file " + module_file + ". ";
+						m_error += ModuleFactory.error_;
 						return false;
 					}				
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
-					m_error = "Could not load module file " + module_file;
+					m_error = "Could not load module file " + module_file + ". ";
+					m_error += ModuleFactory.error_;
 					return false;
 				}
 			}
-			
-			
+
 			if(m_module_name.isEmpty()){
 				module.setModuleName(module_name);
 			}else{
 				module.setModuleName(m_module_name + "->" + module_name);
 			}			
-			
+
 			m_loaded_modules.put(module_name, module);
 			m_loaded_files.put(module_file, module);
 			m_modules_file.put(module_name, module_file);
 			m_modules_full_path.put(module_name, module_path);
-			m_log.writeLn("Module " + module.getModuleName() + "(" + module.getModuleFileName() + ")" + " loaded succesfully.");
-			//m_log.writeLn("Module " + module.getModuleName() + " loaded succesfully.");
+			logs_.WriteLn("Module " + module.getModuleName() + "(" + module.getModuleFileName() + ")" + " loaded succesfully.");
 			return true;
 		}		
 		return false;
@@ -182,15 +184,15 @@ public class Diagram extends Module {
 			if( initial_module.equals("module") ){
 				return false;
 			}
-			
+
 			if(m_initial_module.isEmpty()){
 				m_initial_module = initial_module;
 			}
-					
+
 			String symbols = tokens.nextToken();
 			String next_module = tokens.nextToken();
 			if( !(symbols.startsWith("[") && symbols.endsWith("]")) ){
-				m_log.writeLn("Error reading rule's symbols: missing '[' and/or ']' ");
+				logs_.WriteLn("Error reading rule's symbols: missing '[' and/or ']' ");
 				return false;
 			}
 			symbols = symbols.substring(1, symbols.length()-1);
@@ -215,16 +217,16 @@ public class Diagram extends Module {
 					sent_variable = next_module.substring(pos+1, pos2);
 					next_module = next_module.substring(0,pos);
 				}else{
-					m_log.writeLn("Error reading next module: missing ')' ");
+					logs_.WriteLn("Error reading next module: missing ')' ");
 					return false;
 				}
 			}
 			if(next_module.contains(")")){
-				m_log.writeLn("Error reading next module: missing '(' ");
+				logs_.WriteLn("Error reading next module: missing '(' ");
 				return false;
 			}
-			
-			
+
+
 			DiagramRule rule;
 			if(m_modules_rules.containsKey(initial_module)){
 				rule = m_modules_rules.get(initial_module);				
@@ -232,14 +234,14 @@ public class Diagram extends Module {
 				rule = new DiagramRule();
 				m_modules_rules.put(initial_module, rule);
 			}
-			
+
 			StringTokenizer symbols_tokens = new StringTokenizer(symbols,",");
 			String current_symbol;
 			while(symbols_tokens.hasMoreTokens()){
 				current_symbol = symbols_tokens.nextToken();
 				if(rule.hasTransition(current_symbol)){
-					m_log.writeLn("Non-determinism detected: Current rule conflicts with previously added rule. Aborting loading.");
-					m_log.writeLn("Confliting symbol: " + current_symbol);
+					logs_.WriteLn("Non-determinism detected: Current rule conflicts with previously added rule. Aborting loading.");
+					logs_.WriteLn("Confliting symbol: " + current_symbol);
 					return false;
 				}
 				rule.addTransition(current_symbol, next_module, 
@@ -256,10 +258,11 @@ public class Diagram extends Module {
 		test_steps = 1;
 		boolean executing = true;
 		if(m_loaded){
-			//printStep(t);
-			//m_steps++;
+			logs_.WriteLn("Initial module: "+ getCurrentState());
+			logs_.WriteLn("Initial tape: " + t.toString());
+			logs_.WriteLn("");
 			if(m_modules_rules.isEmpty()){
-				m_log.writeLn("No rules to execute.");
+				logs_.WriteLn("No rules to execute.");
 				executing = false;
 			}
 			while(executing){
@@ -270,90 +273,90 @@ public class Diagram extends Module {
 				current_module.setInitialStep(m_steps);		
 				current_module.reset();
 				if((current_module instanceof Diagram)){					    						
-					   m_log.writeLn("Diagram " + current_module.getModuleName() + ":");
+					logs_.WriteLn("Diagram " + current_module.getModuleName() + ":");
 				}
 				printStep(t);
 				while(current_module.executeStep(t)){
-				   if(!(current_module instanceof Diagram)){
-				    	printStep(t);
-				    	m_steps++;	    
-				    }
+					if(!(current_module instanceof Diagram)){
+						printStep(t);
+						m_steps++;	    
+					}
 				}		
-			  m_steps = current_module.getSteps();
-			  executing = false;
-			  if(m_modules_rules.containsKey(m_current_module)){
-				  String curr_symbol = t.readCurrentSymbol();
-				  DiagramRule rule = m_modules_rules.get(m_current_module);
-				  if(rule.hasTransition(curr_symbol)){
-					  m_current_module = rule.getNexModule(curr_symbol);	
-					  if(!m_loaded_modules.containsKey(m_current_module)){
-						 printStep(t);
-		  				 break;
-		  			  }
-					  executing = true;
-					  if(rule.setsVariable(curr_symbol)){
-						  String var = rule.getSetVariable(curr_symbol);
-						  m_variables_table.put(var, curr_symbol);
-					  }
-					  if(rule.sendsVariable(curr_symbol)){
-						  String var = rule.getSentVariable(curr_symbol);
-						  Module module = m_loaded_modules.get(m_current_module);
-						  if(module instanceof Machine){
-							  Machine m = (Machine)module;
-							  m.setVariableValue(m_variables_table.get(var));
-						  }
-					  }
-				  }
-			  }
+				m_steps = current_module.getSteps();
+				executing = false;
+				if(m_modules_rules.containsKey(m_current_module)){
+					String curr_symbol = t.readCurrentSymbol();
+					DiagramRule rule = m_modules_rules.get(m_current_module);
+					if(rule.hasTransition(curr_symbol)){
+						m_current_module = rule.getNexModule(curr_symbol);	
+						if(!m_loaded_modules.containsKey(m_current_module)){
+							printStep(t);
+							break;
+						}
+						executing = true;
+						if(rule.setsVariable(curr_symbol)){
+							String var = rule.getSetVariable(curr_symbol);
+							m_variables_table.put(var, curr_symbol);
+						}
+						if(rule.sendsVariable(curr_symbol)){
+							String var = rule.getSentVariable(curr_symbol);
+							Module module = m_loaded_modules.get(m_current_module);
+							if(module instanceof Machine){
+								Machine m = (Machine)module;
+								m.setVariableValue(m_variables_table.get(var));
+							}
+						}
+					}
+				}
 			}		
 			printSummary(t);
 			return true;
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean executeStep(Tape t) {		
-	    Module current_module = m_loaded_modules.get(m_current_module);
-	    current_module.setInitialStep(m_steps);
-	    current_module.reset();
-	    if(!(current_module instanceof Diagram)){
-	    	printStep(t);
-	    	m_steps++;	    
-	    }else{
-	    	m_log.writeLn("Diagram " + current_module.getModuleName() + ": ");
-	    }
-	    while(current_module.executeStep(t)){	    	
-	    	printStep(t);
-	    	m_steps++;
-	    }
-	    
-	    m_steps = current_module.getSteps();
-	    current_module.reset();
-	    if(m_modules_rules.containsKey(m_current_module)){
-	    	String curr_symbol = t.readCurrentSymbol();
-	    	DiagramRule rule = m_modules_rules.get(m_current_module);
-	    	if(rule.hasTransition(curr_symbol)){
-	  	    	m_current_module =rule.getNexModule(curr_symbol);
-	  	    	if(!m_loaded_modules.containsKey(m_current_module)){
-	  				return false;
-	  			}
-	  	    	if(rule.setsVariable(curr_symbol)){
+		Module current_module = m_loaded_modules.get(m_current_module);
+		current_module.setInitialStep(m_steps);
+		current_module.reset();
+		if(!(current_module instanceof Diagram)){
+			printStep(t);
+			m_steps++;	    
+		}else{
+			logs_.WriteLn("Diagram " + current_module.getModuleName() + ": ");
+		}
+		while(current_module.executeStep(t)){	    	
+			printStep(t);
+			m_steps++;
+		}
+
+		m_steps = current_module.getSteps();
+		current_module.reset();
+		if(m_modules_rules.containsKey(m_current_module)){
+			String curr_symbol = t.readCurrentSymbol();
+			DiagramRule rule = m_modules_rules.get(m_current_module);
+			if(rule.hasTransition(curr_symbol)){
+				m_current_module =rule.getNexModule(curr_symbol);
+				if(!m_loaded_modules.containsKey(m_current_module)){
+					return false;
+				}
+				if(rule.setsVariable(curr_symbol)){
 					String var = rule.getSetVariable(curr_symbol);
 					m_variables_table.put(var, curr_symbol);
-	  	    	}
-	  	    	if(rule.sendsVariable(curr_symbol)){
+				}
+				if(rule.sendsVariable(curr_symbol)){
 					String var = rule.getSentVariable(curr_symbol);
 					Module module = m_loaded_modules.get(m_current_module);
 					if(module instanceof Machine){
 						Machine m = (Machine)module;
 						m.setVariableValue(m_variables_table.get(var));
 					}
-	  	    	}
-	  	    	return true;		  	    	
-	  	    }
-	    }	  
-	    return false;		
+				}
+				return true;		  	    	
+			}
+		}	  
+		return false;		
 	}
 
 	@Override
@@ -365,37 +368,37 @@ public class Diagram extends Module {
 			String step_info = "<"+ m_current_module + "," +  current_module.getCurrentState() + ">:";
 			String tape_info = t.toString();
 			String formatted_output = String.format(format_string, step_count,step_info, tape_info);
-			m_log.writeLn(formatted_output);			
+			logs_.WriteLn(formatted_output);			
 		}else{
 			String step_count = Integer.toString(Module.test_steps)+ ".";
 			String step_info = "<"+ m_current_module + ">:";
 			String tape_info = t.toString();
 			String formatted_output = String.format(format_string, step_count,step_info, tape_info);
-			m_log.writeLn(formatted_output);
+			logs_.WriteLn(formatted_output);
 		}		
 		Module.test_steps++;		
 	}
 
 	@Override
 	public void printSummary(Tape t) {
-		m_log.writeLn("Finished executing in " + (Module.test_steps-1) + " steps.");
-		m_log.writeLn("Tape final configuration is: " + t.toString());	
+		logs_.WriteLn("Finished executing in " + (Module.test_steps-1) + " steps.");
+		logs_.WriteLn("Tape final configuration is: " + t.toString());	
 		if(m_loaded_modules.containsKey(m_current_module)){
-			m_log.writeLn("Stopped on module: " + m_loaded_modules.get(m_current_module).getModuleName());
-			m_log.writeLn("Final state is: " + m_loaded_modules.get(m_current_module).getFinalState());
+			logs_.WriteLn("Stopped on module: " + m_loaded_modules.get(m_current_module).getModuleName());
+			logs_.WriteLn("Final state is: " + m_loaded_modules.get(m_current_module).getFinalState());
 		}else{
-			m_log.writeLn("Stopped on module: " + m_current_module);
+			logs_.WriteLn("Stopped on module: " + m_current_module);
 		}
 	}	
-	
+
 	private boolean isEmptyLine(String line) {
 		return line.equals("\n") || line.equals("\r") || line.equals("\r\n") || line.isEmpty();
 	}
-	
+
 	public void setModuleFilesFullPath(HashMap<String,String> file_paths){
 		m_modules_full_path = file_paths;
 	}
-	
+
 	public ArrayList<String> getDependencies()
 	{
 		ArrayList<String> dependencies = new ArrayList<String>();
@@ -403,37 +406,37 @@ public class Diagram extends Module {
 		while( it.hasNext() ) {
 			String dep_path = it.next();
 			Module dep = null;
-			
+
 			dependencies.add(dep_path);
 			try {
 				dep = ModuleFactory.loadModule(dep_path);
 				if( dep != null )
 					dependencies.addAll(dep.getDependencies());
 			} catch(IOException e) {
-				m_log.writeLn("File not found: " + dep_path);
+				logs_.WriteLn("File not found: " + dep_path);
 				e.printStackTrace();
 			}			
 		}
-		
+
 		for( String p : dependencies )  {
 			File module_file = new File(p);
-			m_log.writeLn("Dependency: " + module_file.getName());
+			logs_.WriteLn("Dependency: " + module_file.getName());
 		}
 		return dependencies;
 	}
-	
+
 	private class DiagramRule
 	{	
 		HashMap<String, String> m_next_modules; //Maps from symbol to module;
 		HashMap<String, String> m_set_variables; //Maps from symbol to the variable that is set
 		HashMap<String, String> m_sent_variables; //Maps from symbol to the variable that is sent
-		
+
 		DiagramRule(){
 			m_next_modules = new HashMap<String, String>();
 			m_set_variables = new HashMap<String, String>();
 			m_sent_variables = new HashMap<String, String>();
 		}
-		
+
 		public void addTransition(String symbol, String next_module, 
 				boolean sets_variable, boolean sends_variable, 
 				String set_variable, String sent_variable){
@@ -445,19 +448,19 @@ public class Diagram extends Module {
 				m_sent_variables.put(symbol, sent_variable);
 			}
 		}
-		
+
 		public boolean setsVariable(String symbol){
 			return m_set_variables.containsKey(symbol);
 		}
-		
+
 		public boolean sendsVariable(String symbol){
 			return m_sent_variables.containsKey(symbol) || m_sent_variables.containsKey("*");
 		}
-		
+
 		public String getSetVariable(String symbol){
 			return m_set_variables.get(symbol);
 		}
-		
+
 		public String getSentVariable(String symbol){
 			if(m_sent_variables.containsKey(symbol)){
 				return m_sent_variables.get(symbol);
@@ -468,12 +471,12 @@ public class Diagram extends Module {
 			}
 			return "";		
 		}
-		
+
 		//Checks if the rule already has a transition for the given symbol
 		public boolean hasTransition(String symbol){
 			return m_next_modules.containsKey(symbol) || m_next_modules.containsKey("*");
 		}	
-		
+
 		public String getNexModule(String symbol){
 			if(m_next_modules.containsKey(symbol)){
 				return m_next_modules.get(symbol);
@@ -483,7 +486,7 @@ public class Diagram extends Module {
 				}
 				return null;
 			}
-			
+
 		}
 	}
 }

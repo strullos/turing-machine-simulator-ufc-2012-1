@@ -2,6 +2,7 @@ package turing.machines.editor.perspectives;
 
 import turing.machines.editor.EditorPerspective;
 import turing.machines.editor.TuringMachinesEditor;
+import turing.simulator.log.ConsoleLog;
 import turing.simulator.module.Diagram;
 import turing.simulator.module.Machine;
 import turing.simulator.tape.Tape;
@@ -104,41 +105,38 @@ public class DiagramTextEditor extends EditorPerspective {
 		}		
 		try {
 			File selected_file = new File(file_path);
-			boolean required_modules = true;
-			BufferedReader reader = new BufferedReader(new FileReader(file_path));
-			String line;
-			try {
-				String diagram_text = new String("");
-				while( (line = reader.readLine()) != null ){
-					//						if(!m_current_diagram_document.CheckRequiredModules(line)){
-					//							required_modules = false;
-					//						}
-					diagram_text += (line + "\n");		
-				}
+			BufferedReader reader = new BufferedReader(new FileReader(file_path));			
+			try {				
 				DiagramTextDocument new_diagram_document = new DiagramTextDocument();
 				m_current_diagram_document = new_diagram_document;
-				new_diagram_document.SetModuleText(diagram_text);
 				m_diagrams_tabbedPane.addTab(selected_file.getName().toString() + " Project", null, new_diagram_document, null);	
 				m_diagrams_tabbedPane.setSelectedComponent(new_diagram_document);
 				m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
-				m_current_diagram_document.SetModuleText(diagram_text);
+				
 				TuringMachinesEditor.SetStatusMessage("Diagram file loaded successfully.\n");
 				m_current_diagram_document.AddModule(selected_file.getName(), file_path);
-				if(!required_modules){
-					m_current_diagram_document.AppendConsoleText("Some of the required modules are not available, diagram won't be able to execute. " +
-							"\nConsider adding the required modules.\n");
-				}
+				
 				Diagram d = new Diagram();
+				d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
 				d.setLoadPath(selected_file.getParent());
+				
+				String diagram_text = new String("");
+				String line;
+				while( (line = reader.readLine()) != null ){				
+					diagram_text += (line + "\n");		
+				}
 				d.loadFromString(diagram_text);
+				m_current_diagram_document.SetModuleText(diagram_text);
 				ArrayList<String> dependencies = d.getDependencies();
 				for(int i = 0; i < dependencies.size(); i++)
 				{
 					File module_file = new File(dependencies.get(i));
 					m_current_diagram_document.AddModule(module_file.getName(), module_file.getPath());
+					module_file = null;
 				}
 				m_current_diagram_document.SetMainModuleSelected();
-
+				diagram_text = null;
+				d = null;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -172,12 +170,12 @@ public class DiagramTextEditor extends EditorPerspective {
 					"\nConsider adding the required modules.\n");
 		}
 		Diagram d = new Diagram();		
+		d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
 		String example_dir = example_path.replaceAll("/" + example_name ,"");
 		d.setLoadPath(example_dir);
 		try {
 			d.loadFromString(diagram_text);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		ArrayList<String> dependencies = d.getDependencies();
@@ -195,14 +193,14 @@ public class DiagramTextEditor extends EditorPerspective {
 	public void Save() 
 	{
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
-			TuringMachinesEditor.SetStatusMessage("Error saving diagram file: empty diagram.\n");
+			TuringMachinesEditor.SetStatusMessage("Error saving file: empty content.\n");
 		}else{
 			String module_name = m_current_diagram_document.GetSelectedModule();
 			String module_path = m_current_diagram_document.GetModulePath(module_name);		
 			String module_filename = "";
 			String file_extension = "";
 			String file_type = "";
-			if(module_path == ""){
+			if(module_path.isEmpty()){
 				File target_file;
 				if(module_name.endsWith(".mt")){
 					target_file = SelectMachineFilePath(true);
@@ -233,12 +231,12 @@ public class DiagramTextEditor extends EditorPerspective {
 				module_filename = target_file.getName();
 				if(!module_filename.contains(file_extension)){
 					module_filename += file_extension;
-				}
-			}
-			if(module_path.isEmpty()) //If the path is empty the user cancelled the save operation
-			{
-				return;
-			}
+				}	
+				if(module_path.isEmpty()) //If the path is still empty the user cancelled the save operation
+				{
+					return;
+				}				
+			}		
 			if(m_current_diagram_document.CheckDuplicatedModule(module_filename)){
 				TuringMachinesEditor.SetStatusMessage("This diagram project already contains a module called " + module_filename + ". Please save it with a different name.");
 				return;
@@ -252,7 +250,9 @@ public class DiagramTextEditor extends EditorPerspective {
 				TuringMachinesEditor.SetStatusMessage(file_type +  module_path + " saved succesfully.\n");
 				m_current_diagram_document.UnmarkSelectedItem();
 				m_current_diagram_document.SetModulePath(module_name, module_path);	
-				m_current_diagram_document.RenameModule(module_name, module_filename);
+				if(!module_filename.isEmpty()){
+					m_current_diagram_document.RenameModule(module_name, module_filename);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}								
@@ -305,7 +305,7 @@ public class DiagramTextEditor extends EditorPerspective {
 			}
 			boolean duplicated_module = false;
 			if(m_current_diagram_document.CheckDuplicatedModule(module_filename)){
-				m_current_diagram_document.m_console.AppendText("This diagram project already contains a module called " + module_filename + ".File will be saved, but will not be added to the project.");
+				m_current_diagram_document.console_.AppendText("This diagram project already contains a module called " + module_filename + ".File will be saved, but will not be added to the project.");
 				duplicated_module = true;
 			}
 			FileWriter fstream; 
@@ -326,7 +326,6 @@ public class DiagramTextEditor extends EditorPerspective {
 
 	private File SelectMachineFilePath(boolean empty_file_name)
 	{	
-		//		String machine_path = "";
 		//This modified JFileChooser asks for confirmation if the user wants to overwrite the file
 		ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
 		if(!empty_file_name){
@@ -336,13 +335,8 @@ public class DiagramTextEditor extends EditorPerspective {
 				"Machine files (.mt)", "mt");
 		fc.setFileFilter(filter);
 		fc.setAcceptAllFileFilterUsed(false);
-		//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = fc.showSaveDialog(null);
 		if(returnVal == JFileChooser.APPROVE_OPTION){	
-			//			machine_path = fc.getSelectedFile().getAbsolutePath().toString();
-			//			if(!machine_path.endsWith(".mt")){
-			//				machine_path += ".mt";
-			//			}	
 			return fc.getSelectedFile();
 		}
 		return null;
@@ -350,7 +344,6 @@ public class DiagramTextEditor extends EditorPerspective {
 
 	private File SelectDiagramFilePath(boolean empty_file_name)
 	{
-		//		String diagram_path = "";
 		//This modified JFileChooser asks for confirmation if the user wants to overwrite the file
 		ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));		
 		if(!empty_file_name){
@@ -360,13 +353,8 @@ public class DiagramTextEditor extends EditorPerspective {
 				"Diagram files (.dt)", "dt");
 		fc.setFileFilter(filter);
 		fc.setAcceptAllFileFilterUsed(false);
-		//fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int returnVal = fc.showSaveDialog(null);
 		if(returnVal == JFileChooser.APPROVE_OPTION){	
-			//			diagram_path = fc.getSelectedFile().getAbsolutePath().toString();
-			//			if(!diagram_path.endsWith(".dt")){
-			//				diagram_path += ".dt";
-			//			}	
 			return fc.getSelectedFile();
 		}
 		return null;
@@ -387,6 +375,7 @@ public class DiagramTextEditor extends EditorPerspective {
 			return;
 		}
 		Machine m = new Machine();
+		m.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
 		boolean empty_fields = false;
 		m_current_diagram_document.ClearConsoleText();
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
@@ -402,10 +391,7 @@ public class DiagramTextEditor extends EditorPerspective {
 				if( m.loadFromString(m_current_diagram_document.GetModuleText())) {
 					Tape tape = new Tape(m_current_diagram_document.GetTape());				
 					m.execute(tape);
-					m_current_diagram_document.AppendConsoleText(m.getLog().getText());
-				} else {
-					m_current_diagram_document.SetConsoleText("Failed to process rule - error on line " + Integer.toString(m.getLine()));
-				}
+				} 
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -415,6 +401,7 @@ public class DiagramTextEditor extends EditorPerspective {
 	private void ExecuteDiagram()
 	{
 		Diagram d = new Diagram();
+		d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
 		m_current_diagram_document.SetConsoleText("");
 		d.setModuleFilesFullPath(m_current_diagram_document.GetModulesPath());
 		d.setModulesContent(m_current_diagram_document.GetModulesContent());
@@ -433,15 +420,10 @@ public class DiagramTextEditor extends EditorPerspective {
 				if( d.loadFromString(m_current_diagram_document.GetModuleText()) ) {
 					//This clear here is to erase the "loading messages" that may be on the log.
 					//This way, only the execution messages are displayed when the diagram executes
-					d.clearLog(); 					
-					Tape tape = new Tape(m_current_diagram_document.GetTape());		
-					m_current_diagram_document.AppendConsoleText("Initial module: "+ d.getCurrentState() + "\n");
-					m_current_diagram_document.AppendConsoleText("Initial tape: " + tape.toString() + "\n\n");					
+					d.ClearLogsList(); 					
+					Tape tape = new Tape(m_current_diagram_document.GetTape());												
 					d.execute(tape);	
-					m_current_diagram_document.AppendConsoleText(d.getLog().getText());					
-				} else {
-					m_current_diagram_document.AppendConsoleText(d.getLog().getText());	
-				}
+				} 
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -452,7 +434,6 @@ public class DiagramTextEditor extends EditorPerspective {
 	public void Help() {
 		HelpDialog help_dialog = new HelpDialog();
 		help_dialog.SetHelpContent(StringFileReader.ReadFile(getClass().getResourceAsStream("/help/diagram_help.txt")));
-		//		help_dialog.SetHelpContent("");
 		help_dialog.setVisible(true);
 	}
 
@@ -465,7 +446,7 @@ public class DiagramTextEditor extends EditorPerspective {
 			OpenExample(examples_dialog.GetSelectedExample(), examples_dialog.GetSelectedExamplePath());		
 		}
 	}	
-	
+
 	class TabChangedListener implements ChangeListener
 	{
 		@Override

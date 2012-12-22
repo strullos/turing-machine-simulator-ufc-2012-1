@@ -30,7 +30,7 @@ public class Machine extends Module {
 	@Override
 	protected boolean load(BufferedReader reader) {
 		String line;
-		m_steps = 0;
+		m_steps = 0;	
 		try {
 			while( (line = reader.readLine()) != null ){
 				m_current_line++;			
@@ -38,14 +38,14 @@ public class Machine extends Module {
 				if(processHeader(line)) continue;
 				if(processVarDeclaration(line)) continue;
 				if(processRule(line)) continue;
-				m_log.writeLn("Failed to load machine " + m_module_name + " file while reading line " + m_current_line + ":" + line);
+				logs_.WriteLn("Failed to load machine " + m_module_name + " file while reading line " + m_current_line + ":" + line);
 				m_error = "Failed to load machine " + m_module_name + " file while reading line " + m_current_line + ":" + line;
 				return false;
 			}
 		} catch (IOException e) {
-			m_log.writeLn("Can't read stream from input");
+			logs_.WriteLn("Can't read stream from input");
 			e.printStackTrace();
-		}	
+		}		
 		return true;
 	}	
 	
@@ -87,9 +87,9 @@ public class Machine extends Module {
 			if(m_rules.containsKey(initial_state)){
 				MachineRule rule = m_rules.get(initial_state);
 				if(rule.hasRule(symbol) || rule.hasRule("*")){
-					m_log.writeLn("Non-deterministic rule detected on line " + m_current_line);
-					m_log.writeLn("Rule: " + initial_state + " " + symbol + " " + final_state + " " + action);
-					m_log.writeLn("Conflicts with previously added Rule: " + initial_state + " " + 
+					logs_.WriteLn("Non-deterministic rule detected on line " + m_current_line);
+					logs_.WriteLn("Rule: " + initial_state + " " + symbol + " " + final_state + " " + action);
+					logs_.WriteLn("Conflicts with previously added Rule: " + initial_state + " " + 
 					symbol + " " + rule.m_next_states.get(symbol) + " " + rule.m_actions.get(symbol));
 					return false;					
 				}
@@ -106,8 +106,8 @@ public class Machine extends Module {
 	@Override
 	public boolean execute(Tape t){
 		Module.test_steps = 1;
-		m_log.writeLn("Initial state: " + m_initial_state);
-		m_log.writeLn("Tape initial configuration: " + t.toString());
+		logs_.WriteLn("Initial state: " + m_initial_state);
+		logs_.WriteLn("Tape initial configuration: " + t.toString());
 		while(executeStep(t)){
 			printStep(t);	
 			Module.test_steps++;	
@@ -119,7 +119,7 @@ public class Machine extends Module {
 	@Override
 	public boolean executeStep(Tape t) {	
 		if(m_steps == m_max_steps){
-			m_log.writeLn("Maximum number of steps reached. Aborting execution.");
+			logs_.WriteLn("Maximum number of steps reached. Aborting execution.");
 			return false;
 		}		
 		if(m_rules.containsKey(m_current_state)){
@@ -141,13 +141,13 @@ public class Machine extends Module {
 			String step_info = m_current_state;
 			String step_tape = t.toString();
 			String formatted_string = String.format(format_string,step_count,step_info,step_tape);
-			m_log.writeLn(formatted_string);			
+			logs_.WriteLn(formatted_string);			
 	}	
 	
 	@Override
 	public void printSummary(Tape t) {
-		m_log.writeLn("Finished executing in " + m_steps + " steps.");
-		m_log.writeLn("Tape final configuration is: " + t.toString());
+		logs_.WriteLn("Finished executing in " + m_steps + " steps.");
+		logs_.WriteLn("Tape final configuration is: " + t.toString());
 	}
 
 	@Override
