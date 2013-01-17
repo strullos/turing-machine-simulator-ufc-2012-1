@@ -37,6 +37,6 @@ public class LineEditComponent extends JPanel {
 	
 	public String GetText()
 	{
-		return m_lineEdit_textField.getText();
+		return  m_lineEdit_textField.getText();
 	}
 }

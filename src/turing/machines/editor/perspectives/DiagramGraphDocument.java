@@ -1,6 +1,8 @@
 package turing.machines.editor.perspectives;
 
 import graph.Graph;
+import graph.GraphNode;
+
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,19 +11,22 @@ import java.util.HashMap;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import ui.utils.ConsoleComponent;
 import ui.utils.GraphControlComponent;
 import ui.utils.ItemListComponent;
+import ui.utils.LineEditComponent;
 
 public class DiagramGraphDocument extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private ItemListComponent m_modules_list;	
 	private HashMap<String, String> m_modules_path;
-//	private JTabbedPane m_console_and_modules_tabbedPane;	
+	private JTabbedPane m_console_and_modules_tabbedPane;	
 	private ConsoleComponent m_console;	
-//	private LineEditComponent m_tape_input;
+	private LineEditComponent m_tape_input;
 	private GraphControlComponent m_graph_controls;
 	
 	Graph m_graph;
@@ -30,28 +35,33 @@ public class DiagramGraphDocument extends JPanel {
 		setLayout(new BorderLayout(0, 0));
 		m_graph = new Graph();
 		m_modules_path = new HashMap<String, String>();
-//		m_tape_input = new LineEditComponent("Tape:");
+		m_tape_input = new LineEditComponent("Tape:");
 		m_console = new ConsoleComponent();
-//		m_modules_list = new ItemListComponent("Modules:", new NewModuleListener() , new AddModuleListener(), new RemoveModuleListener(), new ModuleSelectionChangedListener());
-//		
-//	
-//		add(m_tape_input, BorderLayout.NORTH);		
-//		
-//		JSplitPane diagram_editor_splitPane = new JSplitPane();
-//		diagram_editor_splitPane.setOneTouchExpandable(true);
-//		add(diagram_editor_splitPane, BorderLayout.CENTER);
-//		diagram_editor_splitPane.setDividerLocation(750);		
-//		
-//		m_console_and_modules_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-//		diagram_editor_splitPane.setRightComponent(m_console_and_modules_tabbedPane);		
-//		diagram_editor_splitPane.setLeftComponent(m_graph.GetGraphComponent());
-//
-//		m_graph_controls = new GraphControlComponent(m_graph);
-//		m_console_and_modules_tabbedPane.addTab("Outline",null, m_graph_controls, null);
-//		m_console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
-//		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);	
-//		
-//		m_graph.AddNode(new GraphNode("EM BREVE!", "empty", 100, 100));		
+		m_modules_list = new ItemListComponent("Modules:", 
+				new NewModuleListener() , 
+				new AddModuleListener(), 
+				new RemoveModuleListener(), 
+				new ModuleSelectionChangedListener(), 
+				null, 
+				null);
+		
+	
+		add(m_tape_input, BorderLayout.NORTH);		
+		
+		JSplitPane diagram_editor_splitPane = new JSplitPane();
+		diagram_editor_splitPane.setOneTouchExpandable(true);
+		add(diagram_editor_splitPane, BorderLayout.CENTER);
+		diagram_editor_splitPane.setDividerLocation(750);		
+		
+		m_console_and_modules_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		diagram_editor_splitPane.setRightComponent(m_console_and_modules_tabbedPane);		
+		diagram_editor_splitPane.setLeftComponent(m_graph.GetGraphComponent());
+
+		m_graph_controls = new GraphControlComponent(m_graph);
+		m_console_and_modules_tabbedPane.addTab("Outline",null, m_graph_controls, null);
+		m_console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
+		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);	
+		
 	}
 	
 	public void AddRequiredModule(String file_name, String file_path)

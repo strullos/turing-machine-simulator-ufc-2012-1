@@ -55,7 +55,6 @@ public class GraphControlComponent extends JPanel {
 		JButton remove_node_button = new JButton("Remove Node");
 		controls_panel.add(remove_node_button);
 		remove_node_button.addActionListener(new RemoveNodeListener());
-		//controls_splitPane.setDividerLocation(400);
 		
 		m_add_node_button.addActionListener(new AddNodeListener());
 		m_add_node_button.setEnabled(false);
@@ -70,27 +69,33 @@ public class GraphControlComponent extends JPanel {
 	
 	class AddNodeListener implements ActionListener
 	{
+
 		@Override
-		public void actionPerformed(ActionEvent e) {		
-			Object[] modules = new Object[m_modules_list.getModel().getSize()];
-			for(int i = 0; i < m_modules_list.getModel().getSize(); i++)
-			{
-				modules[i] = (Object)m_modules_list.getModel().getElementAt(i);
-			}
-			String selected_module = (String) JOptionPane.showInputDialog(null,"Select the node's module:",
-					"Module Selection", JOptionPane.PLAIN_MESSAGE,null,modules, modules[0]);
-			if(selected_module != null && selected_module.length() > 0)
-			{
-				String node_name = "New Node";
-				int i = 1;
-				while(m_graph.ContainsNode(node_name)){
-					node_name += i;
-					i++;
-				}
-				GraphNode node = new GraphNode(node_name, selected_module, 0,0);
-				GraphControlComponent.this.m_graph.AddNode(node);			
-			}
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			
 		}
+//		@Override
+//		public void actionPerformed(ActionEvent e) {		
+//			Object[] modules = new Object[m_modules_list.getModel().getSize()];
+//			for(int i = 0; i < m_modules_list.getModel().getSize(); i++)
+//			{
+//				modules[i] = (Object)m_modules_list.getModel().getElementAt(i);
+//			}
+//			String selected_module = (String) JOptionPane.showInputDialog(null,"Select the node's module:",
+//					"Module Selection", JOptionPane.PLAIN_MESSAGE,null,modules, modules[0]);
+//			if(selected_module != null && selected_module.length() > 0)
+//			{
+//				String node_name = "New Node";
+//				int i = 1;
+//				while(m_graph.ContainsNode(node_name)){
+//					node_name += i;
+//					i++;
+//				}
+//				GraphNode node = new GraphNode(node_name, selected_module, 0,0);
+//				GraphControlComponent.this.m_graph.AddNode(node);			
+//			}
+//		}
 		
 	};
 	
@@ -99,8 +104,14 @@ public class GraphControlComponent extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			m_graph.RemoveSelectedNode();			
+			// TODO Auto-generated method stub
+			
 		}
+
+//		@Override
+//		public void actionPerformed(ActionEvent e) {
+//			m_graph.RemoveSelectedNode();			
+//		}
 		
 	}
 }
