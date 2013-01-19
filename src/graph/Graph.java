@@ -43,46 +43,6 @@ public class Graph {
 	private String m_node_style;
 	private mxCell m_starting_node;
 
-	class TestStyle implements mxEdgeStyle.mxEdgeStyleFunction {
-		@Override
-		public void apply(mxCellState state, mxCellState source, mxCellState target, List<mxPoint> points, List<mxPoint> result) {
-			if(target == null && source != null){				
-				double x_origin = source.getCenterX();
-				double y_origin = source.getCenterY();
-				double x = state.getAbsolutePoints().get(state.getAbsolutePointCount() - 1).getX();
-				double y = state.getAbsolutePoints().get(state.getAbsolutePointCount() - 1).getY();
-				double x_dir = x - x_origin;
-				double y_dir = y - y_origin;
-				double length = Math.sqrt((x_dir*x_dir) + (y_dir*y_dir));
-				double x_dir_n = x_dir / length;
-				double y_dir_n = y_dir / length;
-				System.out.print("Edge length: " + state.getLength());
-				double x_point = x_origin + ((state.getLength() / 2) * x_dir_n);
-				double y_point = y_origin + ((state.getLength() / 2) * y_dir_n);
-				double x_dir_np = -y_dir_n;
-				double y_dir_np = x_dir_n;
-				result.add(new mxPoint((x_point + (50 * x_dir_np)), (y_point + (50 * y_dir_np))));		
-			}
-			System.out.println("Routing center: " + m_graph.getView().getRoutingCenterX(source));
-			System.out.println("center: " + source.getCenterX());
-			System.out.println("Result: " + result.size());
-			System.out.println("Point count: " + state.getAbsolutePointCount());
-			System.out.println("Target: " + target);
-			System.out.println("Result: " + result);
-			System.out.println("Points: " + points);
-		}
-
-	}
-
-	class Test2 extends mxConnectorShape{
-		@Override
-		public void paintShape(mxGraphics2DCanvas canvas,
-				mxCellState state){
-			canvas.paintRectangle(new Rectangle(100,200), new Color(50,50,50), new Color(100,100,100));
-		}
-	}
-
-
 	public Graph(){		
 		m_graph = new mxGraph();		
 		m_graph_component = new mxGraphComponent(m_graph) {
@@ -119,12 +79,7 @@ public class Graph {
 		edgeStyle.put(mxConstants.STYLE_LABEL_POSITION, mxConstants.ALIGN_MIDDLE);
 		edgeStyle.put(mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, "#ffffff");
 		edgeStyle.put(mxConstants.STYLE_LABEL_BORDERCOLOR, "#000000");
-		//edgeStyle.put( mxConstants.STYLE_EDGE, new TestStyle() );
 		stylesheet.setDefaultEdgeStyle(edgeStyle);	
-
-
-
-
 
 		m_graph.getModel().endUpdate();
 		m_graph.setCellsResizable(true);
@@ -168,39 +123,14 @@ public class Graph {
 							points.add(0, new mxPoint((x_point + (50 * x_dir_np)), (y_point + (50 * y_dir_np))));
 							g.setPoints(points);						
 							m_graph_component.refresh();
-//							System.out.println("X Origin: " + x_origin + " " + "Y Origin: " + y_origin);
-//							System.out.println("X: " + x + " " + "Y: " + y);
 						}
 					}						
 				});
 				
 		
-//				m_graph_component.addListener(mxEvent.LABEL_CHANGED,new mxEventSource.mxIEventListener() {
-//		
-//					@Override
-//					public void invoke(Object arg0, mxEventObject arg1) {
-//						System.out.println("RENAMED");
-//		
-//					}
-//				});
 
 		m_graph_component.addKeyListener(new GraphKeyListener());
-		m_graph_component.getGraphControl().addMouseListener(new GraphMouseListener());
 		m_graph_component.addMouseWheelListener(new MouseWheelTracker());	
-		m_graph_component.getGraphControl().addMouseMotionListener(new MouseMotionListener() {
-
-			@Override
-			public void mouseMoved(MouseEvent e) {
-				//System.out.println("Mouse x:" +  e.getX() + " Mouse y:" + e.getY());
-
-			}
-
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-		});
 	}	
 
 
@@ -311,39 +241,4 @@ public class Graph {
 
 		}
 	}
-
-	class GraphMouseListener implements MouseListener {
-
-		@Override
-		public void mouseClicked(MouseEvent e) {
-			System.out.println("Mouse x: " + e.getX() * m_graph.getView().getScale());
-			System.out.println("Mouse y: " + e.getY() * m_graph.getView().getScale());
-		}
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
-
-		}
-
-	}
-
 }
