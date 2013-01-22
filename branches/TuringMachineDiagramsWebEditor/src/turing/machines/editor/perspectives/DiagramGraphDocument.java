@@ -1,7 +1,6 @@
 package turing.machines.editor.perspectives;
 
 import graph.Graph;
-import graph.GraphNode;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;

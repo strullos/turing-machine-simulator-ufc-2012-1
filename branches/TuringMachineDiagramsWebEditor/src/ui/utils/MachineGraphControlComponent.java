@@ -1,22 +1,18 @@
 package ui.utils;
 
 import graph.Graph;
-import graph.GraphNode;
-
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.border.EmptyBorder;
+
+import com.mxgraph.util.mxEvent;
+import com.mxgraph.util.mxEventObject;
+import com.mxgraph.util.mxEventSource.mxIEventListener;
 
 public class MachineGraphControlComponent extends JPanel {
 	/**
@@ -25,6 +21,7 @@ public class MachineGraphControlComponent extends JPanel {
 	private static final long serialVersionUID = 1L;
 	Graph m_graph;
 	private JButton m_add_node_button;
+	private JButton m_remove_node_button;
 	
 	public MachineGraphControlComponent(Graph graph){
 		m_graph = graph;
@@ -48,12 +45,15 @@ public class MachineGraphControlComponent extends JPanel {
 		m_add_node_button = new JButton("Add Node");
 		controls_panel.add(m_add_node_button);
 
-		JButton remove_node_button = new JButton("Remove Node");
-		controls_panel.add(remove_node_button);
-		remove_node_button.addActionListener(new RemoveNodeListener());
+		m_remove_node_button = new JButton("Remove Node");
+		controls_panel.add(m_remove_node_button);
+		m_remove_node_button.addActionListener(new RemoveNodeListener());
+		m_remove_node_button.setEnabled(false);
 
 		m_add_node_button.addActionListener(new AddNodeListener());
 		m_add_node_button.setEnabled(true);
+		
+		m_graph.GetGraphComponent().getGraph().getSelectionModel().addListener(mxEvent.CHANGE, new SelectionChangedListener());			
 	}
 		
 	
@@ -74,4 +74,17 @@ public class MachineGraphControlComponent extends JPanel {
 		}
 		
 	};
+	
+	class SelectionChangedListener implements mxIEventListener{
+
+		@Override
+		public void invoke(Object arg0, mxEventObject arg1) {
+			if(m_graph.GetGraphComponent().getGraph().getSelectionCells().length == 0){
+				m_remove_node_button.setEnabled(false);
+			}else{
+				m_remove_node_button.setEnabled(true);
+			}			
+		}
+		
+	}
 }

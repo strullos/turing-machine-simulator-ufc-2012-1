@@ -18,7 +18,6 @@ public class StringFileReader {
 	public String ReadFile(String path)
 	{
 		try {
-			@SuppressWarnings("resource")
 			BufferedReader reader = new BufferedReader(new FileReader(path));
 			StringBuilder string_builder = new StringBuilder();
 			String line;
