@@ -43,12 +43,12 @@ public class MachineTextEditor extends EditorPerspective {
 		m_machines_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		add(m_machines_tabbedPane, BorderLayout.CENTER);	
 		
-		NewMachineDocument();
+		New();
 		m_machines_tabbedPane.addChangeListener(new TabChangedListener());
 	}
 	
-	public void NewMachineDocument() 
-	{
+	@Override
+	public void New() {
 		MachineTextDocument machine_text_document = new MachineTextDocument();
 		m_current_machine_document = machine_text_document;
 		if(m_machines_tabbedPane.getComponentCount() > 1){
@@ -58,11 +58,6 @@ public class MachineTextEditor extends EditorPerspective {
 		}		
 		m_machines_tabbedPane.setSelectedComponent(machine_text_document);
 		m_machines_tabbedPane.setTabComponentAt(m_machines_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_machines_tabbedPane));
-	}
-	
-	@Override
-	public void New() {
-		NewMachineDocument();		
 	}
 
 	@Override
@@ -230,7 +225,7 @@ public class MachineTextEditor extends EditorPerspective {
 				out.write(machine_content);
 				out.close();
 				TuringMachinesEditor.SetStatusMessage("Machine file " + machine_path + " saved succesfully.\n");
-				NewMachineDocument();
+				New();
 				if(!machine_name.isEmpty()){ //If machine name is empty the file was already saved so we do not need to save it again
 					m_machines_tabbedPane.setTitleAt(m_machines_tabbedPane.getSelectedIndex(), machine_name);
 				}		

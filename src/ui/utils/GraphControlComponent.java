@@ -1,7 +1,6 @@
 package ui.utils;
 
 import graph.Graph;
-import graph.GraphNode;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -11,7 +10,6 @@ import java.awt.event.ActionListener;
 import javax.swing.border.EmptyBorder;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
 import javax.swing.JButton;
 

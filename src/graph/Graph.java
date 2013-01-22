@@ -1,14 +1,14 @@
 package graph;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,18 +16,12 @@ import java.util.List;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
-import com.mxgraph.util.mxEventSource;
+import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.util.mxPoint;
-import com.mxgraph.view.mxCellState;
-import com.mxgraph.view.mxEdgeStyle;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
-import com.mxgraph.canvas.mxGraphics2DCanvas;
-import com.mxgraph.layout.mxEdgeLabelLayout;
-import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGeometry;
-import com.mxgraph.shape.mxConnectorShape;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.swing.mxGraphOutline;
 import com.mxgraph.swing.handler.mxRubberband;
@@ -37,19 +31,22 @@ public class Graph {
 	protected mxGraph m_graph;
 	private mxGraphComponent m_graph_component;
 	private mxGraphOutline m_graph_outline;
+	@SuppressWarnings("unused")
 	private mxRubberband m_graph_rubberband;
 	private static int m_node_width = 100;
 	private static int m_node_height = 100;
 	private String m_node_style;
 	private mxCell m_starting_node;
+	private boolean m_is_panning_allowed;
 
 	public Graph(){		
+		m_is_panning_allowed = true;
 		m_graph = new mxGraph();		
 		m_graph_component = new mxGraphComponent(m_graph) {
 			private static final long serialVersionUID = 1L;
 			@Override
 			public boolean isPanningEvent(MouseEvent event){
-				if(event.getButton() == MouseEvent.BUTTON2){ //Middle Mouse Button
+				if(event.getButton() == MouseEvent.BUTTON2 && m_is_panning_allowed){ //Middle Mouse Button
 					return true;
 				}
 				return false;
@@ -97,44 +94,13 @@ public class Graph {
 		m_graph_component.getViewport().setBackground(Color.WHITE);
 
 		m_graph_outline = new mxGraphOutline(this.m_graph_component);
-
-				m_graph_component.getConnectionHandler().addListener(mxEvent.CONNECT, new mxEventSource.mxIEventListener() {
-		
-					@Override
-					public void invoke(Object arg0, mxEventObject arg1) {
-						System.out.println("ADDED");					
-						mxCell edge = (mxCell) arg1.getProperty("cell");
-						if(edge.getTarget() != edge.getSource()){
-							mxGeometry g = edge.getGeometry();
-							List<mxPoint> points = new ArrayList<mxPoint>();	
-							double x_origin = edge.getSource().getGeometry().getCenterX();
-							double y_origin = edge.getSource().getGeometry().getCenterY();
-							double x = edge.getTarget().getGeometry().getCenterX();
-							double y =  edge.getTarget().getGeometry().getCenterY();
-							double x_dir = x - x_origin;
-							double y_dir = y - y_origin;
-							double length = Math.sqrt((x_dir*x_dir) + (y_dir*y_dir));
-							double x_dir_n = x_dir / length;
-							double y_dir_n = y_dir / length;
-							double x_point = x_origin + ((length / 2) * x_dir_n);
-							double y_point = y_origin + ((length / 2) * y_dir_n);
-							double x_dir_np = -y_dir_n;
-							double y_dir_np = x_dir_n;
-							points.add(0, new mxPoint((x_point + (50 * x_dir_np)), (y_point + (50 * y_dir_np))));
-							g.setPoints(points);						
-							m_graph_component.refresh();
-						}
-					}						
-				});
-				
-		
-
+		m_graph_component.getConnectionHandler().addListener(mxEvent.CONNECT, new AddCellListener());
 		m_graph_component.addKeyListener(new GraphKeyListener());
 		m_graph_component.addMouseWheelListener(new MouseWheelTracker());	
 	}	
 
 
-	public void AddNode(String label)
+	public mxCell AddNode(String label)
 	{
 		Object parent = m_graph.getDefaultParent();
 		m_graph.getModel().beginUpdate();
@@ -145,7 +111,23 @@ public class Graph {
 			node.setStyle("ROUNDED;fillColor=#beffaf");
 			m_graph_component.refresh();
 		}
+		return node;
 	}	
+	
+	public mxCell AddNode(String label, float x, float y, boolean is_starting_node)
+	{
+		Object parent = m_graph.getDefaultParent();
+		m_graph.getModel().beginUpdate();
+		mxCell node = (mxCell)m_graph.insertVertex(parent, null, label ,x, y, m_node_width, m_node_height, m_node_style);
+		m_graph.getModel().endUpdate();
+		if(is_starting_node){
+			m_starting_node = node;
+			node.setStyle("ROUNDED;fillColor=#beffaf");
+			m_graph_component.refresh();
+		}
+		return node;
+	}	
+
 
 	public void RemoveSelectedCell()
 	{
@@ -195,6 +177,85 @@ public class Graph {
 		}		
 		return machine_text;
 	}
+	
+	//#v label x y width height true
+	//#e label source target x y ...
+
+
+	public String ExportGraph(){
+		String graph_text = "";
+		String vertices = "";
+		String edges = "";
+		Object[] cells = m_graph.getChildCells(m_graph.getDefaultParent(),true,false);
+		for(int i = 0; i < cells.length; i++){
+			mxCell node = (mxCell)cells[i];
+			if(!node.isVertex()){
+				continue;
+			}
+			vertices += "v " + m_graph.getLabel(node) + " " + node.getGeometry().getX() + " " + node.getGeometry().getY();
+			if(node == m_starting_node){
+				vertices += " true";
+			}else{
+				vertices += " false";
+			}
+			vertices += "\n";
+			for(int j = 0; j < node.getEdgeCount(); j++){
+				mxCell edge = (mxCell)node.getEdgeAt(j);	
+				if(edge.getSource() != node){
+					continue;
+				}
+				String initial_state = m_graph.getLabel(edge.getSource());
+				String final_state = m_graph.getLabel(edge.getTarget());
+				String edge_label =  m_graph.getLabel(edge);				
+			
+				edges += "e " + edge_label + " " + initial_state + " " + 
+				final_state + " " + edge.getGeometry().getPoints().get(0).getX() + " " + 
+						edge.getGeometry().getPoints().get(0).getY() + "\n"; 
+			}
+		}		
+		graph_text += vertices;
+		graph_text += edges;
+		System.out.println(graph_text);
+		return graph_text;
+	}
+	
+	public void ImportGraph(String graph_text) throws IOException
+	{
+		BufferedReader r = new BufferedReader(new StringReader(graph_text));
+		String line;
+		while((line = r.readLine()) != null){
+			if(line.startsWith("v")){
+				line = line.substring(line.indexOf(" ") + 1);
+				String node_label = line.substring(0, line.indexOf(" "));
+				line = line.substring(line.indexOf(" ") + 1);				
+				String node_x = line.substring(0, line.indexOf(" "));
+				line = line.substring(line.indexOf(" ") + 1);				
+				String node_y = line.substring(0, line.indexOf(" "));
+				String starting_node = line.substring(line.indexOf(" ") + 1);				
+				boolean is_starting_node = false;
+				if(starting_node.equals("true")){
+					is_starting_node = true;
+				}
+				if(starting_node.equals("false")){
+					is_starting_node = false;
+				}
+				this.AddNode(node_label,Float.parseFloat(node_x),Float.parseFloat(node_y), is_starting_node);
+			}
+			if(line.startsWith("e")){
+				line = line.substring(line.indexOf(" "));
+				String edge_label = line.substring(0, line.indexOf(" "));
+				line = line.substring(line.indexOf(" "));				
+				String edge_source = line.substring(0, line.indexOf(" "));
+				line = line.substring(line.indexOf(" "));				
+				String edge_target = line.substring(0, line.indexOf(" "));
+				line = line.substring(line.indexOf(" "));				
+				String edge_x = line.substring(0, line.indexOf(" "));
+				line = line.substring(line.indexOf(" "));				
+				String edge_y = line.substring(0, line.indexOf(" "));
+				
+			}
+		}
+	}
 
 	protected void mouseWheelMoved(MouseWheelEvent e)
 	{
@@ -240,5 +301,34 @@ public class Graph {
 			// TODO Auto-generated method stub
 
 		}
+	}
+
+	class AddCellListener implements mxIEventListener{
+
+		@Override
+		public void invoke(Object arg0, mxEventObject arg1) {
+			mxCell edge = (mxCell) arg1.getProperty("cell");
+			if(edge.getTarget() != edge.getSource()){
+				mxGeometry g = edge.getGeometry();
+				List<mxPoint> points = new ArrayList<mxPoint>();	
+				double x_origin = edge.getSource().getGeometry().getCenterX();
+				double y_origin = edge.getSource().getGeometry().getCenterY();
+				double x = edge.getTarget().getGeometry().getCenterX();
+				double y =  edge.getTarget().getGeometry().getCenterY();
+				double x_dir = x - x_origin;
+				double y_dir = y - y_origin;
+				double length = Math.sqrt((x_dir*x_dir) + (y_dir*y_dir));
+				double x_dir_n = x_dir / length;
+				double y_dir_n = y_dir / length;
+				double x_point = x_origin + ((length / 2) * x_dir_n);
+				double y_point = y_origin + ((length / 2) * y_dir_n);
+				double x_dir_np = -y_dir_n;
+				double y_dir_np = x_dir_n;
+				points.add(0, new mxPoint((x_point + (50 * x_dir_np)), (y_point + (50 * y_dir_np))));
+				g.setPoints(points);						
+				m_graph_component.refresh();
+			}
+		}
+
 	}
 }
