@@ -53,7 +53,7 @@ public class Machine extends Module {
 	public boolean processHeader(String line) {
 		StringTokenizer tokens = new StringTokenizer(line);
 		int tokens_count = tokens.countTokens();
-		String first_token = tokens.nextToken();
+		String first_token = tokens.nextToken();		
 		if((tokens_count == 2) && (!first_token.equals("var"))){
 			m_initial_state = first_token;	
 			m_current_state = m_initial_state;

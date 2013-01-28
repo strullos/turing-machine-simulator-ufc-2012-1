@@ -16,6 +16,11 @@ public class Main {
 			System.out.println("Usage: -machine.mt (or diagram.dt) -tape");
 		}else{		
 			Module m = ModuleFactory.loadModule(args[0]);
+			if(m == null){
+				System.out.println("Failed to load file.");
+				System.out.println(ModuleFactory.error_);
+				return;
+			}
 			m.logs_.AddLog(new SystemOutputLog());
 			Tape t = new Tape(args[1]);
 			m.execute(t);

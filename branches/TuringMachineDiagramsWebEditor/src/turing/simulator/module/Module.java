@@ -40,6 +40,9 @@ public abstract class Module {
 	{
 		StringFileReader file_reader = new StringFileReader();
 		String content = file_reader.ReadFile(filename);
+		if(content ==  "Unable to read file"){
+			return false;
+		}
 		logs_.WriteLn("Loading file: " + filename);
 		BufferedReader reader = new BufferedReader(new StringReader(content));
 		try {
