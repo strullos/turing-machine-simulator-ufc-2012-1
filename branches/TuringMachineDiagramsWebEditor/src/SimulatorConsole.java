@@ -12,7 +12,7 @@ public class SimulatorConsole {
 	 * @throws FileNotFoundException 
 	 */
 	public static void main(String[] args) throws FileNotFoundException {		
-		System.out.println("Turing Machines Editor - Web Applet - Comp UFC 2012.1");
+		System.out.println("Turing Machines Editor - Comp UFC 2012.1");
 		if(args.length != 2){
 			System.out.println("Usage: -machine.mt (or diagram.dt) -tape");
 		}else{		
