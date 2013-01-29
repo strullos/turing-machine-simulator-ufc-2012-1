@@ -15,7 +15,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import ui_utils.ConsoleComponent;
-import ui_utils.GraphControlComponent;
+import ui_utils.DiagramGraphControlComponent;
 import ui_utils.ItemListComponent;
 import ui_utils.LineEditComponent;
 
@@ -26,7 +26,7 @@ public class DiagramGraphDocument extends JPanel {
 	private JTabbedPane m_console_and_modules_tabbedPane;	
 	private ConsoleComponent m_console;	
 	private LineEditComponent m_tape_input;
-	private GraphControlComponent m_graph_controls;
+	private DiagramGraphControlComponent m_graph_controls;
 	
 	Graph m_graph;
 	public DiagramGraphDocument()
@@ -56,7 +56,7 @@ public class DiagramGraphDocument extends JPanel {
 		diagram_editor_splitPane.setRightComponent(m_console_and_modules_tabbedPane);		
 		diagram_editor_splitPane.setLeftComponent(m_graph.GetGraphComponent());
 
-		m_graph_controls = new GraphControlComponent(m_graph);
+		m_graph_controls = new DiagramGraphControlComponent(m_graph);
 		m_console_and_modules_tabbedPane.addTab("Outline",null, m_graph_controls, null);
 		m_console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
 		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);	
@@ -72,7 +72,7 @@ public class DiagramGraphDocument extends JPanel {
 		m_modules_path.put(file_name, file_path);
 		m_modules_list.AddItem(file_name);		
 		m_console.AppendText("Module " + file_name + " added successfully.\n");		
-		m_graph_controls.AddModuleToList(file_name);
+		//m_graph_controls.AddModuleToList(file_name);
 	}	
 	
 	class NewModuleListener implements ActionListener
