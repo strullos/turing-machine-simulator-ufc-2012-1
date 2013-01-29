@@ -113,7 +113,7 @@ public class Graph {
 		}
 		return node;
 	}	
-	
+
 	public mxCell AddNode(String label, float x, float y, boolean is_starting_node)
 	{
 		Object parent = m_graph.getDefaultParent();
@@ -127,6 +127,18 @@ public class Graph {
 		}
 		return node;
 	}	
+
+	public mxCell GetNode(String label)
+	{
+		Object[] cells = m_graph.getChildCells(m_graph.getDefaultParent(),true,false);
+		for(int i = 0; i < cells.length; i++){
+			mxCell node = (mxCell)cells[i];
+			if(m_graph.getLabel(node).equals(label)){
+				return node;
+			}
+		}
+		return null;
+	}
 
 
 	public void RemoveSelectedCell()
@@ -177,11 +189,9 @@ public class Graph {
 		}		
 		return machine_text;
 	}
-	
+
 	//#v label x y width height true
 	//#e label source target x y ...
-
-
 	public String ExportGraph(){
 		String graph_text = "";
 		String vertices = "";
@@ -207,9 +217,9 @@ public class Graph {
 				String initial_state = m_graph.getLabel(edge.getSource());
 				String final_state = m_graph.getLabel(edge.getTarget());
 				String edge_label =  m_graph.getLabel(edge);				
-			
+
 				edges += "e " + edge_label + " " + initial_state + " " + 
-				final_state + " " + edge.getGeometry().getPoints().get(0).getX() + " " + 
+						final_state + " " + edge.getGeometry().getPoints().get(0).getX() + " " + 
 						edge.getGeometry().getPoints().get(0).getY() + "\n"; 
 			}
 		}		
@@ -218,7 +228,7 @@ public class Graph {
 		System.out.println(graph_text);
 		return graph_text;
 	}
-	
+
 	public void ImportGraph(String graph_text) throws IOException
 	{
 		BufferedReader r = new BufferedReader(new StringReader(graph_text));
@@ -242,18 +252,40 @@ public class Graph {
 				this.AddNode(node_label,Float.parseFloat(node_x),Float.parseFloat(node_y), is_starting_node);
 			}
 			if(line.startsWith("e")){
-				line = line.substring(line.indexOf(" "));
+				line = line.substring(line.indexOf(" ") + 1);
 				String edge_label = line.substring(0, line.indexOf(" "));
-				line = line.substring(line.indexOf(" "));				
+				line = line.substring(line.indexOf(" ") + 1);				
 				String edge_source = line.substring(0, line.indexOf(" "));
-				line = line.substring(line.indexOf(" "));				
+				line = line.substring(line.indexOf(" ") + 1);				
 				String edge_target = line.substring(0, line.indexOf(" "));
-				line = line.substring(line.indexOf(" "));				
+				line = line.substring(line.indexOf(" ") + 1);				
 				String edge_x = line.substring(0, line.indexOf(" "));
-				line = line.substring(line.indexOf(" "));				
-				String edge_y = line.substring(0, line.indexOf(" "));
-				
+				String edge_y = line.substring(line.indexOf(" ") + 1);				
+				if(GetNode(edge_source) != null && GetNode(edge_target) != null){
+					m_graph.getModel().beginUpdate();				
+					mxCell edge = (mxCell)m_graph.insertEdge(m_graph.getDefaultParent(), null, edge_label, GetNode(edge_source), GetNode(edge_target));
+					mxGeometry g = edge.getGeometry();
+					List<mxPoint> points = new ArrayList<mxPoint>();	
+					points.add(new mxPoint(Float.parseFloat(edge_x),Float.parseFloat(edge_y)));
+					g.setPoints(points);
+					m_graph.getModel().endUpdate();
+				}
+
 			}
+		}
+	}
+	
+	public void SetStartingNode()
+	{
+		mxCell selected_node = (mxCell)m_graph_component.getGraph().getSelectionCell();
+		if(selected_node != null && selected_node.isVertex()){
+			m_graph.getModel().beginUpdate();
+			m_starting_node.setStyle("ROUNDED;fillColor=#ffffff");
+			m_starting_node = selected_node;			
+			m_starting_node.setStyle("ROUNDED;fillColor=#beffaf");
+			m_graph_component.refresh();
+			m_graph.getModel().endUpdate();
+			
 		}
 	}
 
@@ -304,7 +336,6 @@ public class Graph {
 	}
 
 	class AddCellListener implements mxIEventListener{
-
 		@Override
 		public void invoke(Object arg0, mxEventObject arg1) {
 			mxCell edge = (mxCell) arg1.getProperty("cell");

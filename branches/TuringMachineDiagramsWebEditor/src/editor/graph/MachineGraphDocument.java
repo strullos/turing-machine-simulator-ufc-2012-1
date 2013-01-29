@@ -18,6 +18,7 @@ public class MachineGraphDocument extends JPanel {
 	private ConsoleComponent m_console;	
 	private LineEditComponent m_tape_input;
 	private MachineGraphControlComponent m_graph_controls;
+	private String m_machine_graph_document_path;
 	
 	Graph m_graph;
 	public MachineGraphDocument() {
@@ -39,7 +40,8 @@ public class MachineGraphDocument extends JPanel {
 
 		m_graph_controls = new MachineGraphControlComponent(m_graph);
 		m_console_and_controls_tabbedPane.addTab("Graph Controls",null, m_graph_controls, null);
-		m_console_and_controls_tabbedPane.addTab("Console", null, m_console, null);			
+		m_console_and_controls_tabbedPane.addTab("Console", null, m_console, null);	
+		m_machine_graph_document_path = "";
 	}
 	
 	public void SetConsoleText(String console_text)
@@ -70,6 +72,16 @@ public class MachineGraphDocument extends JPanel {
 	public ConsoleComponent console()
 	{
 		return m_console;
+	}
+	
+	public String GetMachineGraphDocumentPath()
+	{
+		return m_machine_graph_document_path;
+	}
+	
+	public void SetMachineDocumentPath(String path)
+	{
+		m_machine_graph_document_path = path;
 	}
 
 }
