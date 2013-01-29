@@ -1,0 +1,49 @@
+The .mt files represent a Turing Machine.
+
+Turing Machines have the following syntax:
+
+q0 1000
+
+q0 # q1 >
+
+
+In the first line of the machine (the header), 
+we declare which state is the initial state. The number besides it represents
+the maximum number of steps that machine is allowed to run.
+
+Following the header, we have the rules declaration.
+A rule consists of a initial state, a symbol, a final state and an action.
+Rules have the following structure:
+
+"initial state" "symbol" "final state" "action" 
+
+Basically, a rule specifies the behaviour of the machine according to the characters on the tape.
+A rule simple says that, if the machine is in "initial state" and reads the "symbol" character on the tape,
+it will execute "action" and go to "final state"
+
+
+The actions can be: 
+
+1. >  ---- Moves the reading head 1 position to the right
+2. <  ---- Moves the reading head 1 position to the left
+3. x  ---- In which 'x' represents any character. This action write the character 
+represented by 'x' in the tape, on the position pointed by the tape's head. The reading head
+is represented by a '_' character right before the symbol.
+
+The '*' character is a special character. It represents all symbols. If a rule
+has this character as its symbol, it means that it will execute the action
+for any character that is read on the tape.
+
+You can declare variables on machines files. These variables can be passed by diagrams
+to this machine file.
+
+To declare a variable use the following syntax, for example:
+
+q0 1000
+
+var x
+
+q0 * q1 x
+
+This sets 'x' as a variable. The rule represented in the end will
+write the value stored on x for any symbol read on the tape.
