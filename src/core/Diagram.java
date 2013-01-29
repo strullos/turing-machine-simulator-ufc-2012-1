@@ -49,6 +49,7 @@ public class Diagram extends Module {
 		String line;		
 		while( (line = reader.readLine()) != null ){
 			m_current_line++;
+			if(line.equals("\n") || line.equals("\r") || line.equals("\r\n") || line.isEmpty() || line.startsWith("//")) continue;
 			if(processHeader(line)) continue;
 			if(processRule(line)) continue;			
 			if( isEmptyLine(line) ) continue;

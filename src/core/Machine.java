@@ -33,7 +33,7 @@ public class Machine extends Module {
 		try {
 			while( (line = reader.readLine()) != null ){
 				m_current_line++;			
-				if(line.equals("\n") || line.equals("\r") || line.equals("\r\n") || line.isEmpty()) continue;
+				if(line.equals("\n") || line.equals("\r") || line.equals("\r\n") || line.isEmpty() || line.startsWith("//")) continue;
 				if(processHeader(line)) continue;
 				if(processVarDeclaration(line)) continue;
 				if(processRule(line)) continue;
