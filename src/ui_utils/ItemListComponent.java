@@ -119,6 +119,16 @@ public class ItemListComponent extends JPanel {
 		return item;
 	}
 	
+	public int GetItemsCount()
+	{
+		return m_items_list.getModel().getSize();
+	}
+	
+	public JList<String> GetItemsList() 
+	{
+		return m_items_list;
+	}
+	
 	//This method can be called in the SelectionChanged listener method
 	//to get the item that was previously selected
 	//The previous value is updated to the current selection in the end of the listener method
