@@ -104,7 +104,7 @@ public class MachineGraphEditor extends EditorPerspective {
 					m_machines_tabbedPane.addTab(fc.getSelectedFile().getName().toString(), null, new_machine_document, null);	
 					m_machines_tabbedPane.setSelectedComponent(new_machine_document);
 					m_machines_tabbedPane.setTabComponentAt(m_machines_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_machines_tabbedPane));
-					TuringMachinesEditor.SetStatusMessage("Machine file loaded successfully.\n");
+					TuringMachinesEditor.SetStatusMessage("Machine graph file loaded successfully.\n");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

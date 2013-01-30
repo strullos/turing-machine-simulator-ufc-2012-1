@@ -1,11 +1,15 @@
 package editor.graph;
 
+import editor.TuringMachinesEditor;
 import graph.Graph;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 
 import javax.swing.JFileChooser;
@@ -14,6 +18,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import ui_utils.ConfirmationFileChooser;
 import ui_utils.ConsoleComponent;
 import ui_utils.DiagramGraphControlComponent;
 import ui_utils.ItemListComponent;
@@ -27,6 +32,7 @@ public class DiagramGraphDocument extends JPanel {
 	private ConsoleComponent m_console;	
 	private LineEditComponent m_tape_input;
 	private DiagramGraphControlComponent m_graph_controls;
+	private String m_diagram_graph_document_path;
 
 	Graph m_graph;
 	public DiagramGraphDocument()
@@ -62,6 +68,7 @@ public class DiagramGraphDocument extends JPanel {
 		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);	
 		
 		m_graph_controls.SetAddNodeButtonEnabled(false);
+		m_diagram_graph_document_path = "";
 	}
 
 	public void AddRequiredModule(String file_name, String file_path)
@@ -73,8 +80,56 @@ public class DiagramGraphDocument extends JPanel {
 		m_modules_path.put(file_name, file_path);
 		m_modules_list.AddItem(file_name);		
 		m_console.AppendText("Module " + file_name + " added successfully.\n");		
-		//m_graph_controls.AddModuleToList(file_name);
+		m_graph_controls.UpdateModulesComboBox();
+	}
+
+	
+	public void SetConsoleText(String console_text)
+	{
+		m_console.SetText(console_text);
+	}
+	
+	public void AppendConsoleText(String text)
+	{
+		m_console.AppendText(text);
+	}
+	
+	public void ClearConsoleText()
+	{
+		m_console.SetText("");
+	}
+	
+	public String GetDiagramText()
+	{
+		return m_graph.GenerateTuringDiagram();
+	}
+	
+	public String GetTape()
+	{
+		return m_tape_input.GetText();
 	}	
+	
+	public ConsoleComponent console()
+	{
+		return m_console;
+	}
+	
+	public String GetDiagramGraphDocumentPath()
+	{
+		return m_diagram_graph_document_path;
+	}
+	
+	public void SetDiagramDocumentPath(String path)
+	{
+		m_diagram_graph_document_path = path;
+	}
+	
+	public HashMap<String,String> GetModulesPath()
+	{
+		return m_modules_path;
+	}
+	
+
 
 	class NewModuleListener implements ActionListener
 	{
@@ -110,6 +165,8 @@ public class DiagramGraphDocument extends JPanel {
 		}
 
 	}
+	
+	
 
 	class RemoveModuleListener implements ActionListener
 	{
