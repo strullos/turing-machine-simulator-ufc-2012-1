@@ -27,7 +27,7 @@ public class DiagramGraphDocument extends JPanel {
 	private ConsoleComponent m_console;	
 	private LineEditComponent m_tape_input;
 	private DiagramGraphControlComponent m_graph_controls;
-	
+
 	Graph m_graph;
 	public DiagramGraphDocument()
 	{
@@ -43,26 +43,27 @@ public class DiagramGraphDocument extends JPanel {
 				new ModuleSelectionChangedListener(), 
 				null, 
 				null);
-		
-	
+
+
 		add(m_tape_input, BorderLayout.NORTH);		
-		
+
 		JSplitPane diagram_editor_splitPane = new JSplitPane();
 		diagram_editor_splitPane.setOneTouchExpandable(true);
 		add(diagram_editor_splitPane, BorderLayout.CENTER);
 		diagram_editor_splitPane.setDividerLocation(750);		
-		
+
 		m_console_and_modules_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		diagram_editor_splitPane.setRightComponent(m_console_and_modules_tabbedPane);		
 		diagram_editor_splitPane.setLeftComponent(m_graph.GetGraphComponent());
 
-		m_graph_controls = new DiagramGraphControlComponent(m_graph);
+		m_graph_controls = new DiagramGraphControlComponent(m_graph, m_modules_list);
 		m_console_and_modules_tabbedPane.addTab("Outline",null, m_graph_controls, null);
 		m_console_and_modules_tabbedPane.addTab("Modules List", null, m_modules_list, null);
 		m_console_and_modules_tabbedPane.addTab("Console", null, m_console, null);	
 		
+		m_graph_controls.SetAddNodeButtonEnabled(false);
 	}
-	
+
 	public void AddRequiredModule(String file_name, String file_path)
 	{
 		if(m_modules_path.containsKey(file_name)){
@@ -74,18 +75,18 @@ public class DiagramGraphDocument extends JPanel {
 		m_console.AppendText("Module " + file_name + " added successfully.\n");		
 		//m_graph_controls.AddModuleToList(file_name);
 	}	
-	
+
 	class NewModuleListener implements ActionListener
 	{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			
+
 		}
-		
+
 	}
-	
+
 	class AddModuleListener implements ActionListener
 	{	
 
@@ -93,7 +94,7 @@ public class DiagramGraphDocument extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			JFileChooser fc = new JFileChooser(new File("."));		
 			FileNameExtensionFilter filter = new FileNameExtensionFilter(
-			        "Modules files(.mt or .dt)", "mt", "dt");		
+					"Modules files(.mt or .dt)", "mt", "dt");		
 			fc.setFileFilter(filter);
 			fc.setAcceptAllFileFilterUsed(false);
 			int returnVal = fc.showOpenDialog(null);
@@ -103,41 +104,45 @@ public class DiagramGraphDocument extends JPanel {
 				file_name = fc.getSelectedFile().getName();
 				file_path = fc.getSelectedFile().getAbsolutePath().toString();
 				DiagramGraphDocument.this.AddRequiredModule(file_name, file_path);
-			}			
+			}
+			m_graph_controls.SetAddNodeButtonEnabled((m_modules_list.GetItemsCount() > 0));
+			m_graph_controls.UpdateModulesComboBox();
 		}
-		
+
 	}
-	
+
 	class RemoveModuleListener implements ActionListener
 	{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			
+			m_graph_controls.SetAddNodeButtonEnabled((m_modules_list.GetItemsCount() > 0));
+			m_graph_controls.UpdateModulesComboBox();
 		}
-//
-//		@Override
-//		public void actionPerformed(ActionEvent e) {
-//			String selected_module = m_modules_list.GetSelectedItem();
-//			m_modules_path.remove(selected_module);			
-//		}
-//		
+		//
+		//		@Override
+		//		public void actionPerformed(ActionEvent e) {
+		//			String selected_module = m_modules_list.GetSelectedItem();
+		//			m_modules_path.remove(selected_module);			
+		//		}
+		//		
+		
 	}
-	
+
 	class ModuleSelectionChangedListener implements ActionListener
 	{
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			
+
 		}
 
-//		@Override
-//		public void actionPerformed(ActionEvent e) {
-//			DiagramTextDocument.this.ReadSelectedModule(m_modules_list.GetSelectedItem());			
-//		}
-		
+		//		@Override
+		//		public void actionPerformed(ActionEvent e) {
+		//			DiagramTextDocument.this.ReadSelectedModule(m_modules_list.GetSelectedItem());			
+		//		}
+
 	}
 }

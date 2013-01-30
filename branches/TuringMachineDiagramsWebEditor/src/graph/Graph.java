@@ -38,8 +38,10 @@ public class Graph {
 	private String m_node_style;
 	private mxCell m_starting_node;
 	private boolean m_is_panning_allowed;
+	private HashMap<mxCell,String> m_node_modules;
 
 	public Graph(){		
+		m_node_modules = new HashMap<mxCell,String>();
 		m_is_panning_allowed = true;
 		m_graph = new mxGraph();		
 		m_graph_component = new mxGraphComponent(m_graph) {
@@ -113,6 +115,21 @@ public class Graph {
 		}
 		return node;
 	}	
+	
+	public mxCell AddNode(String label, String corresponding_module)
+	{
+		Object parent = m_graph.getDefaultParent();
+		m_graph.getModel().beginUpdate();
+		mxCell node = (mxCell)m_graph.insertVertex(parent, null, label ,10, 10, m_node_width, m_node_height, m_node_style);
+		m_graph.getModel().endUpdate();
+		if(m_graph.getChildCells(m_graph.getDefaultParent(), true, false).length == 1){
+			m_starting_node = node;
+			node.setStyle("ROUNDED;fillColor=#beffaf");
+			m_graph_component.refresh();
+		}
+		m_node_modules.put(node, corresponding_module);
+		return node;
+	}	
 
 	public mxCell AddNode(String label, float x, float y, boolean is_starting_node)
 	{
@@ -138,6 +155,21 @@ public class Graph {
 			}
 		}
 		return null;
+	}
+	
+	public String GetSelectedNodeModule()
+	{
+		mxCell selected_node = (mxCell) m_graph.getSelectionCell();
+		if(selected_node != null && selected_node.isVertex()){
+			return m_node_modules.get(selected_node);
+		}
+		return null;		
+	}
+	
+	public void SetModuleOfSelectedNode(String module)
+	{
+		mxCell selected_node = (mxCell) m_graph.getSelectionCell();
+		m_node_modules.put(selected_node, module);
 	}
 
 
@@ -189,8 +221,42 @@ public class Graph {
 		}		
 		return machine_text;
 	}
+	
+	public String GenerateTuringDiagram(){
+		if( m_graph.getChildCells(m_graph.getDefaultParent(),true,false).length == 0){
+			return "";
+		}
+		String diagram_text = "";
+		Object[] cells = m_graph.getChildCells(m_graph.getDefaultParent(),true,false);
+		for(int i = 0; i < cells.length; i++){
+			mxCell node = (mxCell)cells[i];
+			if(node.isVertex()){
+				diagram_text += "module " + m_graph.getLabel(node) + " " + m_node_modules.get(node) + "\n";
+			}
+		}
+		diagram_text += "\n";
+		for(int i = 0; i < cells.length; i++){
+			mxCell node = (mxCell)cells[i];
+			for(int j = 0; j < node.getEdgeCount(); j++){
+				mxCell edge = (mxCell)node.getEdgeAt(j);	
+				if(edge.getSource() != node){
+					continue;
+				}
+				String initial_state = m_graph.getLabel(edge.getSource());
+				String final_state = m_graph.getLabel(edge.getTarget());
+				String edge_label =  m_graph.getLabel(edge);
+				if(!edge_label.startsWith("[") && !edge_label.endsWith("]")){
+					return "";
+				}
+				String rule = initial_state + " " + edge_label + " " + final_state;
+				diagram_text += rule + "\n";			
+			}
+		}		
+		System.out.println(diagram_text);
+		return diagram_text;
+	}
 
-	//#v label x y width height true
+	//#v label x y width height true module (to do)
 	//#e label source target x y ...
 	public String ExportGraph(){
 		String graph_text = "";
