@@ -89,7 +89,7 @@ public class DiagramGraphControlComponent extends JPanel {
 		state_controls_panel.add(m_export_to_dt_button);
 		m_export_to_dt_button.setIcon(new ImageIcon(MachineGraphControlComponent.class.getResource("/resources/icons/document-save-3.png")));
 		m_export_to_dt_button.setToolTipText("Export to .dt File");
-		m_export_to_dt_button.addActionListener(new ExportMtFileListener());
+		m_export_to_dt_button.addActionListener(new ExportDtFileListener());
 
 		JPanel graph_controls_panel = new JPanel();
 		graph_controls_panel.setBorder(new EmptyBorder(5, 10, 10, 10));
@@ -134,7 +134,6 @@ public class DiagramGraphControlComponent extends JPanel {
 		m_modules_comboBox.setMinimumSize(new Dimension(100, 24));
 		state_module_panel.add(m_modules_comboBox);
 
-
 		m_graph.GetGraphComponent().getGraph().getSelectionModel().addListener(mxEvent.CHANGE, new SelectionChangedListener());	
 		m_modules_comboBox.setEnabled(false);
 		m_starting_node_button.setEnabled(false);
@@ -160,7 +159,6 @@ public class DiagramGraphControlComponent extends JPanel {
 		}
 		m_modules_comboBox.setSelectedIndex(-1);
 	}
-
 
 	class AddNodeListener implements ActionListener
 	{
@@ -229,45 +227,43 @@ public class DiagramGraphControlComponent extends JPanel {
 		}
 	}
 
-	class ExportMtFileListener implements ActionListener
+	class ExportDtFileListener implements ActionListener
 	{
-
 		@Override
 		public void actionPerformed(ActionEvent e) {
-//			String machine_mt_text = m_graph.GenerateTuringMachine();
-//			if(machine_mt_text.isEmpty()){
-//				TuringMachinesEditor.SetStatusMessage("Machine Graph empty.\n");
-//				return;
-//			}
-//			String machine_graph_file_path;
-//			String machine_graph_file_name;
-//			ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
-//			FileNameExtensionFilter filter = new FileNameExtensionFilter(
-//					"Diagram files (.dt)", "dt");
-//			fc.setFileFilter(filter);
-//			fc.setAcceptAllFileFilterUsed(false);
-//			int returnVal = fc.showSaveDialog(null);
-//			if(returnVal == JFileChooser.APPROVE_OPTION){	
-//				machine_graph_file_path = fc.getSelectedFile().getAbsolutePath().toString();
-//				if(!machine_graph_file_path.endsWith(".dt")){
-//					machine_graph_file_path = machine_graph_file_path + ".dt";
-//				}
-//				machine_graph_file_name = fc.getSelectedFile().getName();
-//				if(!machine_graph_file_name.endsWith(".dt")){
-//					machine_graph_file_name = machine_graph_file_name + ".dt";
-//				}			
-//				FileWriter fstream; 
-//				try {
-//					fstream = new FileWriter(machine_graph_file_path);
-//					BufferedWriter out = new BufferedWriter(fstream);
-//					out.write(machine_mt_text);
-//					out.close();
-//					TuringMachinesEditor.SetStatusMessage("Machine Graph file " + machine_graph_file_path + " exported succesfully.\n");							
-//				} catch (IOException ex) {
-//					ex.printStackTrace();
-//				}						
-//			}
-			m_graph.GenerateTuringDiagram();
+			String diagram_dt_text = m_graph.GenerateTuringDiagram();
+			if(diagram_dt_text.isEmpty()){
+				TuringMachinesEditor.SetStatusMessage("Diagram Graph empty.\n");
+				return;
+			}
+			String diagram_graph_file_path;
+			String diagram_graph_file_name;
+			ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(
+					"Diagram Graph files (.dt)", "dt");
+			fc.setFileFilter(filter);
+			fc.setAcceptAllFileFilterUsed(false);
+			int returnVal = fc.showSaveDialog(null);
+			if(returnVal == JFileChooser.APPROVE_OPTION){	
+				diagram_graph_file_path = fc.getSelectedFile().getAbsolutePath().toString();
+				if(!diagram_graph_file_path.endsWith(".dt")){
+					diagram_graph_file_path = diagram_graph_file_path + ".dt";
+				}
+				diagram_graph_file_name = fc.getSelectedFile().getName();
+				if(!diagram_graph_file_name.endsWith(".dt")){
+					diagram_graph_file_name = diagram_graph_file_name + ".dt";
+				}			
+				FileWriter fstream; 
+				try {
+					fstream = new FileWriter(diagram_graph_file_path);
+					BufferedWriter out = new BufferedWriter(fstream);
+					out.write(diagram_dt_text);
+					out.close();
+					TuringMachinesEditor.SetStatusMessage("Diagram Graph file " + diagram_graph_file_path + " exported succesfully.\n");							
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				}						
+			}
 		}
 	}
 	

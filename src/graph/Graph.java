@@ -175,7 +175,15 @@ public class Graph {
 
 	public void RemoveSelectedCell()
 	{
-		m_graph.removeCells(m_graph.getSelectionCells());
+		for(int i = 0; i < m_graph.getSelectionCells().length; i++){
+			mxCell node = (mxCell) m_graph.getSelectionCells()[i];
+			if(node.isVertex()){
+				if(m_node_modules.get(node) != null){
+					m_node_modules.remove(node);
+				}
+			}
+		}
+		m_graph.removeCells(m_graph.getSelectionCells());		
 	}
 
 	public boolean ContainsNode(String label)
@@ -252,7 +260,6 @@ public class Graph {
 				diagram_text += rule + "\n";			
 			}
 		}		
-		System.out.println(diagram_text);
 		return diagram_text;
 	}
 
@@ -274,6 +281,13 @@ public class Graph {
 			}else{
 				vertices += " false";
 			}
+			//If it is a diagram graph, the node's modules should be stored
+			if(m_node_modules.get(node) != null){
+				vertices += " ";
+				vertices += m_node_modules.get(node);
+			}else{
+				vertices += " null";
+			}
 			vertices += "\n";
 			for(int j = 0; j < node.getEdgeCount(); j++){
 				mxCell edge = (mxCell)node.getEdgeAt(j);	
@@ -291,7 +305,6 @@ public class Graph {
 		}		
 		graph_text += vertices;
 		graph_text += edges;
-		System.out.println(graph_text);
 		return graph_text;
 	}
 
@@ -307,7 +320,8 @@ public class Graph {
 				String node_x = line.substring(0, line.indexOf(" "));
 				line = line.substring(line.indexOf(" ") + 1);				
 				String node_y = line.substring(0, line.indexOf(" "));
-				String starting_node = line.substring(line.indexOf(" ") + 1);				
+				line = line.substring(line.indexOf(" ") + 1);
+				String starting_node = line.substring(0,line.indexOf(" "));				
 				boolean is_starting_node = false;
 				if(starting_node.equals("true")){
 					is_starting_node = true;
@@ -315,7 +329,11 @@ public class Graph {
 				if(starting_node.equals("false")){
 					is_starting_node = false;
 				}
-				this.AddNode(node_label,Float.parseFloat(node_x),Float.parseFloat(node_y), is_starting_node);
+				String node_module = line.substring(line.indexOf(" ") + 1);				
+				mxCell node = this.AddNode(node_label,Float.parseFloat(node_x),Float.parseFloat(node_y), is_starting_node);
+				if(!node_module.equals("null")){
+					m_node_modules.put(node, node_module);
+				}
 			}
 			if(line.startsWith("e")){
 				line = line.substring(line.indexOf(" ") + 1);
