@@ -6,6 +6,8 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import javax.swing.JTextField;
 
@@ -62,7 +64,11 @@ public class TuringMachinesEditor extends JPanel {
 	
 	public static void SetStatusMessage(String message)
 	{
-		m_status_textField.setText(message);
+		Calendar cal = Calendar.getInstance();
+    	cal.getTime();
+    	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+		m_status_textField.setText(sdf.format(cal.getTime()) + " - " + message);
+		sdf = null;
 	}
 	
 	private void InstallToolBar()
