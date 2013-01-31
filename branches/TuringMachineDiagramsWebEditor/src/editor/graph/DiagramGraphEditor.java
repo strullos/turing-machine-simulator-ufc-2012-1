@@ -249,21 +249,26 @@ public class DiagramGraphEditor extends EditorPerspective {
 					m_diagrams_tabbedPane.addTab(fc.getSelectedFile().getName().toString(), null, new_machine_document, null);	
 					m_diagrams_tabbedPane.setSelectedComponent(new_machine_document);
 					m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
-					TuringMachinesEditor.SetStatusMessage("Diagram graph file loaded successfully.\n");					
 					diagram_graph_text = null;
 
 					File selected_file = new File(file_path);
 					Diagram d = new Diagram();
 					d.setLoadPath(selected_file.getParent());
-
+					selected_file = null;
 					String diagram_text = new_machine_document.ConvertGraphToModule();
 					d.loadFromString(diagram_text);
+					
 					ArrayList<String> dependencies = d.getDependencies();
 					for(int i = 0; i < dependencies.size(); i++)
 					{
 						File module_file = new File(dependencies.get(i));
 						m_current_diagram_graph_document.AddModule(module_file.getName(), module_file.getPath());
 						module_file = null;
+					}
+					if(!d.GetError().isEmpty()){
+						TuringMachinesEditor.SetStatusMessage("Error: " +  d.GetError());
+					}else{
+						TuringMachinesEditor.SetStatusMessage("Diagram graph file loaded successfully.\n");	
 					}
 					diagram_text = null;
 					d = null;
