@@ -245,7 +245,12 @@ public class Graph {
 		for(int i = 0; i < cells.length; i++){
 			mxCell node = (mxCell)cells[i];
 			if(node.isVertex()){
-				diagram_text += "module " + m_graph.getLabel(node) + " " + m_node_modules.get(node) + "\n";
+				if(m_graph.getLabel(node).equals(m_graph.getLabel(m_starting_node))){
+					//Marks the initial state
+					diagram_text += "module %" + m_graph.getLabel(node) + " " + m_node_modules.get(node) + "\n";
+				}else{
+					diagram_text += "module " + m_graph.getLabel(node) + " " + m_node_modules.get(node) + "\n";
+				}
 			}
 		}
 		diagram_text += "\n";

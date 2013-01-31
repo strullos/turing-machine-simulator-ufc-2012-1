@@ -1,49 +1,24 @@
-The .mt files represent a Turing Machine.
+The Diagram Graph editor can create .gdt files. 
 
-Turing Machines have the following syntax:
+These files are a graphical representation of the Turing Machine. They can be exported to a .dt file.
 
-q0 1000
+To create a Diagram Graph file, add a node for each state you would like on the Diagram.
+To add a state, it is first required to add modules, on the Modules menu on the right.
+A state has to be binded to a Module, always.
 
-q0 # q1 >
+To add a transition click on a node and drag the mouse to another node.
+Double click on the created edge to edit the rule.
 
+You can rename a node by double-clicking on it.
 
-In the first line of the machine (the header), 
-we declare which state is the initial state. The number besides it represents
-the maximum number of steps that machine is allowed to run.
+A Turing Machine Diagram needs to have an initial state. To set the initial state, select a node and click on 
+the "Flag" button. The initial state node should turn to a green color.
 
-Following the header, we have the rules declaration.
-A rule consists of a initial state, a symbol, a final state and an action.
-Rules have the following structure:
+The rules have the following format:
 
-"initial state" "symbol" "final state" "action" 
+"[symbols]"
 
-Basically, a rule specifies the behaviour of the machine according to the characters on the tape.
-A rule simple says that, if the machine is in "initial state" and reads the "symbol" character on the tape,
-it will execute "action" and go to "final state"
+Example:
+[a,b,c]
 
-
-The actions can be: 
-
-1. >  ---- Moves the reading head 1 position to the right
-2. <  ---- Moves the reading head 1 position to the left
-3. x  ---- In which 'x' represents any character. This action write the character 
-represented by 'x' in the tape, on the position pointed by the tape's head. The reading head
-is represented by a '_' character right before the symbol.
-
-The '*' character is a special character. It represents all symbols. If a rule
-has this character as its symbol, it means that it will execute the action
-for any character that is read on the tape.
-
-You can declare variables on machines files. These variables can be passed by diagrams
-to this machine file.
-
-To declare a variable use the following syntax, for example:
-
-q0 1000
-
-var x
-
-q0 * q1 x
-
-This sets 'x' as a variable. The rule represented in the end will
-write the value stored on x for any symbol read on the tape.
+For more information, view the Help on the DiagramTextEditor perspective.
