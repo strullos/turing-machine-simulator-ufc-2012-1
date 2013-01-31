@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ui_utils.ConsoleComponent;
+
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
@@ -39,8 +41,9 @@ public class Graph {
 	private mxCell m_starting_node;
 	private boolean m_is_panning_allowed;
 	private HashMap<mxCell,String> m_node_modules;
-
-	public Graph(){		
+	private ConsoleComponent m_console;
+	public Graph(ConsoleComponent console){	
+		m_console = console;
 		m_node_modules = new HashMap<mxCell,String>();
 		m_is_panning_allowed = true;
 		m_graph = new mxGraph();		
@@ -218,6 +221,9 @@ public class Graph {
 				String final_state = m_graph.getLabel(edge.getTarget());
 				String edge_label =  m_graph.getLabel(edge);
 				if(edge_label.indexOf(";") == -1){
+					m_console.AppendText("Failed to parse edge from " + initial_state + " to " + final_state + "\n");
+					m_console.AppendText("Edge: " + edge_label + "\n");
+					m_console.AppendText("Expected ; character.\n");
 					return "";
 				}
 				String symbol = edge_label.substring(0, edge_label.indexOf(";"));

@@ -97,6 +97,13 @@ public class TuringMachinesEditor extends JPanel {
 			if(m_current_perspective == m_diagram_text_editor){
 				m_tool_bar.SetExampleButtonEnabled(true);
 			}
+			
+			if(m_current_perspective == m_diagram_graph_editor){
+				m_tool_bar.SetExampleButtonEnabled(false);
+			}
+			if(m_current_perspective == m_machine_graph_editor){
+				m_tool_bar.SetExampleButtonEnabled(false);
+			}
 		}		
 	}
 	
@@ -106,7 +113,6 @@ public class TuringMachinesEditor extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			m_current_perspective.New();
-			
 		}
 		
 	}

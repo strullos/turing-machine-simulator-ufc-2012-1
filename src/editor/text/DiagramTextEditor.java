@@ -113,14 +113,14 @@ public class DiagramTextEditor extends EditorPerspective {
 				m_diagrams_tabbedPane.addTab(selected_file.getName().toString() + " Project", null, new_diagram_document, null);	
 				m_diagrams_tabbedPane.setSelectedComponent(new_diagram_document);
 				m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
-				
+
 				TuringMachinesEditor.SetStatusMessage("Diagram file loaded successfully.\n");
 				m_current_diagram_document.AddModule(selected_file.getName(), file_path);
-				
+
 				Diagram d = new Diagram();
 				d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
 				d.setLoadPath(selected_file.getParent());
-				
+
 				String diagram_text = new String("");
 				String line;
 				while( (line = reader.readLine()) != null ){				
@@ -363,6 +363,20 @@ public class DiagramTextEditor extends EditorPerspective {
 
 	@Override
 	public void Execute() {
+		if(m_current_diagram_document == null){
+			return;
+		}
+		if(m_current_diagram_document.GetModuleText().isEmpty()){
+			TuringMachinesEditor.SetStatusMessage("Empty machine.\n");
+			JOptionPane.showMessageDialog(null, "Error", "Empty diagram", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		if(m_current_diagram_document.GetTape().isEmpty()){
+			TuringMachinesEditor.SetStatusMessage("Empty tape.\n");	
+			JOptionPane.showMessageDialog(null, "Error", "Empty tape", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		m_current_diagram_document.ClearConsoleText();
 		if(m_current_diagram_document.GetSelectedModule().endsWith(".mt")){
 			ExecuteMachine();
 		}else if (m_current_diagram_document.GetSelectedModule().endsWith(".dt")){
@@ -372,30 +386,20 @@ public class DiagramTextEditor extends EditorPerspective {
 
 	private void ExecuteMachine()
 	{
-		if(m_current_diagram_document == null){
-			return;
-		}
+
 		Machine m = new Machine();
 		m.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
-		boolean empty_fields = false;
-		m_current_diagram_document.ClearConsoleText();
-		if(m_current_diagram_document.GetModuleText().isEmpty()){
-			TuringMachinesEditor.SetStatusMessage("Empty machine.\n");
-			empty_fields = true;
-		}
-		if(m_current_diagram_document.GetTape().isEmpty()){
-			TuringMachinesEditor.SetStatusMessage("Empty tape.\n");		
-			empty_fields = true;
-		}
-		if(!empty_fields){
-			try {
-				if( m.loadFromString(m_current_diagram_document.GetModuleText())) {
-					Tape tape = new Tape(m_current_diagram_document.GetTape());				
-					m.execute(tape);
-				} 
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		try {
+			if( m.loadFromString(m_current_diagram_document.GetModuleText())) {
+				Tape tape = new Tape(m_current_diagram_document.GetTape());				
+				m.execute(tape);
+				tape = null;
+				m = null;
+				TuringMachinesEditor.SetStatusMessage("Execution finished.\n");
+			} 
+		} catch (IOException e) {
+			e.printStackTrace();
+			m = null;
 		}
 	}
 
@@ -403,31 +407,22 @@ public class DiagramTextEditor extends EditorPerspective {
 	{
 		Diagram d = new Diagram();
 		d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
-		m_current_diagram_document.SetConsoleText("");
 		d.setModuleFilesFullPath(m_current_diagram_document.GetModulesPath());
 		d.setModulesContent(m_current_diagram_document.GetModulesContent());
-		boolean empty_fields = false;
-
-		if(m_current_diagram_document.GetModuleText().isEmpty()){
-			TuringMachinesEditor.SetStatusMessage("Error executing: empty module.\n");
-			empty_fields = true;
-		}
-		if(m_current_diagram_document.GetTape().isEmpty()){
-			TuringMachinesEditor.SetStatusMessage("Error executing: empty tape.\n");		
-			empty_fields = true;
-		}
-		if(!empty_fields){
-			try {
-				if( d.loadFromString(m_current_diagram_document.GetModuleText()) ) {
-					//This clear here is to erase the "loading messages" that may be on the log.
-					//This way, only the execution messages are displayed when the diagram executes
-					d.ClearLogsList(); 					
-					Tape tape = new Tape(m_current_diagram_document.GetTape());												
-					d.execute(tape);	
-				} 
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		try {
+			if( d.loadFromString(m_current_diagram_document.GetModuleText()) ) {
+				//This clear here is to erase the "loading messages" that may be on the log.
+				//This way, only the execution messages are displayed when the diagram executes
+				d.ClearLogsList(); 					
+				Tape tape = new Tape(m_current_diagram_document.GetTape());												
+				d.execute(tape);	
+				tape = null;
+				d = null;
+				TuringMachinesEditor.SetStatusMessage("Execution finished.\n");
+			} 
+		} catch (IOException e) {
+			e.printStackTrace();
+			d = null;
 		}
 	}
 

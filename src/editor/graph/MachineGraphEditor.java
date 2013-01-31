@@ -10,6 +10,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -100,7 +102,7 @@ public class MachineGraphEditor extends EditorPerspective {
 						machine_text += "\n";						
 					}
 					MachineGraphDocument new_machine_document = new MachineGraphDocument();
-					new_machine_document.m_graph.ImportGraph(machine_text);					
+					new_machine_document.GetGraph().ImportGraph(machine_text);					
 					m_machines_tabbedPane.addTab(fc.getSelectedFile().getName().toString(), null, new_machine_document, null);	
 					m_machines_tabbedPane.setSelectedComponent(new_machine_document);
 					m_machines_tabbedPane.setTabComponentAt(m_machines_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_machines_tabbedPane));
@@ -119,11 +121,11 @@ public class MachineGraphEditor extends EditorPerspective {
 		if(m_current_machine_graph_document == null){
 			return;
 		}
-		String machine_graph_text = m_current_machine_graph_document.GetMachineText();
+		String machine_graph_text = m_current_machine_graph_document.ConvertGraphToModule();
 		if(machine_graph_text.isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty machine.");
 		}else{
-			String machine_path = m_current_machine_graph_document.GetMachineGraphDocumentPath();
+			String machine_path = m_current_machine_graph_document.GetGraphDocumentPath();
 			String machine_name = "";
 			if(machine_path.isEmpty()){
 				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
@@ -141,7 +143,7 @@ public class MachineGraphEditor extends EditorPerspective {
 					if(!machine_name.endsWith(".gmt")){
 						machine_name = machine_name + ".gmt";
 					}
-					m_current_machine_graph_document.SetMachineDocumentPath(machine_path);
+					m_current_machine_graph_document.SetDocumentPath(machine_path);
 				}else{
 					return;
 				}
@@ -150,7 +152,7 @@ public class MachineGraphEditor extends EditorPerspective {
 			try {
 				fstream = new FileWriter(machine_path);
 				BufferedWriter out = new BufferedWriter(fstream);
-				out.write(m_current_machine_graph_document.m_graph.ExportGraph());
+				out.write(m_current_machine_graph_document.GetGraph().ExportGraph());
 				out.close();
 				TuringMachinesEditor.SetStatusMessage("Machine Graph file " + machine_path + " saved succesfully.\n");
 				if(!machine_name.isEmpty()){ //If machine name is empty the file was already saved so we do not need to save it again
@@ -167,11 +169,11 @@ public class MachineGraphEditor extends EditorPerspective {
 		if(m_current_machine_graph_document == null){
 			return;
 		}
-		String machine_graph_text = m_current_machine_graph_document.GetMachineText();
+		String machine_graph_text = m_current_machine_graph_document.ConvertGraphToModule();
 		if(machine_graph_text.isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty machine.");
 		}else{
-			String machine_path = m_current_machine_graph_document.GetMachineGraphDocumentPath();
+			String machine_path = m_current_machine_graph_document.GetGraphDocumentPath();
 			String machine_name = "";
 			if(machine_path.isEmpty()){
 				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
@@ -189,14 +191,14 @@ public class MachineGraphEditor extends EditorPerspective {
 					if(!machine_name.endsWith(".gmt")){
 						machine_name = machine_name + ".gmt";
 					}
-					m_current_machine_graph_document.SetMachineDocumentPath(machine_path);
+					m_current_machine_graph_document.SetDocumentPath(machine_path);
 				}else{
 					return;
 				}
 			}			
 			FileWriter fstream; 
 			try {
-				String machine_content = m_current_machine_graph_document.m_graph.ExportGraph();
+				String machine_content = m_current_machine_graph_document.GetGraph().ExportGraph();
 				fstream = new FileWriter(machine_path);
 				BufferedWriter out = new BufferedWriter(fstream);
 				out.write(machine_content);
@@ -206,8 +208,8 @@ public class MachineGraphEditor extends EditorPerspective {
 				if(!machine_name.isEmpty()){ //If machine name is empty the file was already saved so we do not need to save it again
 					m_machines_tabbedPane.setTitleAt(m_machines_tabbedPane.getSelectedIndex(), machine_name);
 				}		
-				m_current_machine_graph_document.SetMachineDocumentPath(machine_path);
-				m_current_machine_graph_document.m_graph.ImportGraph(machine_content);
+				m_current_machine_graph_document.SetDocumentPath(machine_path);
+				m_current_machine_graph_document.GetGraph().ImportGraph(machine_content);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}						
@@ -219,31 +221,32 @@ public class MachineGraphEditor extends EditorPerspective {
 		if(m_current_machine_graph_document == null){
 			return;
 		}
-		Machine m = new Machine();
-		m.logs_.AddLog(new ConsoleLog(m_current_machine_graph_document.console()));
-		boolean empty_fields = false;
-		m_current_machine_graph_document.ClearConsoleText();
-		if(m_current_machine_graph_document.GetMachineText().isEmpty()){
+		if(m_current_machine_graph_document.ConvertGraphToModule().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty machine.\n");
-			empty_fields = true;
+			JOptionPane.showMessageDialog(null, "Error", "Empty Machine Graph", JOptionPane.ERROR_MESSAGE);
+			return;
 		}
 		if(m_current_machine_graph_document.GetTape().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty tape.\n");		
-			empty_fields = true;
+			JOptionPane.showMessageDialog(null, "Error", "Empty tape", JOptionPane.ERROR_MESSAGE);
+			return;
 		}
-		if(!empty_fields){
-			try {
-				String machine_text = m_current_machine_graph_document.GetMachineText();
-				System.out.println(machine_text);
-				if( m.loadFromString(m_current_machine_graph_document.GetMachineText())) {
-					Tape tape = new Tape(m_current_machine_graph_document.GetTape());				
-					m.execute(tape);
-				} 
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		Machine m = new Machine();
+		m.logs_.AddLog(new ConsoleLog(m_current_machine_graph_document.console()));
+		m_current_machine_graph_document.GoToConsoleTab();
+		m_current_machine_graph_document.ClearConsoleText();
+		try {
+			if( m.loadFromString(m_current_machine_graph_document.ConvertGraphToModule())) {
+				Tape tape = new Tape(m_current_machine_graph_document.GetTape());				
+				m.execute(tape);
+				tape = null;
+				m = null;
+				TuringMachinesEditor.SetStatusMessage("Execution finished.\n");
+			} 
+		} catch (IOException e) {
+			e.printStackTrace();
+			m = null;
 		}
-		TuringMachinesEditor.SetStatusMessage("Execution finished.\n");
 	}
 
 	@Override
