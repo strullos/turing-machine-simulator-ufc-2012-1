@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -22,8 +23,6 @@ import core.Tape;
 
 import editor.EditorPerspective;
 import editor.TuringMachinesEditor;
-import editor.text.DiagramTextDocument;
-
 import ui_utils.ClosableTabComponent;
 import ui_utils.ConfirmationFileChooser;
 import ui_utils.HelpDialog;
@@ -37,14 +36,14 @@ public class DiagramGraphEditor extends EditorPerspective {
 	private static final long serialVersionUID = 1L;
 	private DiagramGraphDocument m_current_diagram_graph_document;
 	private JTabbedPane m_diagrams_tabbedPane;
-	
+
 	public DiagramGraphEditor(String name) {
 		super(name);
 		setLayout(new BorderLayout(0, 0));
-		
+
 		m_diagrams_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		add(m_diagrams_tabbedPane, BorderLayout.CENTER);
-		
+
 		DiagramGraphDocument diagram_document = new DiagramGraphDocument();
 		m_current_diagram_graph_document = diagram_document;
 		if(m_diagrams_tabbedPane.getComponentCount() > 0){
@@ -56,7 +55,7 @@ public class DiagramGraphEditor extends EditorPerspective {
 		m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
 		m_diagrams_tabbedPane.addChangeListener(new TabChangedListener());
 	}
-	
+
 	class TabChangedListener implements ChangeListener
 	{
 		@Override
@@ -88,16 +87,16 @@ public class DiagramGraphEditor extends EditorPerspective {
 		if(m_current_diagram_graph_document == null){
 			return;
 		}
-		String machine_graph_text = m_current_diagram_graph_document.GetDiagramText();
+		String machine_graph_text = m_current_diagram_graph_document.ConvertGraphToModule();
 		if(machine_graph_text.isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty diagram graph.");
 		}else{
-			String diagram_path = m_current_diagram_graph_document.GetDiagramGraphDocumentPath();
+			String diagram_path = m_current_diagram_graph_document.GetGraphDocumentPath();
 			String diagram_name = "";
 			if(diagram_path.isEmpty()){
 				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
 				FileNameExtensionFilter filter = new FileNameExtensionFilter(
-				        "Diagram Graph files (.gdt)", "gdt");
+						"Diagram Graph files (.gdt)", "gdt");
 				fc.setFileFilter(filter);
 				fc.setAcceptAllFileFilterUsed(false);
 				int returnVal = fc.showSaveDialog(null);
@@ -110,7 +109,7 @@ public class DiagramGraphEditor extends EditorPerspective {
 					if(!diagram_name.endsWith(".gdt")){
 						diagram_name = diagram_name + ".gdt";
 					}
-					m_current_diagram_graph_document.SetDiagramDocumentPath(diagram_path);
+					m_current_diagram_graph_document.SetDocumentPath(diagram_path);
 				}else{
 					return;
 				}
@@ -119,7 +118,7 @@ public class DiagramGraphEditor extends EditorPerspective {
 			try {
 				fstream = new FileWriter(diagram_path);
 				BufferedWriter out = new BufferedWriter(fstream);
-				out.write(m_current_diagram_graph_document.m_graph.ExportGraph());
+				out.write(m_current_diagram_graph_document.GetGraph().ExportGraph());
 				out.close();
 				TuringMachinesEditor.SetStatusMessage("Diagram Graph file " + diagram_path + " saved succesfully.\n");
 				if(!diagram_name.isEmpty()){ //If machine name is empty the file was already saved so we do not need to save it again
@@ -136,33 +135,34 @@ public class DiagramGraphEditor extends EditorPerspective {
 		if(m_current_diagram_graph_document == null){
 			return;
 		}
-		Diagram d = new Diagram();
-		d.setModuleFilesFullPath(m_current_diagram_graph_document.GetModulesPath());
-		d.logs_.AddLog(new ConsoleLog(m_current_diagram_graph_document.console()));
-		boolean empty_fields = false;
 		m_current_diagram_graph_document.ClearConsoleText();
-		if(m_current_diagram_graph_document.GetDiagramText().isEmpty()){
-			TuringMachinesEditor.SetStatusMessage("Empty machine.\n");
-			empty_fields = true;
+		if(m_current_diagram_graph_document.ConvertGraphToModule().isEmpty()){
+			TuringMachinesEditor.SetStatusMessage("Empty Diagram Graph.\n");
+			JOptionPane.showMessageDialog(null, "Error", "Empty Diagram Graph", JOptionPane.ERROR_MESSAGE);
+			return;
 		}
 		if(m_current_diagram_graph_document.GetTape().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty tape.\n");		
-			empty_fields = true;
-		}		
-		if(!empty_fields){
-			try {
-				String diagram_text = m_current_diagram_graph_document.GetDiagramText();
-				System.out.println(diagram_text);
-				if( d.loadFromString(m_current_diagram_graph_document.GetDiagramText())) {
-					Tape tape = new Tape(m_current_diagram_graph_document.GetTape());				
-					d.execute(tape);
-				} 
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			JOptionPane.showMessageDialog(null, "Error", "Empty tape", JOptionPane.ERROR_MESSAGE);
+			return;
+		}	
+		m_current_diagram_graph_document.GoToConsoleTab();
+		Diagram d = new Diagram();
+		d.setModuleFilesFullPath(m_current_diagram_graph_document.GetModulesPath());
+		d.setModulesContent(m_current_diagram_graph_document.GetModulesContent());
+		d.logs_.AddLog(new ConsoleLog(m_current_diagram_graph_document.console()));
+		try {
+			if( d.loadFromString(m_current_diagram_graph_document.ConvertGraphToModule())) {
+				Tape tape = new Tape(m_current_diagram_graph_document.GetTape());				
+				d.execute(tape);
+				tape = null;
+				d = null;
+				TuringMachinesEditor.SetStatusMessage("Execution finished.\n");
+			} 
+		} catch (IOException e) {
+			e.printStackTrace();
+			d = null;
 		}
-		TuringMachinesEditor.SetStatusMessage("Execution finished.\n");
-		
 	}
 
 	@Override
@@ -170,16 +170,16 @@ public class DiagramGraphEditor extends EditorPerspective {
 		if(m_current_diagram_graph_document == null){
 			return;
 		}
-		String diagram_graph_text = m_current_diagram_graph_document.GetDiagramText();
+		String diagram_graph_text = m_current_diagram_graph_document.ConvertGraphToModule();
 		if(diagram_graph_text.isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty diagram graph.");
 		}else{
-			String diagram_path = m_current_diagram_graph_document.GetDiagramGraphDocumentPath();
+			String diagram_path = m_current_diagram_graph_document.GetGraphDocumentPath();
 			String diagram_name = "";
 			if(diagram_path.isEmpty()){
 				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
 				FileNameExtensionFilter filter = new FileNameExtensionFilter(
-				        "Diagram Graph files (.gdt)", "gdt");
+						"Diagram Graph files (.gdt)", "gdt");
 				fc.setFileFilter(filter);
 				fc.setAcceptAllFileFilterUsed(false);
 				int returnVal = fc.showSaveDialog(null);
@@ -192,14 +192,14 @@ public class DiagramGraphEditor extends EditorPerspective {
 					if(!diagram_name.endsWith(".gdt")){
 						diagram_name = diagram_name + ".gdt";
 					}
-					m_current_diagram_graph_document.SetDiagramDocumentPath(diagram_path);
+					m_current_diagram_graph_document.SetDocumentPath(diagram_path);
 				}else{
 					return;
 				}
 			}			
 			FileWriter fstream; 
 			try {
-				String diagram_content = m_current_diagram_graph_document.m_graph.ExportGraph();
+				String diagram_content = m_current_diagram_graph_document.GetGraph().ExportGraph();
 				fstream = new FileWriter(diagram_path);
 				BufferedWriter out = new BufferedWriter(fstream);
 				out.write(diagram_content);
@@ -209,8 +209,8 @@ public class DiagramGraphEditor extends EditorPerspective {
 				if(!diagram_name.isEmpty()){ //If diagram name is empty the file was already saved so we do not need to save it again
 					m_diagrams_tabbedPane.setTitleAt(m_diagrams_tabbedPane.getSelectedIndex(), diagram_name);
 				}		
-				m_current_diagram_graph_document.SetDiagramDocumentPath(diagram_path);
-				m_current_diagram_graph_document.m_graph.ImportGraph(diagram_content);
+				m_current_diagram_graph_document.SetDocumentPath(diagram_path);
+				m_current_diagram_graph_document.GetGraph().ImportGraph(diagram_content);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}						
@@ -245,24 +245,24 @@ public class DiagramGraphEditor extends EditorPerspective {
 						diagram_graph_text += "\n";						
 					}
 					DiagramGraphDocument new_machine_document = new DiagramGraphDocument();
-					new_machine_document.m_graph.ImportGraph(diagram_graph_text);					
+					new_machine_document.GetGraph().ImportGraph(diagram_graph_text);					
 					m_diagrams_tabbedPane.addTab(fc.getSelectedFile().getName().toString(), null, new_machine_document, null);	
 					m_diagrams_tabbedPane.setSelectedComponent(new_machine_document);
 					m_diagrams_tabbedPane.setTabComponentAt(m_diagrams_tabbedPane.getSelectedIndex(),new ClosableTabComponent(m_diagrams_tabbedPane));
 					TuringMachinesEditor.SetStatusMessage("Diagram graph file loaded successfully.\n");					
 					diagram_graph_text = null;
-										
+
 					File selected_file = new File(file_path);
 					Diagram d = new Diagram();
 					d.setLoadPath(selected_file.getParent());
-					
-					String diagram_text = new_machine_document.m_graph.GenerateTuringDiagram();
+
+					String diagram_text = new_machine_document.ConvertGraphToModule();
 					d.loadFromString(diagram_text);
 					ArrayList<String> dependencies = d.getDependencies();
 					for(int i = 0; i < dependencies.size(); i++)
 					{
 						File module_file = new File(dependencies.get(i));
-						m_current_diagram_graph_document.AddRequiredModule(module_file.getName(), module_file.getPath());
+						m_current_diagram_graph_document.AddModule(module_file.getName(), module_file.getPath());
 						module_file = null;
 					}
 					diagram_text = null;
