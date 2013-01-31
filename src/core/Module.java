@@ -34,6 +34,11 @@ public abstract class Module {
 		m_load_path = load_path;
 	}	
 	
+	public String GetError()
+	{
+		return m_error;
+	}
+	
 	public boolean loadFromFile(String filename) throws FileNotFoundException
 	{
 		StringFileReader file_reader = new StringFileReader();

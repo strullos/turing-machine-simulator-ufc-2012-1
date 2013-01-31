@@ -334,7 +334,13 @@ public class Graph {
 				line = line.substring(line.indexOf(" ") + 1);				
 				String node_y = line.substring(0, line.indexOf(" "));
 				line = line.substring(line.indexOf(" ") + 1);
-				String starting_node = line.substring(0,line.indexOf(" "));				
+				String starting_node = "";
+				if(line.indexOf(" ") == -1){
+					starting_node = line;
+				}else{
+					starting_node = line.substring(0,line.indexOf(" "));	
+				}
+							
 				boolean is_starting_node = false;
 				if(starting_node.equals("true")){
 					is_starting_node = true;
@@ -342,10 +348,12 @@ public class Graph {
 				if(starting_node.equals("false")){
 					is_starting_node = false;
 				}
-				String node_module = line.substring(line.indexOf(" ") + 1);				
 				mxCell node = this.AddNode(node_label,Float.parseFloat(node_x),Float.parseFloat(node_y), is_starting_node);
-				if(!node_module.equals("null")){
-					m_node_modules.put(node, node_module);
+				if(line.indexOf(" ") != -1){
+					String node_module = line.substring(line.indexOf(" ") + 1);	
+					if(!node_module.equals("null")){
+						m_node_modules.put(node, node_module);
+					}
 				}
 			}
 			if(line.startsWith("e")){
