@@ -49,7 +49,7 @@ public class DiagramGraphDocument extends ModuleGraphDocument {
 	
 	public String ConvertGraphToModule()
 	{
-		return m_graph.GenerateTuringMachine();
+		return m_graph.GenerateTuringDiagram();
 	}
 
 	public void AddModule(String file_name, String file_path)
