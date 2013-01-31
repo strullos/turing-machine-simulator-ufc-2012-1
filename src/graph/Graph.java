@@ -67,7 +67,7 @@ public class Graph {
 		style.put(mxConstants.STYLE_OPACITY, 100);
 		style.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 		style.put(mxConstants.STYLE_FONTSIZE, "30"); //!< Remove this later...
-		style.put(mxConstants.STYLE_LABEL_POSITION, mxConstants.ALIGN_MIDDLE);
+		style.put(mxConstants.STYLE_LABEL_POSITION, mxConstants.ALIGN_CENTER);
 		style.put(mxConstants.STYLE_SPACING_TOP, 5);
 		style.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 		stylesheet.putCellStyle("ROUNDED", style);
@@ -78,7 +78,7 @@ public class Graph {
 		edgeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 		edgeStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 		edgeStyle.put(mxConstants.STYLE_FONTSIZE, "30");
-		edgeStyle.put(mxConstants.STYLE_LABEL_POSITION, mxConstants.ALIGN_MIDDLE);
+		edgeStyle.put(mxConstants.STYLE_LABEL_POSITION, mxConstants.ALIGN_CENTER);
 		edgeStyle.put(mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, "#ffffff");
 		edgeStyle.put(mxConstants.STYLE_LABEL_BORDERCOLOR, "#000000");
 		stylesheet.setDefaultEdgeStyle(edgeStyle);	
@@ -101,7 +101,9 @@ public class Graph {
 		m_graph_outline = new mxGraphOutline(this.m_graph_component);
 		m_graph_component.getConnectionHandler().addListener(mxEvent.CONNECT, new AddCellListener());
 		m_graph_component.addKeyListener(new GraphKeyListener());
-		m_graph_component.addMouseWheelListener(new MouseWheelTracker());	
+		m_graph_component.addMouseWheelListener(new MouseWheelTracker());
+		
+//		m_graph.setHtmlLabels(true);
 	}	
 
 
