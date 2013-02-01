@@ -222,12 +222,12 @@ public class MachineGraphEditor extends EditorPerspective {
 		}
 		if(m_current_machine_graph_document.ConvertGraphToModule().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty machine.\n");
-			JOptionPane.showMessageDialog(null, "Error", "Empty Machine Graph", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Empty Machine Graph", "Error",  JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		if(m_current_machine_graph_document.GetTape().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty tape.\n");		
-			JOptionPane.showMessageDialog(null, "Error", "Empty tape", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Empty tape", "Error",  JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		Machine m = new Machine();

@@ -138,12 +138,12 @@ public class DiagramGraphEditor extends EditorPerspective {
 		m_current_diagram_graph_document.ClearConsoleText();
 		if(m_current_diagram_graph_document.ConvertGraphToModule().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty Diagram Graph.\n");
-			JOptionPane.showMessageDialog(null, "Error", "Empty Diagram Graph", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Empty Diagram Graph", "Error",  JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		if(m_current_diagram_graph_document.GetTape().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty tape.\n");		
-			JOptionPane.showMessageDialog(null, "Error", "Empty tape", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Empty tape", "Error",  JOptionPane.ERROR_MESSAGE);
 			return;
 		}	
 		m_current_diagram_graph_document.GoToConsoleTab();
