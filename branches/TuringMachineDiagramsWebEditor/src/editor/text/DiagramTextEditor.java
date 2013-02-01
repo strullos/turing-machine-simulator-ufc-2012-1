@@ -368,12 +368,12 @@ public class DiagramTextEditor extends EditorPerspective {
 		}
 		if(m_current_diagram_document.GetModuleText().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty machine.\n");
-			JOptionPane.showMessageDialog(null, "Error", "Empty diagram", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Empty Diagram", "Error",  JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		if(m_current_diagram_document.GetTape().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty tape.\n");	
-			JOptionPane.showMessageDialog(null, "Error", "Empty tape", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Empty tape", "Error",  JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		m_current_diagram_document.ClearConsoleText();

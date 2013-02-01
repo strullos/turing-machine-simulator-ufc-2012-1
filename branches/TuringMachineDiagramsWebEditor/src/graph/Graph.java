@@ -73,7 +73,7 @@ public class Graph {
 		stylesheet.putCellStyle("ROUNDED", style);
 
 		HashMap<String, Object> edgeStyle = new HashMap<String, Object>();
-		edgeStyle.put(mxConstants.STYLE_SHAPE,    mxConstants.SHAPE_CONNECTOR);
+		edgeStyle.put(mxConstants.STYLE_SHAPE,    mxConstants.SHAPE_CURVE);
 		edgeStyle.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
 		edgeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 		edgeStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
