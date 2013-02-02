@@ -1,12 +1,14 @@
 package editor;
 
-import javax.swing.JPanel;
+import java.awt.event.KeyEvent;
 
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import ui_utils.ConsoleComponent;
 import ui_utils.LineEditComponent;
 import ui_utils.TextEditComponent;
 
-public class ModuleTextDocument extends JPanel {
+public abstract class ModuleTextDocument extends JPanel {
 	/**
 	 * 
 	 */
@@ -14,9 +16,12 @@ public class ModuleTextDocument extends JPanel {
 	public ConsoleComponent console_;	
 	protected TextEditComponent m_module_input;	
 	protected LineEditComponent m_tape_input;
+	protected boolean m_switch_to_input;
+	protected JTabbedPane m_input_output_tabbedPane;
 	
 	public ModuleTextDocument()
 	{		
+		m_switch_to_input = false;
 	}
 	
 	public String GetModuleText()
@@ -54,4 +59,23 @@ public class ModuleTextDocument extends JPanel {
 		return console_;
 	}
 	
+	public void SwitchConsoleAndInput()
+	{
+		if(m_switch_to_input){
+			m_input_output_tabbedPane.setSelectedIndex(0);
+			m_switch_to_input = false;
+			m_module_input.SetFocusOnTextArea();
+		}else{
+			m_input_output_tabbedPane.setSelectedIndex(1);
+			m_switch_to_input = true;
+			m_tape_input.SetFocusOnTextField();
+		}
+	}
+	
+	public void HandleKeyEvents(KeyEvent e)
+	{
+		if(e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_F4){
+			SwitchConsoleAndInput();
+		}
+	}
 }

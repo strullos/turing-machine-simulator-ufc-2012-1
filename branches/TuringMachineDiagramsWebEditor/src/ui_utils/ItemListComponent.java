@@ -64,14 +64,14 @@ public class ItemListComponent extends JPanel {
 		
 		
 		m_add_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-add.png")));
-		m_add_button.setToolTipText("Add existing module");
+		m_add_button.setToolTipText("Load existing module (Ctrl + M)");
 		m_add_button.setMinimumSize(new Dimension(30, 30));
 		m_add_button.setMaximumSize(new Dimension(30, 30));
 		buttons_panel.add(m_add_button);
 		
 		
 		m_remove_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/list-remove.png")));
-		m_remove_button.setToolTipText("Remove selected module");
+		m_remove_button.setToolTipText("Remove selected module (Ctrl + K)");
 		m_remove_button.setMinimumSize(new Dimension(30, 30));
 		m_remove_button.setMaximumSize(new Dimension(30, 30));
 		buttons_panel.add(m_remove_button);		
@@ -79,7 +79,7 @@ public class ItemListComponent extends JPanel {
 		m_remove_button.setEnabled(false);
 		
 		m_save_all_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/document-save-all.png")));
-		m_save_all_button.setToolTipText("Save all modules to a folder");
+		m_save_all_button.setToolTipText("Save all modules to a folder (Ctrl + L)");
 		m_save_all_button.setMinimumSize(new Dimension(30, 30));
 		m_save_all_button.setMaximumSize(new Dimension(30, 30));
 		
@@ -87,7 +87,7 @@ public class ItemListComponent extends JPanel {
 		buttons_panel.add(m_save_all_button);
 		
 		m_pre_defined_modules_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/applications-other.png")));
-		m_pre_defined_modules_button.setToolTipText("Import pre-defined modules");
+		m_pre_defined_modules_button.setToolTipText("Import pre-defined modules (Ctrl + P)");
 	
 		m_pre_defined_modules_button.setMinimumSize(new Dimension(30, 30));
 		m_pre_defined_modules_button.setMaximumSize(new Dimension(30, 30));

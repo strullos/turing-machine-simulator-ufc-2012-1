@@ -1,6 +1,8 @@
 package editor;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
+
 import graph.Graph;
 
 import javax.swing.JPanel;
@@ -22,26 +24,23 @@ public abstract class ModuleGraphDocument extends JPanel {
 	protected LineEditComponent m_tape_input;
 	protected Graph m_graph;
 	protected String m_graph_document_path;
-	protected JTabbedPane m_graph_document_tabbedPane;	
+	protected JTabbedPane m_input_output_tabbedPane;	
 	protected GraphControlsComponent m_graph_controls;
-	protected JSplitPane m_editor_splitPane;
+	protected JSplitPane m_graph_splitPane;
+	protected boolean m_switch_to_input;
 	
 	public ModuleGraphDocument() {
+		m_switch_to_input = false;
 		m_graph_document_path = "";
 		m_console = new ConsoleComponent();
 		m_graph = new Graph(m_console);
 		m_tape_input = new LineEditComponent("Tape:");
-		m_graph_document_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		m_input_output_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		
 		setLayout(new BorderLayout(0, 0));
 		add(m_tape_input, BorderLayout.NORTH);		
 		
-		m_editor_splitPane = new JSplitPane();
-		m_editor_splitPane.setOneTouchExpandable(true);
-		add(m_editor_splitPane, BorderLayout.CENTER);
-		m_editor_splitPane.setDividerLocation(325);	
-		m_editor_splitPane.setLeftComponent(m_graph_document_tabbedPane);	
-		m_editor_splitPane.setRightComponent(m_graph.GetGraphComponent());
+		m_graph_splitPane = new JSplitPane();
 	}
 	
 	public Graph GetGraph()
@@ -51,7 +50,7 @@ public abstract class ModuleGraphDocument extends JPanel {
 	
 	public void GoToConsoleTab()
 	{
-		m_graph_document_tabbedPane.setSelectedIndex(m_graph_document_tabbedPane.getComponentCount() - 1);
+		m_input_output_tabbedPane.setSelectedIndex(m_input_output_tabbedPane.getComponentCount() - 1);
 	}
 	
 	public void SetConsoleText(String console_text)
@@ -90,4 +89,23 @@ public abstract class ModuleGraphDocument extends JPanel {
 	}
 	
 	abstract public String ConvertGraphToModule();	
+	
+	public void SwitchConsoleAndInput()
+	{
+		if(m_switch_to_input){
+			m_input_output_tabbedPane.setSelectedIndex(0);
+			m_switch_to_input = false;
+		}else{
+			m_input_output_tabbedPane.setSelectedIndex(1);
+			m_switch_to_input = true;
+			m_tape_input.SetFocusOnTextField();
+		}
+	}
+	
+	public void HandleKeyEvents(KeyEvent e)
+	{
+		if(e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_F4){
+			SwitchConsoleAndInput();
+		}
+	}
 }

@@ -1,5 +1,3 @@
-
-
 import javax.swing.JApplet;
 
 import editor.TuringMachinesEditor;
@@ -12,7 +10,7 @@ public class SimulatorGuiApplet extends JApplet {
 	private static final long serialVersionUID = 1L;
 	private static final int FRAME_WIDTH = 800;
 	private static final int FRAME_HEIGHT = 600;
-	
+
 	/**
 	 * Creates the applet.
 	 */
