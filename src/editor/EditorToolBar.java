@@ -29,26 +29,26 @@ public class EditorToolBar extends JToolBar {
 			ActionListener examples_action_listener)
 	{
 		JButton new_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/document-new-7.png")));
-		new_button.setToolTipText("New");
+		new_button.setToolTipText("New (Ctrl + N)");
 		
 		this.add(new_button);
 		JButton open_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/document-open-7.png")));		
-		open_button.setToolTipText("Open");
+		open_button.setToolTipText("Open (Ctrl + O)");
 		
 		this.add(open_button);		
 		JButton save_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/document-save-5.png")));
-		save_button.setToolTipText("Save");
+		save_button.setToolTipText("Save (Ctrl + S)");
 		
 		this.add(save_button);
 		
 		JButton save_as_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/document-save-as-6.png")));		
-		save_as_button.setToolTipText("Save As");
+		save_as_button.setToolTipText("Save As (Ctrl + Shift + S)");
 		
 		add(save_as_button);
 		
 		this.addSeparator();
 		JButton execute_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/media-playback-start-3.png")));
-		execute_button.setToolTipText("Execute");
+		execute_button.setToolTipText("Execute (Ctrl + R)");
 		
 		this.add(execute_button);		
 		JLabel perspective_label = new JLabel("Perspective: ");
@@ -59,6 +59,7 @@ public class EditorToolBar extends JToolBar {
 		this.add(m_perspectives_combobox);
 		this.addSeparator();
 		m_examples_button = new JButton("Examples");
+		m_examples_button.setToolTipText("Load Examples (Ctrl + E)");
 		add(m_examples_button);
 		m_examples_button.addActionListener(examples_action_listener);
 		this.addSeparator();
@@ -66,7 +67,7 @@ public class EditorToolBar extends JToolBar {
 		this.setFloatable(false);			
 		
 		JButton help_button = new JButton(new ImageIcon(getClass().getResource("/resources/icons/toolbar/help.png")));
-		help_button.setToolTipText("Help");		
+		help_button.setToolTipText("Help (Ctrl + H)");		
 		add(help_button);		
 		help_button.addActionListener(help_action_listener);
 		

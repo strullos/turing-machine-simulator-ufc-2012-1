@@ -6,6 +6,7 @@ import ui_utils.HelpDialog;
 import utils.StringFileReader;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -251,6 +252,11 @@ public class MachineTextEditor extends EditorPerspective {
 	public void Examples() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void HandleKeyEvents(KeyEvent e) {
+		m_current_machine_document.HandleKeyEvents(e);
 	}
 
 }

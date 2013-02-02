@@ -39,4 +39,9 @@ public class LineEditComponent extends JPanel {
 	{
 		return  m_lineEdit_textField.getText();
 	}
+	
+	public void SetFocusOnTextField()
+	{
+		m_lineEdit_textField.grabFocus();
+	}
 }

@@ -7,6 +7,7 @@ import ui_utils.HelpDialog;
 import utils.StringFileReader;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -456,5 +457,24 @@ public class DiagramTextEditor extends EditorPerspective {
 
 	}
 
-
+	@Override
+	public void HandleKeyEvents(KeyEvent e) {
+		if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_M){
+			m_current_diagram_document.AddNewModule();
+			return;
+		}
+		if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_K){
+			m_current_diagram_document.RemoveModule();
+			return;
+		}
+		if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_P){
+			m_current_diagram_document.AddPreDefinedModule();
+			return;
+		}
+		if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_L){
+			m_current_diagram_document.ExportAllModules();
+			return;
+		}
+		m_current_diagram_document.HandleKeyEvents(e);
+	}
 }

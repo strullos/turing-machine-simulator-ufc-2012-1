@@ -1,5 +1,7 @@
 package editor;
 
+import java.awt.event.KeyEvent;
+
 import javax.swing.JPanel;
 
 public abstract class EditorPerspective extends JPanel {
@@ -29,4 +31,5 @@ public abstract class EditorPerspective extends JPanel {
 	public abstract void Execute();  //!<  * execute button is pressed *
 	public abstract void Help(); //!< This method should display the help of the perspective and it's called when the "Help" button is pressed
 	public abstract void Examples();
+	public abstract void HandleKeyEvents(KeyEvent e);
 }

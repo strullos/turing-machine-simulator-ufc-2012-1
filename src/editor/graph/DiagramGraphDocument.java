@@ -2,6 +2,8 @@ package editor.graph;
 
 import editor.ModuleGraphDocument;
 import editor.TuringMachinesEditor;
+
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
@@ -39,12 +41,17 @@ public class DiagramGraphDocument extends ModuleGraphDocument {
 				new ModuleSelectionChangedListener(),
 				new SaveAllListener(),
 				new PreDefinedModulesListener());
+		
+		m_input_output_tabbedPane.addTab("Diagram Graph", m_graph_splitPane);
+		m_input_output_tabbedPane.addTab("Console", m_console);
+		
 		m_graph_controls = new DiagramGraphControlComponent(m_graph, m_modules_list);
-		m_graph_document_tabbedPane.addTab("Outline",null, m_graph_controls, null);
-		m_graph_document_tabbedPane.addTab("Modules List", null, m_modules_list, null);
-		m_graph_document_tabbedPane.addTab("Console", null, m_console, null);	
-
+		m_graph_splitPane.setOneTouchExpandable(true);
+		m_graph_splitPane.setDividerLocation(325);	
+		m_graph_splitPane.setLeftComponent(m_graph_controls);	
+		m_graph_splitPane.setRightComponent(m_graph.GetGraphComponent());
 		m_graph_controls.SetAddNodeButtonEnabled(false);
+		add(m_input_output_tabbedPane, BorderLayout.CENTER);
 	}
 	
 	public String ConvertGraphToModule()

@@ -1,5 +1,7 @@
 package editor.graph;
 
+import java.awt.BorderLayout;
+
 import editor.ModuleGraphDocument;
 import ui_utils.MachineGraphControlComponent;
 
@@ -8,8 +10,14 @@ public class MachineGraphDocument extends ModuleGraphDocument {
 	public MachineGraphDocument() {
 		super();
 		m_graph_controls = new MachineGraphControlComponent(m_graph);
-		m_graph_document_tabbedPane.addTab("Graph Controls",null, m_graph_controls, null);
-		m_graph_document_tabbedPane.addTab("Console", null, m_console, null);	
+		m_graph_splitPane.setOneTouchExpandable(true);
+		m_graph_splitPane.setDividerLocation(325);	
+		m_graph_splitPane.setLeftComponent(m_graph_controls);	
+		m_graph_splitPane.setRightComponent(m_graph.GetGraphComponent());
+		
+		m_input_output_tabbedPane.addTab("Machine Graph", m_graph_splitPane);
+		m_input_output_tabbedPane.addTab("Console", m_console);
+		add(m_input_output_tabbedPane, BorderLayout.CENTER);
 	}
 	
 	public String ConvertGraphToModule()

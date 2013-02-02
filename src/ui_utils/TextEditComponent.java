@@ -63,4 +63,9 @@ public class TextEditComponent extends JPanel {
 	{
 		m_text_input.getDocument().addDocumentListener(listener);
 	}
+	
+	public void SetFocusOnTextArea()
+	{
+		m_text_input.grabFocus();
+	}
 }

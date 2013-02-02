@@ -15,6 +15,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -42,6 +43,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	private HashMap<String, String> m_modules_content;
 	private boolean m_mark_unsaved_content;
 	public DiagramTextDocument() {
+		super();
 		setLayout(new BorderLayout(0, 0));
 
 		m_mark_unsaved_content = true;
@@ -62,20 +64,17 @@ public class DiagramTextDocument extends ModuleTextDocument {
 
 		JSplitPane diagram_and_modules_splitPane = new JSplitPane();
 		diagram_and_modules_splitPane.setOneTouchExpandable(true);	
-		diagram_and_modules_splitPane.setDividerLocation(150);		
+		diagram_and_modules_splitPane.setDividerLocation(150);	
+		
+		m_input_output_tabbedPane = new JTabbedPane();
+		m_input_output_tabbedPane.addTab("Diagram Input", m_module_input);
+		m_input_output_tabbedPane.addTab("Console", console_);
 
 		diagram_and_modules_splitPane.setLeftComponent(m_modules_list);		
-		diagram_and_modules_splitPane.setRightComponent(m_module_input);	
-
-		JSplitPane diagram_editor_and_console_splitPane = new JSplitPane();
-		diagram_editor_and_console_splitPane.setOneTouchExpandable(true);	
-		diagram_editor_and_console_splitPane.setDividerLocation(500);
-		diagram_editor_and_console_splitPane.setLeftComponent(diagram_and_modules_splitPane);
-		diagram_editor_and_console_splitPane.setRightComponent(console_);
-		add(diagram_editor_and_console_splitPane, BorderLayout.CENTER);
+		diagram_and_modules_splitPane.setRightComponent(m_input_output_tabbedPane);	
+		add(diagram_and_modules_splitPane);
 
 		m_module_input.SetInputEnabled(false);
-
 		m_module_input.SetDocumentListener(new ContentChangedListener());
 	}	
 
@@ -188,6 +187,40 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		return true;
 	}
 
+	public void AddNewModule()
+	{
+		ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));		
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+				"Modules files(.mt or .dt)", "mt", "dt");		
+		fc.setFileFilter(filter);
+		fc.setAcceptAllFileFilterUsed(false);
+		int returnVal = fc.showOpenDialog(null);
+		String file_path;
+		String file_name;
+		if(returnVal == JFileChooser.APPROVE_OPTION){			
+			file_name = fc.getSelectedFile().getName();
+			file_path = fc.getSelectedFile().getAbsolutePath().toString();
+			DiagramTextDocument.this.AddModule(file_name, file_path);
+		}			
+	}
+	
+	public void AddPreDefinedModule()
+	{
+		PreDefinedModulesDialog pre_defined_modules = new PreDefinedModulesDialog();
+		pre_defined_modules.setModal(true);
+		int result = pre_defined_modules.showDialog(); //If result equals to 1, the user confirmed the dialog			
+		if(result > 0){
+			String module_name = pre_defined_modules.GetSelectModule();
+			if(CheckDuplicatedModule(module_name)){
+				TuringMachinesEditor.SetStatusMessage("There is already a module " + module_name + " in the project. Duplicated modules are not allowed.");
+				return;
+			}				
+			String content = pre_defined_modules.GetSelectedModuleContent();
+			DiagramTextDocument.this.m_modules_content.put(module_name, content);	
+			DiagramTextDocument.this.AddModule(module_name, "");			
+		}
+	}
+	
 	public void AddModule(String file_name, String file_path)
 	{
 		//m_console.ClearText();
@@ -202,6 +235,74 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		}
 		TuringMachinesEditor.SetStatusMessage("Module " + file_name + " added successfully.\n");		
 	}	
+	
+	public void RemoveModule()
+	{
+		String selected_module = m_modules_list.GetSelectedItem();
+		int ret = (int)JOptionPane.showConfirmDialog(
+				DiagramTextDocument.this,
+				"Are you sure you want to remove module: " + selected_module + "?",                  
+				"Alert",
+				JOptionPane.OK_CANCEL_OPTION
+				);
+		if(ret == JOptionPane.OK_OPTION){			
+			m_modules_list.RemoveSelectedItem();
+			m_modules_path.remove(selected_module);	
+			m_modules_content.remove(selected_module);
+			TuringMachinesEditor.SetStatusMessage("Module: " + selected_module + " removed successfully.\n");
+		}		
+	}
+	
+	public void ExportAllModules()
+	{
+		JFileChooser fc = new JFileChooser();			
+		fc.setAcceptAllFileFilterUsed(false);
+		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		int returnVal = fc.showSaveDialog(null);		
+		boolean overwrite_all = false;
+		if(returnVal == JFileChooser.APPROVE_OPTION){	
+			String path = fc.getSelectedFile().getAbsolutePath();				   
+			Iterator<Entry<String, String>> it = m_modules_content.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, String> pairs = (Entry<String, String>)it.next();
+				String file_path = path + "/" + pairs.getKey();
+				File f = new File(file_path);
+				//This code sections asks the user if he wants to overwrite all the files in the directory
+				if(f.exists() && !overwrite_all){				        	
+					Object[] options = {"Yes",
+							"No",
+					"Overwrite All"};
+					int result = JOptionPane.showOptionDialog(null,
+							"File " + pairs.getKey() + " already exists. Overwrite file?",
+							"Overwrite Confirmation Dialog",
+							JOptionPane.YES_NO_CANCEL_OPTION,
+							JOptionPane.QUESTION_MESSAGE,
+							null,
+							options,
+							options[2]);
+					if(result == JOptionPane.YES_OPTION){
+						//Do nothing and overwrite the file in the code below
+					}
+					if(result == JOptionPane.NO_OPTION){
+						continue;
+					}
+					if(result == JOptionPane.CANCEL_OPTION){ //Overwrite option
+						overwrite_all = true;
+					}
+				}
+				FileWriter fstream; 
+				try {
+					fstream = new FileWriter(file_path);
+					BufferedWriter out = new BufferedWriter(fstream);
+					out.write(pairs.getValue());
+					out.close();							
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}				       
+			}
+			TuringMachinesEditor.SetStatusMessage("All modules exported to " + path);
+		}
+	}
 
 	private void ReadSelectedModule(String selected_module)
 	{		
@@ -258,19 +359,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));		
-			FileNameExtensionFilter filter = new FileNameExtensionFilter(
-					"Modules files(.mt or .dt)", "mt", "dt");		
-			fc.setFileFilter(filter);
-			fc.setAcceptAllFileFilterUsed(false);
-			int returnVal = fc.showOpenDialog(null);
-			String file_path;
-			String file_name;
-			if(returnVal == JFileChooser.APPROVE_OPTION){			
-				file_name = fc.getSelectedFile().getName();
-				file_path = fc.getSelectedFile().getAbsolutePath().toString();
-				DiagramTextDocument.this.AddModule(file_name, file_path);
-			}			
+			DiagramTextDocument.this.AddNewModule();
 		}
 
 	}
@@ -279,19 +368,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	{
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			String selected_module = m_modules_list.GetSelectedItem();
-			int ret = (int)JOptionPane.showConfirmDialog(
-					DiagramTextDocument.this,
-					"Are you sure you want to remove module: " + selected_module + "?",                  
-					"Alert",
-					JOptionPane.OK_CANCEL_OPTION
-					);
-			if(ret == JOptionPane.OK_OPTION){			
-				m_modules_list.RemoveSelectedItem();
-				m_modules_path.remove(selected_module);	
-				m_modules_content.remove(selected_module);
-				TuringMachinesEditor.SetStatusMessage("Module: " + selected_module + " removed successfully.\n");
-			}		
+			DiagramTextDocument.this.RemoveModule();
 		}		
 	}
 
@@ -299,53 +376,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 	{
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JFileChooser fc = new JFileChooser();			
-			fc.setAcceptAllFileFilterUsed(false);
-			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			int returnVal = fc.showSaveDialog(null);		
-			boolean overwrite_all = false;
-			if(returnVal == JFileChooser.APPROVE_OPTION){	
-				String path = fc.getSelectedFile().getAbsolutePath();				   
-				Iterator<Entry<String, String>> it = m_modules_content.entrySet().iterator();
-				while (it.hasNext()) {
-					Map.Entry<String, String> pairs = (Entry<String, String>)it.next();
-					String file_path = path + "/" + pairs.getKey();
-					File f = new File(file_path);
-					//This code sections asks the user if he wants to overwrite all the files in the directory
-					if(f.exists() && !overwrite_all){				        	
-						Object[] options = {"Yes",
-								"No",
-						"Overwrite All"};
-						int result = JOptionPane.showOptionDialog(null,
-								"File " + pairs.getKey() + " already exists. Overwrite file?",
-								"Overwrite Confirmation Dialog",
-								JOptionPane.YES_NO_CANCEL_OPTION,
-								JOptionPane.QUESTION_MESSAGE,
-								null,
-								options,
-								options[2]);
-						if(result == JOptionPane.YES_OPTION){
-							//Do nothing and overwrite the file in the code below
-						}
-						if(result == JOptionPane.NO_OPTION){
-							continue;
-						}
-						if(result == JOptionPane.CANCEL_OPTION){ //Overwrite option
-							overwrite_all = true;
-						}
-					}
-					FileWriter fstream; 
-					try {
-						fstream = new FileWriter(file_path);
-						BufferedWriter out = new BufferedWriter(fstream);
-						out.write(pairs.getValue());
-						out.close();							
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}				       
-				}
-				TuringMachinesEditor.SetStatusMessage("All modules exported to " + path);
-			}
+			DiagramTextDocument.this.ExportAllModules();
 		}		
 	}
 
@@ -354,19 +385,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			PreDefinedModulesDialog pre_defined_modules = new PreDefinedModulesDialog();
-			pre_defined_modules.setModal(true);
-			int result = pre_defined_modules.showDialog(); //If result equals to 1, the user confirmed the dialog			
-			if(result > 0){
-				String module_name = pre_defined_modules.GetSelectModule();
-				if(CheckDuplicatedModule(module_name)){
-					TuringMachinesEditor.SetStatusMessage("There is already a module " + module_name + " in the project. Duplicated modules are not allowed.");
-					return;
-				}				
-				String content = pre_defined_modules.GetSelectedModuleContent();
-				DiagramTextDocument.this.m_modules_content.put(module_name, content);	
-				DiagramTextDocument.this.AddModule(module_name, "");			
-			}
+			DiagramTextDocument.this.AddPreDefinedModule();
 		}		
 	}
 
@@ -407,6 +426,5 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		public void removeUpdate(DocumentEvent arg0) {
 			DiagramTextDocument.this.MarkSelectedItemAsUnsaved();					
 		}
-
 	}
 }
