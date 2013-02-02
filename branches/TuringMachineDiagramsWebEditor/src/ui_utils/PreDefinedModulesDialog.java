@@ -22,6 +22,8 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 
 import utils.StringFileReader;
+import java.awt.Font;
+import java.awt.Color;
 
 public class PreDefinedModulesDialog extends JDialog {
 
@@ -56,6 +58,9 @@ public class PreDefinedModulesDialog extends JDialog {
 			}
 			{
 				m_modules_textArea = new JTextArea();
+				m_modules_textArea.setForeground(Color.GREEN);
+				m_modules_textArea.setBackground(Color.BLACK);
+				m_modules_textArea.setFont(new Font("DejaVu Sans Mono", Font.PLAIN, 16));
 				m_modules_textArea.setEditable(false);
 				splitPane.setRightComponent(m_modules_textArea);
 			}

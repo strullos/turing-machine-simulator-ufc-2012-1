@@ -24,6 +24,20 @@ public abstract class ModuleTextDocument extends ModuleDocument {
 	}
 	
 	@Override
+	protected void IncreaseFontSize()
+	{
+		super.IncreaseFontSize();
+		m_module_input.IncreaseFontSize();
+	}
+	
+	@Override
+	protected void DecreaseFontSize()
+	{
+		super.DecreaseFontSize();
+		m_module_input.DecreaseFontSize();
+	}
+	
+	@Override
 	public void SwitchConsoleAndInput()
 	{
 		if(m_switch_to_input){
