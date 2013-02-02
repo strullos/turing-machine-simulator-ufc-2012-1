@@ -22,44 +22,44 @@ public abstract class ModuleDocument extends JPanel {
 	
 	public ModuleDocument() 
 	{
-		
+
 	}
-	
+
 	public void SetConsoleText(String console_text)
 	{
 		m_console.SetText(console_text);
 	}
-	
+
 	public void AppendConsoleText(String text)
 	{
 		m_console.AppendText(text);
 	}
-	
+
 	public void ClearConsoleText()
 	{
 		m_console.SetText("");
 	}
-	
+
 	public String GetTape()
 	{
 		return m_tape_input.GetText();
 	}	
-	
+
 	public ConsoleComponent GetConsole()
 	{
 		return m_console;
 	}
-	
+
 	public String GetDocumentPath()
 	{
 		return m_document_path;
 	}
-	
+
 	public void SetDocumentPath(String path)
 	{
 		m_document_path = path;
 	}
-	
+
 	public void SwitchConsoleAndInput()
 	{
 		if(m_switch_to_input){
@@ -71,11 +71,35 @@ public abstract class ModuleDocument extends JPanel {
 			m_tape_input.SetFocusOnTextField();
 		}
 	}
-	
+
 	public void HandleKeyEvents(KeyEvent e)
 	{
-		if(e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_F4){
-			SwitchConsoleAndInput();
+		if(e.getID() == KeyEvent.KEY_RELEASED){
+			switch(e.getKeyCode()){
+			case KeyEvent.VK_F4:
+				SwitchConsoleAndInput();
+				break;
+			case KeyEvent.VK_EQUALS:
+				if(e.isControlDown()){
+					IncreaseFontSize();
+				}
+				break;
+			case KeyEvent.VK_MINUS:
+				if(e.isControlDown()){
+					DecreaseFontSize();
+				}
+				break;
+			}
 		}
+	}
+	
+	protected void IncreaseFontSize()
+	{
+		m_console.IncreaseFontSize();
+	}
+	
+	protected void DecreaseFontSize()
+	{
+		m_console.DecreaseFontSize();
 	}
 }

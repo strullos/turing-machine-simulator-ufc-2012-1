@@ -15,6 +15,10 @@ public class ConsoleComponent extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private JTextArea m_console_textArea;
+	
+	private Font m_font = new Font("DejaVu Sans Mono", Font.PLAIN, 16);
+	private float m_current_font_size = 16;
+	private float m_font_size_increase = 4;
 
 	public ConsoleComponent() {
 		setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -32,7 +36,7 @@ public class ConsoleComponent extends JPanel {
 		m_console_textArea.setEditable(false);
 		m_console_textArea.setForeground(new Color(0, 255, 0));
 		m_console_textArea.setBackground(Color.BLACK);
-		m_console_textArea.setFont(new Font("DejaVu Sans Mono", Font.PLAIN, 16));
+		m_console_textArea.setFont(m_font);
 	}
 	
 	public void SetText(String text)
@@ -49,5 +53,18 @@ public class ConsoleComponent extends JPanel {
 	{
 		m_console_textArea.setText("");
 	}
-
+	
+	public void IncreaseFontSize()
+	{
+		m_current_font_size+=m_font_size_increase;
+		m_font = m_font.deriveFont((float) m_current_font_size);
+		m_console_textArea.setFont(m_font);
+	}
+	
+	public void DecreaseFontSize()
+	{
+		m_current_font_size-=m_font_size_increase;
+		m_font = m_font.deriveFont((float) m_current_font_size);
+		m_console_textArea.setFont(m_font);
+	}
 }

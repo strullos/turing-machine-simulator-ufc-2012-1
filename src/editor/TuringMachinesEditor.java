@@ -93,35 +93,31 @@ public class TuringMachinesEditor extends JPanel {
 	private class KeyboardDispatched implements KeyEventDispatcher {
 		@Override
 		public boolean dispatchKeyEvent(KeyEvent e) {
-			if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_N){
-				m_current_perspective.New();
-				return true;
-			}	
-			//Execute shortcut
-			if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_R){
-				m_current_perspective.Execute();
-				return true;
-			}	
-			if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_S){
-				m_current_perspective.Save();
-				return true;
-			}
-			if(e.isControlDown() && e.isShiftDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_S){
-				m_current_perspective.SaveAs();
-				return true;
-			}
-			if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_O){
-				m_current_perspective.Open("");
-				return true;
-			}
-		
-			if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_H){
-				m_current_perspective.Help();
-				return true;
-			}
-			if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_E){
-				m_current_perspective.Examples();
-				return true;
+			if(e.isControlDown() && e.getID() == KeyEvent.KEY_RELEASED){
+				switch(e.getKeyCode()){
+				case KeyEvent.VK_N:
+					m_current_perspective.New();
+					return true;
+				case  KeyEvent.VK_R:
+					m_current_perspective.Execute();
+					return true;
+				case KeyEvent.VK_S:
+					m_current_perspective.Save();
+					return true;
+				case KeyEvent.VK_O:
+					m_current_perspective.Open("");
+					return true;
+				case KeyEvent.VK_H:
+					m_current_perspective.Help();
+					return true;
+				case KeyEvent.VK_E:
+					m_current_perspective.Examples();
+					return true;
+				}
+				if(e.isShiftDown() && e.getID() == KeyEvent.KEY_RELEASED && e.getKeyCode() == KeyEvent.VK_S){
+					m_current_perspective.SaveAs();
+					return true;
+				}
 			}
 			m_current_perspective.HandleKeyEvents(e);			
 			return false;
