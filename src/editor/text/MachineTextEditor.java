@@ -108,7 +108,7 @@ public class MachineTextEditor extends EditorPerspective {
 		if(m_current_machine_document.GetModuleText().isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty machine.");
 		}else{
-			String machine_path = m_current_machine_document.GetMachineDocumentPath();
+			String machine_path = m_current_machine_document.GetDocumentPath();
 			String machine_name = "";
 			if(machine_path.isEmpty()){
 				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
@@ -127,7 +127,7 @@ public class MachineTextEditor extends EditorPerspective {
 					if(!machine_name.endsWith(".mt")){
 						machine_name = machine_name + ".mt";
 					}
-					m_current_machine_document.SetMachineDocumentPath(machine_path);
+					m_current_machine_document.SetDocumentPath(machine_path);
 				}else{
 					return;
 				}
@@ -164,7 +164,7 @@ public class MachineTextEditor extends EditorPerspective {
 			return;
 		}
 		Machine m = new Machine();
-		m.logs_.AddLog(new ConsoleLog(m_current_machine_document.console()));
+		m.logs_.AddLog(new ConsoleLog(m_current_machine_document.GetConsole()));
 		m_current_machine_document.ClearConsoleText();
 		try {
 			if( m.loadFromString(m_current_machine_document.GetModuleText())) {
@@ -232,7 +232,7 @@ public class MachineTextEditor extends EditorPerspective {
 				if(!machine_name.isEmpty()){ //If machine name is empty the file was already saved so we do not need to save it again
 					m_machines_tabbedPane.setTitleAt(m_machines_tabbedPane.getSelectedIndex(), machine_name);
 				}		
-				m_current_machine_document.SetMachineDocumentPath(machine_path);
+				m_current_machine_document.SetDocumentPath(machine_path);
 				m_current_machine_document.SetModuleText(machine_content);
 			} catch (IOException e) {
 				e.printStackTrace();

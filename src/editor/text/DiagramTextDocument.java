@@ -51,7 +51,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		m_modules_path = new HashMap<String, String>();
 		m_tape_input = new LineEditComponent("Tape:");
 		m_module_input = new TextEditComponent("Editor:");
-		console_ = new ConsoleComponent();
+		m_console = new ConsoleComponent();
 		m_modules_list = new ItemListComponent("Modules:", new NewModuleListener(),
 				new AddModuleListener(), 
 				new RemoveModuleListener(), 
@@ -68,7 +68,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 		
 		m_input_output_tabbedPane = new JTabbedPane();
 		m_input_output_tabbedPane.addTab("Diagram Input", m_module_input);
-		m_input_output_tabbedPane.addTab("Console", console_);
+		m_input_output_tabbedPane.addTab("Console", m_console);
 
 		diagram_and_modules_splitPane.setLeftComponent(m_modules_list);		
 		diagram_and_modules_splitPane.setRightComponent(m_input_output_tabbedPane);	
@@ -179,7 +179,7 @@ public class DiagramTextDocument extends ModuleTextDocument {
 			String module_file = tokens.nextToken();
 			if(module_file.endsWith(".dt") || module_file.endsWith(".mt")){
 				if(!m_modules_path.containsKey(module_file)){
-					console_.AppendText("Warning: module file " + module_file + " is not on the available modules list.\n");
+					m_console.AppendText("Warning: module file " + module_file + " is not on the available modules list.\n");
 					return false;
 				}				
 			}			

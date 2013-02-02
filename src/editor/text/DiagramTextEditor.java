@@ -119,7 +119,7 @@ public class DiagramTextEditor extends EditorPerspective {
 				m_current_diagram_document.AddModule(selected_file.getName(), file_path);
 
 				Diagram d = new Diagram();
-				d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
+				d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.GetConsole()));
 				d.setLoadPath(selected_file.getParent());
 
 				String diagram_text = new String("");
@@ -172,7 +172,7 @@ public class DiagramTextEditor extends EditorPerspective {
 					"\nConsider adding the required modules.\n");
 		}
 		Diagram d = new Diagram();		
-		d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
+		d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.GetConsole()));
 		String example_dir = example_path.replaceAll("/" + example_name ,"");
 		d.setLoadPath(example_dir);
 		try {
@@ -307,7 +307,7 @@ public class DiagramTextEditor extends EditorPerspective {
 			}
 			boolean duplicated_module = false;
 			if(m_current_diagram_document.CheckDuplicatedModule(module_filename)){
-				m_current_diagram_document.console_.AppendText("This diagram project already contains a module called " + module_filename + ".File will be saved, but will not be added to the project.");
+				m_current_diagram_document.GetConsole().AppendText("This diagram project already contains a module called " + module_filename + ".File will be saved, but will not be added to the project.");
 				duplicated_module = true;
 			}
 			FileWriter fstream; 
@@ -389,7 +389,7 @@ public class DiagramTextEditor extends EditorPerspective {
 	{
 
 		Machine m = new Machine();
-		m.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
+		m.logs_.AddLog(new ConsoleLog(m_current_diagram_document.GetConsole()));
 		try {
 			if( m.loadFromString(m_current_diagram_document.GetModuleText())) {
 				Tape tape = new Tape(m_current_diagram_document.GetTape());				
@@ -407,7 +407,7 @@ public class DiagramTextEditor extends EditorPerspective {
 	private void ExecuteDiagram()
 	{
 		Diagram d = new Diagram();
-		d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.console()));
+		d.logs_.AddLog(new ConsoleLog(m_current_diagram_document.GetConsole()));
 		d.setModuleFilesFullPath(m_current_diagram_document.GetModulesPath());
 		d.setModulesContent(m_current_diagram_document.GetModulesContent());
 		try {

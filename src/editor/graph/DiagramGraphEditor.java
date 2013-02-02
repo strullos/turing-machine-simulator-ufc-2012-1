@@ -92,7 +92,7 @@ public class DiagramGraphEditor extends EditorPerspective {
 		if(machine_graph_text.isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty diagram graph.");
 		}else{
-			String diagram_path = m_current_diagram_graph_document.GetGraphDocumentPath();
+			String diagram_path = m_current_diagram_graph_document.GetDocumentPath();
 			String diagram_name = "";
 			if(diagram_path.isEmpty()){
 				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
@@ -151,7 +151,7 @@ public class DiagramGraphEditor extends EditorPerspective {
 		Diagram d = new Diagram();
 		d.setModuleFilesFullPath(m_current_diagram_graph_document.GetModulesPath());
 		d.setModulesContent(m_current_diagram_graph_document.GetModulesContent());
-		d.logs_.AddLog(new ConsoleLog(m_current_diagram_graph_document.console()));
+		d.logs_.AddLog(new ConsoleLog(m_current_diagram_graph_document.GetConsole()));
 		try {
 			if( d.loadFromString(m_current_diagram_graph_document.ConvertGraphToModule())) {
 				Tape tape = new Tape(m_current_diagram_graph_document.GetTape());				
@@ -175,7 +175,7 @@ public class DiagramGraphEditor extends EditorPerspective {
 		if(diagram_graph_text.isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty diagram graph.");
 		}else{
-			String diagram_path = m_current_diagram_graph_document.GetGraphDocumentPath();
+			String diagram_path = m_current_diagram_graph_document.GetDocumentPath();
 			String diagram_name = "";
 			if(diagram_path.isEmpty()){
 				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
