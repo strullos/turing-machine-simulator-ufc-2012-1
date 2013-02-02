@@ -125,7 +125,7 @@ public class MachineGraphEditor extends EditorPerspective {
 		if(machine_graph_text.isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty machine.");
 		}else{
-			String machine_path = m_current_machine_graph_document.GetGraphDocumentPath();
+			String machine_path = m_current_machine_graph_document.GetDocumentPath();
 			String machine_name = "";
 			if(machine_path.isEmpty()){
 				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
@@ -173,7 +173,7 @@ public class MachineGraphEditor extends EditorPerspective {
 		if(machine_graph_text.isEmpty()){
 			TuringMachinesEditor.SetStatusMessage("Empty machine.");
 		}else{
-			String machine_path = m_current_machine_graph_document.GetGraphDocumentPath();
+			String machine_path = m_current_machine_graph_document.GetDocumentPath();
 			String machine_name = "";
 			if(machine_path.isEmpty()){
 				ConfirmationFileChooser fc = new ConfirmationFileChooser(new File("."));
@@ -232,7 +232,7 @@ public class MachineGraphEditor extends EditorPerspective {
 			return;
 		}
 		Machine m = new Machine();
-		m.logs_.AddLog(new ConsoleLog(m_current_machine_graph_document.console()));
+		m.logs_.AddLog(new ConsoleLog(m_current_machine_graph_document.GetConsole()));
 		m_current_machine_graph_document.GoToConsoleTab();
 		m_current_machine_graph_document.ClearConsoleText();
 		try {
