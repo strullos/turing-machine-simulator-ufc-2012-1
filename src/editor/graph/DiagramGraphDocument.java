@@ -45,12 +45,11 @@ public class DiagramGraphDocument extends ModuleGraphDocument {
 		m_input_output_tabbedPane.addTab("Diagram Graph", m_graph_splitPane);
 		m_input_output_tabbedPane.addTab("Console", m_console);
 		
-		m_graph_controls = new DiagramGraphControlComponent(m_graph, m_modules_list);
+		m_graph_controls = new DiagramGraphControlComponent(m_graph, m_modules_path, m_modules_content);
 		m_graph_splitPane.setOneTouchExpandable(true);
 		m_graph_splitPane.setDividerLocation(325);	
 		m_graph_splitPane.setLeftComponent(m_graph_controls);	
 		m_graph_splitPane.setRightComponent(m_graph.GetGraphComponent());
-		m_graph_controls.SetAddNodeButtonEnabled(false);
 		add(m_input_output_tabbedPane, BorderLayout.CENTER);
 	}
 	
