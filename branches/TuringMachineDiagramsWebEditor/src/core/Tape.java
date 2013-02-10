@@ -58,6 +58,9 @@ public class Tape {
 	
 	public int moveHeadRight(){
 		m_position++;
+		if(m_position >= m_tape.length()){
+			m_tape.append("#");
+		}
 		return m_position;
 	}
 	
