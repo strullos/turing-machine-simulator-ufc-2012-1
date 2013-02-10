@@ -30,80 +30,32 @@ import com.mxgraph.swing.handler.mxRubberband;
 
 
 public class Graph {
-	protected mxGraph m_graph;
-	private mxGraphComponent m_graph_component;
-	private mxGraphOutline m_graph_outline;
-	@SuppressWarnings("unused")
-	private mxRubberband m_graph_rubberband;
-	private static int m_node_width = 100;
-	private static int m_node_height = 100;
-	private String m_node_style;
-	private mxCell m_starting_node;
-	private boolean m_is_panning_allowed;
-	private HashMap<mxCell,String> m_node_modules;
-	private ConsoleComponent m_console;
+	protected mxGraph m_graph = new mxGraph();
+	protected mxGraphComponent m_graph_component = new CustomMxGraphComponent(m_graph);
+	protected mxGraphOutline m_graph_outline = new mxGraphOutline(this.m_graph_component);
+	protected mxRubberband m_graph_rubberband = new mxRubberband(m_graph_component);
+	protected static int m_node_width = 100;
+	protected static int m_node_height = 100;
+	protected boolean m_is_panning_allowed = true;
+	protected HashMap<mxCell,String> m_node_modules = new HashMap<mxCell,String>();
+	
+	protected String m_node_style;
+	protected mxCell m_starting_node;
+	protected ConsoleComponent m_console;
 	public Graph(ConsoleComponent console){	
 		m_console = console;
-		m_node_modules = new HashMap<mxCell,String>();
-		m_is_panning_allowed = true;
-		m_graph = new mxGraph();		
-		m_graph_component = new mxGraphComponent(m_graph) {
-			private static final long serialVersionUID = 1L;
-			@Override
-			public boolean isPanningEvent(MouseEvent event){
-				if(event.getButton() == MouseEvent.BUTTON2 && m_is_panning_allowed){ //Middle Mouse Button
-					return true;
-				}
-				return false;
-			}
-		};
-		m_graph_rubberband = new mxRubberband(m_graph_component);
-
-		m_node_style = new String("ROUNDED;fillColor=#FFFFFF");
-
-		mxStylesheet stylesheet = m_graph.getStylesheet();
-		HashMap<String, Object> style = new HashMap<String, Object>();
-		style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
-		style.put(mxConstants.STYLE_OPACITY, 100);
-		style.put(mxConstants.STYLE_FONTCOLOR, "#000000");
-		style.put(mxConstants.STYLE_FONTSIZE, "30"); //!< Remove this later...
-		style.put(mxConstants.STYLE_LABEL_POSITION, mxConstants.ALIGN_CENTER);
-		style.put(mxConstants.STYLE_SPACING_TOP, 5);
-		style.put(mxConstants.STYLE_STROKECOLOR, "#000000");
-		stylesheet.putCellStyle("ROUNDED", style);
-
-		HashMap<String, Object> edgeStyle = new HashMap<String, Object>();
-		edgeStyle.put(mxConstants.STYLE_SHAPE,    mxConstants.SHAPE_CURVE);
-		edgeStyle.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
-		edgeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
-		edgeStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
-		edgeStyle.put(mxConstants.STYLE_FONTSIZE, "30");
-		edgeStyle.put(mxConstants.STYLE_LABEL_POSITION, mxConstants.ALIGN_CENTER);
-		edgeStyle.put(mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, "#ffffff");
-		edgeStyle.put(mxConstants.STYLE_LABEL_BORDERCOLOR, "#000000");
-		stylesheet.setDefaultEdgeStyle(edgeStyle);	
-
-		m_graph.getModel().endUpdate();
 		m_graph.setCellsResizable(true);
 		m_graph.setAllowDanglingEdges(false);           
 		m_graph.setAllowLoops(true);      
-		//m_graph.setAutoSizeCells(true);
-
 		m_graph_component.setGridVisible(true);	
 		m_graph_component.setBackground(new Color(255,255,255));
 		m_graph_component.setPageVisible(true);
-		//	 PageFormat page_format = new PageFormat();
-		//	 page_format.setOrientation(PageFormat.LANDSCAPE);
-		//	 m_graph_component.setPageFormat(page_format);
 		m_graph_component.getViewport().setOpaque(true);
 		m_graph_component.getViewport().setBackground(Color.WHITE);
-
-		m_graph_outline = new mxGraphOutline(this.m_graph_component);
 		m_graph_component.getConnectionHandler().addListener(mxEvent.CONNECT, new AddCellListener());
 		m_graph_component.addKeyListener(new GraphKeyListener());
 		m_graph_component.addMouseWheelListener(new MouseWheelTracker());
 		
-//		m_graph.setHtmlLabels(true);
 	}	
 
 
@@ -409,6 +361,26 @@ public class Graph {
 			}
 		}		
 	}
+	
+	class CustomMxGraphComponent extends mxGraphComponent
+	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public CustomMxGraphComponent(mxGraph arg0) {
+			super(arg0);
+		}
+
+		@Override
+		public boolean isPanningEvent(MouseEvent event){
+			if(event.getButton() == MouseEvent.BUTTON2 && m_is_panning_allowed){ //Middle Mouse Button
+				return true;
+			}
+			return false;
+		}
+	};
 
 	class MouseWheelTracker implements MouseWheelListener
 	{
@@ -465,6 +437,5 @@ public class Graph {
 				m_graph_component.refresh();
 			}
 		}
-
 	}
 }
