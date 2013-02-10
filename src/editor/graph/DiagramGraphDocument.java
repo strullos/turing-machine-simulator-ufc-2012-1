@@ -2,7 +2,7 @@ package editor.graph;
 
 import editor.ModuleGraphDocument;
 import editor.TuringMachinesEditor;
-
+import graph.DiagramGraph;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,6 +31,7 @@ public class DiagramGraphDocument extends ModuleGraphDocument {
 	public DiagramGraphDocument()
 	{
 		super();
+		m_graph = new DiagramGraph(m_console);
 		m_modules_path = new HashMap<String, String>();
 		m_modules_content = new HashMap<String, String>();
 		

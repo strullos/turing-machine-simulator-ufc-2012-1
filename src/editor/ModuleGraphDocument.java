@@ -23,7 +23,6 @@ public abstract class ModuleGraphDocument extends ModuleDocument {
 	public ModuleGraphDocument() {
 		m_document_path = "";
 		m_console = new ConsoleComponent();
-		m_graph = new Graph(m_console);
 		m_tape_input = new LineEditComponent("Tape:");
 		m_input_output_tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		
