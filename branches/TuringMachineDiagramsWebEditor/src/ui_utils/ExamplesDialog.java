@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -24,7 +23,7 @@ import javax.swing.JScrollPane;
 
 import utils.StringFileReader;
 
-public class ExamplesDialog extends JDialog {
+public class ExamplesDialog extends Dialog {
 
 	/**
 	 * 
@@ -35,11 +34,12 @@ public class ExamplesDialog extends JDialog {
 	private HashMap<String, String> m_examples_path;
 	private HashMap<String, String> m_examples_content;
 	private JTextArea m_example_textArea;
-	private int m_result;
 	/**
 	 * Create the dialog.
 	 */
 	public ExamplesDialog() {
+		super();
+		m_can_accept = true;
 		m_examples_path = new HashMap<String, String>();
 		m_examples_content = new HashMap<String, String>();
 		
@@ -102,12 +102,6 @@ public class ExamplesDialog extends JDialog {
 		m_examples_list.addListSelectionListener(new SelectionChangedActionListener());
 		BuildExamplesList();
 		this.setTitle("Examples");
-	}
-	
-	public int showDialog()
-	{
-		setVisible(true);
-		return m_result;
 	}
 	
 	public void BuildExamplesList()

@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -25,7 +24,7 @@ import utils.StringFileReader;
 import java.awt.Font;
 import java.awt.Color;
 
-public class PreDefinedModulesDialog extends JDialog {
+public class PreDefinedModulesDialog extends Dialog {
 
 	/**
 	 * 
@@ -36,11 +35,11 @@ public class PreDefinedModulesDialog extends JDialog {
 	private JTextArea m_modules_textArea;
 	private HashMap<String,String> m_modules_content;
 	private HashMap<String, String> m_modules_path;
-	private int m_result;
 	/**
 	 * Create the dialog.
 	 */
 	public PreDefinedModulesDialog() {
+		super();
 		m_modules_content = new HashMap<String, String>();
 		m_modules_path = new HashMap<String, String>();
 		m_result = 0;
@@ -102,12 +101,6 @@ public class PreDefinedModulesDialog extends JDialog {
 		m_modules_list.addListSelectionListener(new SelectionChangedActionListener());
 		BuildModulesList();
 		this.setTitle("Pre-defined Modules");
-	}
-	
-	public int showDialog()
-	{
-		setVisible(true);
-		return m_result;
 	}
 	
 	public void BuildModulesList()
