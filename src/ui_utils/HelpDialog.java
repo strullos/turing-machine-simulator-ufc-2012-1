@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextArea;
@@ -14,7 +13,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
 import java.awt.Insets;
 
-public class HelpDialog extends JDialog {
+public class HelpDialog extends Dialog {
 
 	/**
 	 * 
@@ -27,6 +26,8 @@ public class HelpDialog extends JDialog {
 	 * Create the dialog.
 	 */
 	public HelpDialog() {
+		super();
+		m_can_accept = true;
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));

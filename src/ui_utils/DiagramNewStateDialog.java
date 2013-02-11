@@ -1,6 +1,5 @@
 package ui_utils;
 
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 
@@ -11,6 +10,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import java.awt.Component;
 import javax.swing.Box;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.awt.Dimension;
@@ -20,7 +21,7 @@ import java.io.File;
 
 
 
-public class DiagramNewStateDialog extends JDialog {
+public class DiagramNewStateDialog extends Dialog {
 	/**
 	 * 
 	 */
@@ -30,12 +31,13 @@ public class DiagramNewStateDialog extends JDialog {
 	private String m_selected_module = "";
 	private String m_selected_module_path = "";
 	private String m_selected_module_content = "";
-	private int m_result;
+	
 	private JButton m_ok_button;
 	private JButton m_cancel_button;
 	private JButton m_pre_defined_button;
 	private JButton m_add_module_button;
 	public DiagramNewStateDialog() {
+		super();
 		setBounds(100, 100, 387, 178);
 		
 		JPanel contentPanel = new JPanel();
@@ -110,13 +112,12 @@ public class DiagramNewStateDialog extends JDialog {
 		m_pre_defined_button.addActionListener(new PreDefinedButtonListener());
 		m_add_module_button.addActionListener(new AddButtonListener());
 		
+		m_ok_button.setEnabled(false);
+		
+		label_textField.getDocument().addDocumentListener(new LabelListener());
 	}
 
-	public int showDialog()
-	{
-		setVisible(true);
-		return m_result;
-	}
+	
 	
 	public String GetLabel()
 	{
@@ -149,6 +150,7 @@ public class DiagramNewStateDialog extends JDialog {
 		}
 	}
 	
+	
 	class CancelButtonListener implements ActionListener
 	{
 
@@ -175,6 +177,10 @@ public class DiagramNewStateDialog extends JDialog {
 				m_selected_module_path = fc.getSelectedFile().getAbsolutePath().toString();
 				selected_module_textField.setText(m_selected_module_path);
 				label_textField.grabFocus();
+				if(!label_textField.getText().isEmpty()){
+					m_ok_button.setEnabled(true);
+				}
+				m_can_accept = m_ok_button.isEnabled();
 			}		
 			
 		}
@@ -193,7 +199,48 @@ public class DiagramNewStateDialog extends JDialog {
 				m_selected_module_path = "";
 				selected_module_textField.setText(m_selected_module);
 				label_textField.grabFocus();
+				if(!label_textField.getText().isEmpty()){
+					m_ok_button.setEnabled(true);
+				}
+				m_can_accept = m_ok_button.isEnabled();
 			}
 		}
+	}
+	
+	class LabelListener implements DocumentListener
+	{
+		@Override
+		public void insertUpdate(DocumentEvent e) {
+			if(!DiagramNewStateDialog.this.label_textField.getText().isEmpty() 
+					&& !DiagramNewStateDialog.this.selected_module_textField.getText().isEmpty()){
+				DiagramNewStateDialog.this.m_ok_button.setEnabled(true);
+			}else{
+				DiagramNewStateDialog.this.m_ok_button.setEnabled(false);
+			}
+			m_can_accept = m_ok_button.isEnabled();
+		}
+
+		@Override
+		public void removeUpdate(DocumentEvent e) {
+			if(!DiagramNewStateDialog.this.label_textField.getText().isEmpty() 
+					&& !DiagramNewStateDialog.this.selected_module_textField.getText().isEmpty()){
+				DiagramNewStateDialog.this.m_ok_button.setEnabled(true);
+			}else{
+				DiagramNewStateDialog.this.m_ok_button.setEnabled(false);
+			}
+			m_can_accept = m_ok_button.isEnabled();
+		}
+
+		@Override
+		public void changedUpdate(DocumentEvent e) {
+			if(!DiagramNewStateDialog.this.label_textField.getText().isEmpty() 
+					&& !DiagramNewStateDialog.this.selected_module_textField.getText().isEmpty()){
+				DiagramNewStateDialog.this.m_ok_button.setEnabled(true);
+			}else{
+				DiagramNewStateDialog.this.m_ok_button.setEnabled(false);
+			}
+			m_can_accept = m_ok_button.isEnabled();
+		}
+		
 	}
 }
