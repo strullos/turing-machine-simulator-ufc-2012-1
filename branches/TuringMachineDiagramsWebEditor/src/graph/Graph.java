@@ -15,13 +15,11 @@ import java.util.List;
 
 import ui_utils.ConsoleComponent;
 
-import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxGraph;
-import com.mxgraph.view.mxStylesheet;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGeometry;
 import com.mxgraph.swing.mxGraphComponent;
@@ -67,7 +65,7 @@ public class Graph {
 		m_graph.getModel().endUpdate();
 		if(m_graph.getChildCells(m_graph.getDefaultParent(), true, false).length == 1){
 			m_starting_node = node;
-			node.setStyle("ROUNDED;fillColor=#beffaf");
+			node.setStyle("fillColor=#beffaf");
 			m_graph_component.refresh();
 		}
 		return node;
@@ -81,7 +79,7 @@ public class Graph {
 		m_graph.getModel().endUpdate();
 		if(m_graph.getChildCells(m_graph.getDefaultParent(), true, false).length == 1){
 			m_starting_node = node;
-			node.setStyle("ROUNDED;fillColor=#beffaf");
+			node.setStyle("fillColor=#beffaf");
 			m_graph_component.refresh();
 		}
 		m_node_modules.put(node, corresponding_module);
@@ -96,7 +94,7 @@ public class Graph {
 		m_graph.getModel().endUpdate();
 		if(is_starting_node){
 			m_starting_node = node;
-			node.setStyle("ROUNDED;fillColor=#beffaf");
+			node.setStyle("fillColor=#beffaf");
 			m_graph_component.refresh();
 		}
 		return node;
@@ -337,9 +335,9 @@ public class Graph {
 		mxCell selected_node = (mxCell)m_graph_component.getGraph().getSelectionCell();
 		if(selected_node != null && selected_node.isVertex()){
 			m_graph.getModel().beginUpdate();
-			m_starting_node.setStyle("ROUNDED;fillColor=#ffffff");
+			m_starting_node.setStyle("fillColor=#ffffff");
 			m_starting_node = selected_node;			
-			m_starting_node.setStyle("ROUNDED;fillColor=#beffaf");
+			m_starting_node.setStyle("fillColor=#beffaf");
 			m_graph_component.refresh();
 			m_graph.getModel().endUpdate();
 			
