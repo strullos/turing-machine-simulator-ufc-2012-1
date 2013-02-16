@@ -11,21 +11,17 @@ public class Machine extends Module {
 	private HashMap<String, MachineRule> m_rules; //Maps from state to rule
 	private String m_initial_state;
 	private String m_current_state;
-	private String m_variable;
-	private String m_variable_value;
-	private boolean m_uses_variable;
-	
+	private HashMap<String, String> m_variables;
+
 	public Machine(){
 		m_rules = new HashMap<String, MachineRule>();
 		m_initial_state = "";
 		m_current_state = m_initial_state;
-		m_variable = "";
-		m_variable_value = "";
-		m_uses_variable = false;
 		m_module_name = "";
+		m_variables = new HashMap<String, String>();
 	}	
 
-	
+
 	@Override
 	protected boolean load(BufferedReader reader) {
 		String line;
@@ -47,7 +43,7 @@ public class Machine extends Module {
 		}		
 		return true;
 	}	
-	
+
 	@Override
 	public boolean processHeader(String line) {
 		StringTokenizer tokens = new StringTokenizer(line);
@@ -61,41 +57,46 @@ public class Machine extends Module {
 		}		
 		return false;
 	}	
-	
+
 	public boolean processVarDeclaration(String line){
 		StringTokenizer tokens = new StringTokenizer(line);
 		int tokens_count = tokens.countTokens();
 		String first_token = tokens.nextToken();
 		if(tokens_count == 2 && first_token.equals("var")){
-				m_variable = tokens.nextToken();
-				m_uses_variable = true;
-				return true;
+			String var = tokens.nextToken();
+			m_variables.put(var, "");
+			return true;
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean processRule(String line) {
 		StringTokenizer tokens = new StringTokenizer(line);
 		if(tokens.countTokens() == 4){
 			String initial_state = tokens.nextToken();
 			String symbol = tokens.nextToken();
+			String variable = "";
+			if(symbol.contains("=") && symbol.length() >= 3){
+				variable = symbol.substring(0, symbol.indexOf("="));
+				symbol = symbol.substring(symbol.indexOf("=")+1);
+			}
 			String final_state = tokens.nextToken();
 			String action = tokens.nextToken();
-			
+
 			if(m_rules.containsKey(initial_state)){
 				MachineRule rule = m_rules.get(initial_state);
 				if(rule.hasRule(symbol) || rule.hasRule("*")){
 					logs_.WriteLn("Non-deterministic rule detected on line " + m_current_line);
 					logs_.WriteLn("Rule: " + initial_state + " " + symbol + " " + final_state + " " + action);
 					logs_.WriteLn("Conflicts with previously added Rule: " + initial_state + " " + 
-					symbol + " " + rule.m_next_states.get(symbol) + " " + rule.m_actions.get(symbol));
+							symbol + " " + rule.m_next_states.get(symbol) + " " + rule.m_actions.get(symbol));
 					return false;					
 				}
-				rule.addTransition(symbol, final_state, action);
+				rule.addTransition(symbol, final_state, action, variable);
 				return true;
 			}
-			MachineRule rule = new MachineRule(symbol,final_state, action);
+			MachineRule rule = new MachineRule(symbol,final_state, action, variable, m_variables);
 			m_rules.put(initial_state, rule);
 			return true;
 		}
@@ -132,17 +133,17 @@ public class Machine extends Module {
 		}
 		return false;
 	}	
-	
+
 	@Override
 	public void printStep(Tape t) {	
-			String format_string = "%-4s %-3s %s";
-			String step_count = Integer.toString(Module.test_steps) + ".";
-			String step_info = m_current_state;
-			String step_tape = t.toString();
-			String formatted_string = String.format(format_string,step_count,step_info,step_tape);
-			logs_.WriteLn(formatted_string);			
+		String format_string = "%-4s %-3s %s";
+		String step_count = Integer.toString(Module.test_steps) + ".";
+		String step_info = m_current_state;
+		String step_tape = t.toString();
+		String formatted_string = String.format(format_string,step_count,step_info,step_tape);
+		logs_.WriteLn(formatted_string);			
 	}	
-	
+
 	@Override
 	public void printSummary(Tape t) {
 		logs_.WriteLn("Finished executing in " + m_steps + " steps.");
@@ -153,49 +154,56 @@ public class Machine extends Module {
 	public String getCurrentState() {
 		return m_current_state;
 	}	
-	
+
 	@Override
 	public String getFinalState() {
 		return "<" + m_module_name + "," + m_current_state + ">";
 	}	
-	
+
 	@Override
 	public void reset(){
 		m_current_state = m_initial_state;
 		m_steps = 0;
 	}
-	
-	public void setVariableValue(String value){
-		m_variable_value = value;
+
+	public void setVariableValue(String variable, String value){
+		m_variables.put(variable,value);
 	}	
-	
+
 	public ArrayList<String> getDependencies()
 	{
 		return new ArrayList<String>();
 	}
-	
+
 	private class MachineRule
 	{
 		private HashMap<String,String> m_next_states; //Maps from symbol to final state 
 		private HashMap<String,String> m_actions;	  //Maps from symbol to action
-		
-		public MachineRule(String symbol, String final_state, String action)
+		private HashMap<String, String> m_symbol_variables; //Maps from symbol to variable, meaning that the symbol will be stored on the variable
+		private HashMap<String, String> m_variables_values;
+
+		public MachineRule(String symbol, String final_state, String action, String variable, HashMap<String,String> variables_values)
 		{
 			m_next_states = new HashMap<String,String>();
 			m_actions = new HashMap<String,String>();
-			addTransition(symbol, final_state, action);
+			m_symbol_variables = new HashMap<String, String>();
+			m_variables_values = variables_values;
+			addTransition(symbol, final_state, action, variable);
 		}
-		
-		public void addTransition(String symbol, String final_state, String action){
+
+		public void addTransition(String symbol, String final_state, String action, String variable){
 			m_next_states.put(symbol, final_state);
 			m_actions.put(symbol, action);
+			if(!variable.isEmpty()){
+				m_symbol_variables.put(symbol, variable);
+			}
 		}
-	
-		
+
+
 		public boolean hasRule(String symbol){
 			return (m_actions.containsKey(symbol) || m_next_states.containsKey("*"));
 		}
-	
+
 		public String getNextState(String symbol){
 			if(m_next_states.containsKey("*")){
 				return m_next_states.get("*");
@@ -203,7 +211,7 @@ public class Machine extends Module {
 				return m_next_states.get(symbol);			
 			}			
 		}
-		
+
 		public boolean applyAction(Tape tape)
 		{	
 			String symbol = tape.readCurrentSymbol();
@@ -217,6 +225,10 @@ public class Machine extends Module {
 					return false;
 				}
 			}
+			if(m_symbol_variables.containsKey(symbol)){
+				String var = m_symbol_variables.get(symbol);
+				m_variables_values.put(var, symbol);
+			}
 			switch(action){
 			case '>':
 				tape.moveHeadRight();
@@ -225,9 +237,10 @@ public class Machine extends Module {
 				tape.moveHeadLeft();
 				return true;		
 			default:
-				if(m_uses_variable){
-					if(action == m_variable.charAt(0)){
-						action = m_variable_value.charAt(0);
+				if(!m_variables_values.isEmpty()){
+					String action_str = "" + action;
+					if(m_variables_values.containsKey(action_str)){
+						action = m_variables_values.get(action_str).charAt(0);
 					}
 				}
 				tape.writeSymbol(action);
@@ -235,5 +248,5 @@ public class Machine extends Module {
 			}			
 		}	
 	}
-	
+
 }
