@@ -303,7 +303,7 @@ public class Diagram extends Module {
 							Module module = m_loaded_modules.get(m_current_module);
 							if(module instanceof Machine){
 								Machine m = (Machine)module;
-								m.setVariableValue(m_variables_table.get(var));
+								m.setVariableValue(var, m_variables_table.get(var));
 							}
 						}
 					}
@@ -350,7 +350,7 @@ public class Diagram extends Module {
 					Module module = m_loaded_modules.get(m_current_module);
 					if(module instanceof Machine){
 						Machine m = (Machine)module;
-						m.setVariableValue(m_variables_table.get(var));
+						m.setVariableValue(var, m_variables_table.get(var));
 					}
 				}
 				return true;		  	    	
